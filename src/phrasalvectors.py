@@ -74,7 +74,7 @@ class VectorExtractor:
                 except:
                     print "Warning: unable to untag "+fields[0]
                 linesread+=1
-                if linesread%1000==0:print "Read "+str(linesread)+" lines"
+                if linesread%10000==0:print "Read "+str(linesread)+" lines"
             print "Loaded "+str(loaded)+" head vectors"
 
     def extractfromfile(self):
@@ -213,7 +213,7 @@ class VectorBuilder(VectorExtractor):
 
     def makedifferences(self,phrasevector,mstream,hstream):
         phrase=phrasevector.word.split(':')
-        mod=phrase[2]
+        mod=phrase[1]+':'+phrase[2]
         try:
             head=untag(phrase[0])[0]
         except:
