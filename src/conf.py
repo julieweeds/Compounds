@@ -15,6 +15,7 @@ def configure(args):
     parameters['entrythresh']=50000
     parameters['stopwordlimit']=3
     parameters['featurematch']='nn-DEP'
+    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP'}
     parameters['testing']=False
     parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD']
 

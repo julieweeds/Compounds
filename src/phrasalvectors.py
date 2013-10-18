@@ -61,6 +61,7 @@ class VectorExtractor:
                         linesread+=1
                         if linesread%100000==0:
                             print "Read "+str(linesread)+" lines"
+                            if self.parameters['testing']:exit()
                         fields=line.rstrip().split('\t')
                         for index,feature in enumerate(fields[1:]):
                             parts = feature.split(':')
