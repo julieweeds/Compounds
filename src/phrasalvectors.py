@@ -213,6 +213,14 @@ class VectorBuilder(VectorExtractor):
                             #print "Ignoring word "+currentvector.word
                         currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
+                if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
+                    #do last vector
+                    if flag=='mod':
+                        self.modvectordict[currentvector.word]=currentvector
+                    else:
+                        self.makedifferences(currentvector,moddiffstream,headdiffstream)
+                    currentvector.finalise(self.featdict,self.featuretotal,outstream)
+
 
     def makedifferences(self,phrasevector,mstream,hstream):
         phrase=phrasevector.word.split(':')
