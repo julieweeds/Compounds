@@ -67,6 +67,7 @@ class VectorExtractor:
                             if self.parameters['testing']:exit()
                         fields=line.rstrip().split('\t')
                         word =untag(fields[0])[0]
+                        print word,self.entrydict.get(word,0),self.parameters['inversefeatures'][self.parameters['featurematch']]
                         for index,feature in enumerate(fields[1:]):
                             parts = feature.split(':')
 
