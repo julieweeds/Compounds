@@ -78,8 +78,7 @@ class VectorExtractor:
                                 self.writeoutput(phrase,newfields,outstream1)
                                 self.writeoutput(feature,newfields,outstream2)
                             elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
-                                print "Found inverse match"
-                                invertedfeature=self.parameters['featurematch']+word
+                                #print "Found inverse match"
                                 phrase=parts[1]+'/N:'+self.parameters['featurematch']+':'+word
                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                 newfields=self.depfilter(newfields)
