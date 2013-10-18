@@ -69,7 +69,7 @@ class VectorExtractor:
                         word =untag(fields[0])[0]
                         for index,feature in enumerate(fields[1:]):
                             parts = feature.split(':')
-                            invertedfeature=self.parameters['featurematch']+word
+                            invertedfeature=self.parameters['featurematch']+':'+word
                             print invertedfeature,self.entrydict.get(invertedfeature,0)
                             if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:
                                 phrase=untag(fields[0])[0]+':'+feature
