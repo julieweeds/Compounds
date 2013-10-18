@@ -70,7 +70,8 @@ class VectorExtractor:
                     if self.headdict.get(head,self.entrydict.get(head,0))>0:
                         #print "Loading head vector for "+head
                         loaded+=1
-                        self.headvectordict[head]=FeatureVector(head).addfeats(fields[1:])
+                        self.headvectordict[head]=FeatureVector(head)
+                        self.headvectordict[head].addfeats(fields[1:])
                 except:
                     print "Warning: unable to untag "+fields[0]
                 linesread+=1
@@ -143,7 +144,7 @@ class FeatureVector:
 
     def finddiff(self,avector):
         #return (positive) difference between self and avector
-        result=FeatureVector(self.word+'-'+avector.word)
+        result=FeatureVector(self.word+'!'+avector.word)
         for feat in self.featdict.keys():
             score=self.featdict[feat]-avector.featdict.get(feat,0)
             if score > 0:
@@ -207,8 +208,9 @@ class VectorBuilder(VectorExtractor):
                                 self.makedifferences(currentvector,moddiffstream,headdiffstream)
                             currentvector.finalise(self.featdict,self.featuretotal,outstream)
 
-                        else:
-                            print "Ignoring word "+currentvector.word
+                        #else:
+
+                            #print "Ignoring word "+currentvector.word
                         currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
 
@@ -224,7 +226,7 @@ class VectorBuilder(VectorExtractor):
         moddiffvector=self.modvectordict[mod].finddiff(phrasevector)
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
         headdiffvector=self.headvectordict[head].finddiff(phrasevector)
-        headdiffvector.fnalise(self.featdict,self.featuretotal,hstream)
+        headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
 
 
