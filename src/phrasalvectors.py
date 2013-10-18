@@ -58,7 +58,7 @@ class VectorExtractor:
 
 
     def loadheadvectors(self):
-        filepath=os.path.join(self.datadir,self.parameters['featurefile'])
+        filepath=os.path.join(self.datadir,self.parameters['freqfile'])
         with open(filepath,'r') as instream:
             print "Reading "+filepath
             linesread=0
@@ -74,7 +74,7 @@ class VectorExtractor:
                 except:
                     print "Warning: unable to untag "+fields[0]
                 linesread+=1
-                if linesread%1000:print "Read "+str(linesread)+" lines"
+                if linesread%1000==0:print "Read "+str(linesread)+" lines"
             print "Loaded "+str(loaded)+" vectors"
 
     def extractfromfile(self):
