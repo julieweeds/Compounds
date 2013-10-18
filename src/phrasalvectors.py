@@ -65,11 +65,14 @@ class VectorExtractor:
             loaded=0
             for line in instream:
                 fields=line.rstrip().split('\t')
-                head=untag(fields[0])[0]
-                if self.headdict.get(head,self.entrydict.get(head,0))>0:
-                    print "Loading head vector for "+head
-                    loaded+=1
-                    self.headvectordict[head]=FeatureVector(head).addfeats(fields[1:])
+                try:
+                    head=untag(fields[0])[0]
+                    if self.headdict.get(head,self.entrydict.get(head,0))>0:
+                        print "Loading head vector for "+head
+                        loaded+=1
+                        self.headvectordict[head]=FeatureVector(head).addfeats(fields[1:])
+                except:
+                    print "Warning: unable to untag "+fields[0]
                 linesread+=1
                 if linesread%1000:print "Read "+str(linesread)+" lines"
             print "Loaded "+str(loaded)+" vectors"
