@@ -148,6 +148,7 @@ class FeatureVector:
             score=self.featdict[feat]-avector.featdict.get(feat,0)
             if score > 0:
                 result.featdict[feat]=score
+                result.total+=score
         return result
 
     def finalise(self,allfeatdict,featuretotal,outstream):
