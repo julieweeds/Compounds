@@ -67,24 +67,24 @@ class VectorExtractor:
                             if self.parameters['testing']:exit()
                         fields=line.rstrip().split('\t')
                         word =untag(fields[0])[0]
-                        print word,self.entrydict.get(word,0),self.parameters['inversefeatures'][self.parameters['featurematch']]
                         for index,feature in enumerate(fields[1:]):
                             parts = feature.split(':')
-
+                            invertedfeature=self.parameters['featurematch']+word
+                            print invertedfeature,self.entrydict.get(invertedfeature,0)
                             if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:
                                 phrase=untag(fields[0])[0]+':'+feature
                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                 newfields=self.depfilter(newfields)
                                 self.writeoutput(phrase,newfields,outstream1)
                                 self.writeoutput(feature,newfields,outstream2)
-                            elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(word,0)>0:
+                            elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
                                 print "Found inverse match"
-                                outfeature=self.parameters['featurematch']+word
+                                invertedfeature=self.parameters['featurematch']+word
                                 phrase=parts[1]+':'+self.parameters['featurematch']+word
                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                 newfields=self.depfilter(newfields)
                                 self.writeoutput(phrase,newfields,outstream1)
-                                self.writeoutput(outfeature,newfields,outstream2)
+                                self.writeoutput(invertedfeature,newfields,outstream2)
     def depfilter(self,fields):
         newfields=[]
 
