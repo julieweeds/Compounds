@@ -15,11 +15,13 @@ class VectorExtractor:
         self.datadir=os.path.join(self.parameters['parentdir'],self.parameters['datadir'])
         self.entrydict={}
         self.collocdict={}
+        self.headdict={}
         self.featdict={}
         self.featuretotal=0
         self.deppath = os.path.join(self.datadir,self.parameters['depfile'])
         self.phrasal_path = self.deppath+'_'+self.parameters['featurematch']+'_phrases'
         self.modifier_path=self.deppath+'_'+self.parameters['featurematch']+'_modifiers'
+        self.headvectordict={}
 
 
     def loadphrases(self):
@@ -34,6 +36,8 @@ class VectorExtractor:
                 parts=collocate.split(':')
                 feature=parts[1]+':'+parts[2]
                 #self.entrydict[parts[0]]+= self.entrydict.get(parts[0],0)
+                head = untag(parts[0])[0]
+                self.headdict[head]=self.headdict.get(head,0)+1
                 self.entrydict[feature]=self.entrydict.get(feature,0)+1
                 linesread+=1
             print "Read "+str(linesread)+" lines"
@@ -52,6 +56,23 @@ class VectorExtractor:
                 linesread+=1
             print "Read "+str(linesread)+" lines"
 
+
+    def loadheadvectors(self):
+        filepath=os.path.join(self.datadir,self.parameters['featurefile'])
+        with open(filepath,'r') as instream:
+            print "Reading "+filepath
+            linesread=0
+            loaded=0
+            for line in instream:
+                fields=line.rstrip().split('\t')
+                head=untag(fields[0])[0]
+                if self.headdict.get(head,self.entrydict.get(head,0))>0:
+                    print "Loading head vector for "+head
+                    loaded+=1
+                    self.headvectordict[head]=FeatureVector(head).addfeats(fields[1:])
+                linesread+=1
+                if linesread%1000:print "Read "+str(linesread)+" lines"
+            print "Loaded "+str(loaded)+" vectors"
 
     def extractfromfile(self):
 
@@ -177,6 +198,8 @@ def gobuild(parameters):
     myBuilder=VectorBuilder(parameters)
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
+    myBuilder.loadheadvectors()
+    exit()
     myBuilder.build(myBuilder.phrasal_path+'.sorted')
     myBuilder.build(myBuilder.modifier_path+'.sorted')
 
