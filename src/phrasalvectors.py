@@ -68,14 +68,14 @@ class VectorExtractor:
                 try:
                     head=untag(fields[0])[0]
                     if self.headdict.get(head,self.entrydict.get(head,0))>0:
-                        print "Loading head vector for "+head
+                        #print "Loading head vector for "+head
                         loaded+=1
                         self.headvectordict[head]=FeatureVector(head).addfeats(fields[1:])
                 except:
                     print "Warning: unable to untag "+fields[0]
                 linesread+=1
                 if linesread%1000==0:print "Read "+str(linesread)+" lines"
-            print "Loaded "+str(loaded)+" vectors"
+            print "Loaded "+str(loaded)+" head vectors"
 
     def extractfromfile(self):
 
@@ -141,6 +141,15 @@ class FeatureVector:
             self.featdict[field]=self.featdict.get(field,0)+1
             self.total+=1
 
+    def finddiff(self,avector):
+        #return (positive) difference between self and avector
+        result=FeatureVector(self.word+'-'+avector.word)
+        for feat in self.featdict.keys():
+            score=self.featdict[feat]-avector.featdict.get(feat,0)
+            if score > 0:
+                result.featdict[feat]=score
+        return result
+
     def finalise(self,allfeatdict,featuretotal,outstream):
 
         for feature in self.featdict.keys():
@@ -160,8 +169,15 @@ class FeatureVector:
             outstream.write('\n')
 class VectorBuilder(VectorExtractor):
 
-    def build(self,filepath):
+    def build(self,filepath,flag):
 
+        if flag=='mod':
+            self.modvectordict={}
+        else:
+            moddiffpath=self.deppath+'_moddiff'
+            headdiffpath=self.deppath+'_headdiff'
+            moddiffstream=open(moddiffpath,'w')
+            headdiffstream=open(headdiffpath,'w')
         outpath=filepath+'_vectors'
         currentvector=FeatureVector()
 
@@ -176,7 +192,7 @@ class VectorBuilder(VectorExtractor):
                     linesread+=1
                     if linesread%100000==0:
                         print "Read "+str(linesread)+" lines"
-                        if self.parameters['testing']:
+                        if self.parameters['testing'] and flag == 'phrase':
                             exit()
                     fields=line.rstrip().split('\t')
                     thisword=fields[0]
@@ -184,12 +200,31 @@ class VectorBuilder(VectorExtractor):
                         currentvector.addfeats(fields[1:])
                     else:
                         if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
+                            if flag=='mod':
+                                self.modvectordict[currentvector.word]=currentvector
+                            else:
+                                self.makedifferences(currentvector,moddiffstream,headdiffstream)
                             currentvector.finalise(self.featdict,self.featuretotal,outstream)
+
                         else:
                             print "Ignoring word "+currentvector.word
                         currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
 
+    def makedifferences(self,phrasevector,mstream,hstream):
+        phrase=phrasevector.word.split(':')
+        mod=phrase[2]
+        try:
+            head=untag(phrase[0])[0]
+        except:
+            print "Warning: unable to untag "+phrase[0]
+            head=phrase[0]
+
+        moddiffvector=self.modvectordict[mod].finddiff(phrasevector)
+        moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
+        headdiffvector=self.headvectordict[head].finddiff(phrasevector)
+        headdiffvector.fnalise(self.featdict,self.featuretotal,hstream)
+        return
 
 
 def extract(parameters):
@@ -203,8 +238,9 @@ def gobuild(parameters):
     myBuilder.loadfeaturecounts()
     myBuilder.loadheadvectors()
     exit()
-    myBuilder.build(myBuilder.phrasal_path+'.sorted')
-    myBuilder.build(myBuilder.modifier_path+'.sorted')
+    myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
+    myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+
 
 
 
