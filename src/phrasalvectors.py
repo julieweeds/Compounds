@@ -237,7 +237,6 @@ def gobuild(parameters):
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
     myBuilder.loadheadvectors()
-    exit()
     myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
     myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
 
