@@ -42,6 +42,10 @@ class VectorExtractor:
                 linesread+=1
             print "Read "+str(linesread)+" lines"
 
+        #print self.headdict.get('childhood',0)
+        #print self.entrydict.get('nn-DEP:childhood',0)
+        #exit()
+
 
     def loadfeaturecounts(self):
         filepath = os.path.join(self.datadir,self.parameters['featurefile'])
@@ -67,11 +71,11 @@ class VectorExtractor:
                 fields=line.rstrip().split('\t')
                 try:
                     head=untag(fields[0])[0]
-                    if self.headdict.get(head,self.entrydict.get(head,0))>0:
+                    if self.headdict.get(head,self.entrydict.get(self.parameters['featurematch']+':'+head,0))>0:
                         #print "Loading head vector for "+head
                         loaded+=1
                         self.headvectordict[head]=FeatureVector(head)
-                        self.headvectordict[head].addfeats(fields[1:])
+                        self.headvectordict[head].addfeaturecounts(fields[1:])
                 except:
                     print "Warning: unable to untag "+fields[0]
                 linesread+=1
@@ -142,6 +146,13 @@ class FeatureVector:
             self.featdict[field]=self.featdict.get(field,0)+1
             self.total+=1
 
+    def addfeaturecounts(self,featurecounts):
+        while len(featurecounts)>0:
+            count=float(featurecounts.pop())
+            feature=featurecounts.pop()
+            self.featdict[feature]=count
+            self.total+=count
+
     def finddiff(self,avector):
         #return (positive) difference between self and avector
         result=FeatureVector(self.word+'!'+avector.word)
@@ -150,6 +161,8 @@ class FeatureVector:
             if score > 0:
                 result.featdict[feat]=score
                 result.total+=score
+            #else:
+             #   print "Removing feature "+feat+':'+str(self.featdict[feat])+':'+str(avector.featdict.get(feat,0))
         return result
 
     def finalise(self,allfeatdict,featuretotal,outstream):
@@ -161,6 +174,8 @@ class FeatureVector:
                 pmi = math.log(ratio)
                 if pmi>0:
                     self.pmidict[feature] = math.log(ratio)
+                #else:
+                #    print "Ignoring feature "+feature
 
         self.writetofile(outstream)
     def writetofile(self,outstream):
@@ -196,6 +211,7 @@ class VectorBuilder(VectorExtractor):
                         print "Read "+str(linesread)+" lines"
                         if self.parameters['testing'] and flag == 'phrase':
                             exit()
+
                     fields=line.rstrip().split('\t')
                     thisword=fields[0]
                     if thisword==currentvector.word:
@@ -234,6 +250,8 @@ class VectorBuilder(VectorExtractor):
         moddiffvector=self.modvectordict[mod].finddiff(phrasevector)
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
         headdiffvector=self.headvectordict[head].finddiff(phrasevector)
+        headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
+        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector)
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
 
