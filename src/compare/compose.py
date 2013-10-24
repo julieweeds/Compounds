@@ -38,7 +38,7 @@ class FeatureVector:
         newvector=FeatureVector(self.signifier+'*'+avector.signifier,features=[],fdict={})
 
         for feature in self.featuredict.keys():
-            if feature in avector.featuredict.keys():
+            if avector.featuredict.get(feature,0)>0:
                 newvector.featuredict[feature]=self.featuredict[feature]*avector.featuredict[feature]
 
         return newvector
