@@ -104,15 +104,15 @@ class VectorExtractor:
                                 phrase=fields[0]+':'+feature
                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                 newfields=self.depfilter(newfields)
-                                self.writeoutput(phrase,newfields,outstream1)
-                                self.writeoutput(feature,newfields,outstream2)
+                                self.writeoutput(phrase,newfields,outstream1,'head')
+                                self.writeoutput(feature,newfields,outstream2,'head')
                             elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
                                 #print "Found inverse match"
                                 phrase=parts[1]+'/N:'+self.parameters['featurematch']+':'+word
                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                 newfields=self.depfilter(newfields)
-                                self.writeoutput(phrase,newfields,outstream1)
-                                self.writeoutput(invertedfeature,newfields,outstream2)
+                                self.writeoutput(phrase,newfields,outstream1,'mod')
+                                self.writeoutput(invertedfeature,newfields,outstream2,'mod')
     def depfilter(self,fields):
         newfields=[]
 
@@ -123,12 +123,12 @@ class VectorExtractor:
         return newfields
 
 
-    def writeoutput(self,head,features,outstream):
+    def writeoutput(self,head,features,outstream,tag):
 
         if len(features)>0:
             outstream.write(head)
             for feature in features:
-                outstream.write('\t'+feature)
+                outstream.write('\t'+feature+'\t'+tag)
             outstream.write('\n')
 
 
@@ -137,13 +137,19 @@ class FeatureVector:
     def __init__(self,word=''):
 
         self.featdict={}
+        self.headfeatdict={}
         self.word=word
         self.total=0
         self.pmidict={}
 
     def addfeats(self,fields):
-        for field in fields:
+        #assuming new format where features are labelled head and mod
+        while len(fields)>0:
+            type=fields.pop()
+            field=fields.pop()
             self.featdict[field]=self.featdict.get(field,0)+1
+            if type=='head':
+                self.headfeatdict[field]=self.headfeatdict.get(field,0)+1
             self.total+=1
 
     def addfeaturecounts(self,featurecounts):
@@ -153,11 +159,21 @@ class FeatureVector:
             self.featdict[feature]=count
             self.total+=count
 
-    def finddiff(self,avector):
+    def finddiff(self,avector,type='all'):
         #return (positive) difference between self and avector
+        #type is 'head', 'mod' or 'all' to label type of self and therefore which features of avector you should be subtracting
         result=FeatureVector(self.word+'!'+avector.word)
         for feat in self.featdict.keys():
-            score=self.featdict[feat]-avector.featdict.get(feat,0)
+            if type=='head':
+                remove = avector.headfeatdict.get(feat,0)
+            elif type=='mod':
+                remove = avector.featdict.get(feat,0)-avector.headfeatdict.get(feat,0)
+            elif type=='all':
+                remove = avector.featdict.get(feat,0)
+            else:
+                print "Warning: Unknown vector type "+type
+
+            score=self.featdict[feat]-remove
             if score > 0:
                 result.featdict[feat]=score
                 result.total+=score
@@ -247,11 +263,11 @@ class VectorBuilder(VectorExtractor):
             print "Warning: unable to untag "+phrase[0]
             head=phrase[0]
 
-        moddiffvector=self.modvectordict[mod].finddiff(phrasevector)
+        moddiffvector=self.modvectordict[mod].finddiff(phrasevector,type='all')
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
-        headdiffvector=self.headvectordict[head].finddiff(phrasevector)
+        headdiffvector=self.headvectordict[head].finddiff(phrasevector,type='head')
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
-        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector)
+        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='mod')
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
 
