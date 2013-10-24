@@ -106,6 +106,7 @@ class Composer:
 
         self.readcomps()
         self.makecaches()
+        self.resultspath=os.path.join(self.parameters['datadir'],'results.csv')
 
     def readcomps(self):
 
@@ -320,6 +321,19 @@ class Composer:
 
             correlation=stats.spearmanr(np.array(xs),np.array(zs))
             print "Correlation with PMI is: ", correlation
+            (c1,c2)=correlation
+            with open(self.resultspath,'a') as outstream:
+                if parameters['mod']:
+                    outstream.write('mod,')
+                else:
+                    outstream.write('nomod,')
+                if parameters['diff']:
+                    outstream.write('diff,')
+                else:
+                    outstream.write('nodiff,')
+                outstream.write(parameters['compop']+',')
+                outstream.write(metric+','+str(mean)+','+str(sd)+','+str(c1)+','+str(c2)+'\n')
+
         return
 
     def _compose_add(self,head,modifier):
