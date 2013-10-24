@@ -274,11 +274,11 @@ class Composer:
                             print headVector.toString()
                             print modVector.toString()
                             print composedVector.toString()
-                        score=self.compare(composedVector,phraseVector)
+                        scores =self.compare(composedVector,phraseVector)
                         if self.parameters['testing']:
-                            print score
+                            print scores
                         xs.append(self.collocdict[phrasefields[0]])
-                        ys.append(score)
+                        ys.append(scores)
                         done+=1
                         if done % 1000 == 0:
                             print "Processed "+str(done)+"phrasal expressions"
@@ -291,19 +291,35 @@ class Composer:
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
         return compfunct(head,mod)
     def compare(self,composed,phrasal):
-        simfunct=getattr(self,'_compare_'+self.parameters['metric'])
-        return simfunct(composed,phrasal)
+        res=[]
+        for metric in self.parameters['metric']:
+            simfunct=getattr(self,'_compare_'+metric)
+            res.append(simfunct(composed,phrasal))
+
+        return res
 
     def computestats(self,xs,ys):
-        total=0
-        for y in ys:
-            total+=y
-        mean = total/len(ys)
-        print "Mean "+self.parameters['metric']+" score is "+str(mean)
 
-        correlation=stats.spearmanr(np.array(xs),np.array(ys))
-        print "Correlation is: ", correlation
+        for i,metric in enumerate(self.parameters['metric']):
+            total=0
+            totalsquared=0
+            zs=[]
+            for y in ys:
+                print y
+                z=y[i]
+                zs.append(z)
+                total+=z
+                totalsquared+=z*z
+            mean = total/len(zs)
+            variance = totalsquared/len(zs)-mean*mean
+            if variance>0:
+                sd = math.pow(variance,0.5)
+            else:
+                sd=0
+            print "Mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
 
+            correlation=stats.spearmanr(np.array(xs),np.array(zs))
+            print "Correlation with PMI is: ", correlation
         return
 
     def _compose_add(self,head,modifier):
@@ -331,6 +347,9 @@ def go(parameters):
 
 if __name__=='__main__':
     parameters=conf.configure(sys.argv)
-
+    print "Metrics:",parameters['metric']
+    print "MOD:",parameters['mod']
+    print "DIFF:",parameters['diff']
+    print "Composition Operation:",parameters['compop']
     go(parameters)
 
