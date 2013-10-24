@@ -102,6 +102,15 @@ class Composer:
         self.collocdict={}
         self.headdict={}
         self.moddict={}
+        self.whoami='.'+self.parameters['compop']
+        if self.parameters['mod']:
+            self.whoami=self.whoami+".mod"
+        else:
+            self.whoami=self.whoami+'.nomod'
+        if self.parameters['diff']:
+            self.whoami=self.whoami+'.diff'
+        else:
+            self.whoami=self.whoami+'.nodiff'
 
 
         self.readcomps()
@@ -132,9 +141,9 @@ class Composer:
 
     def makecaches(self):
 
-        self.parameters['phrasalcache']=os.path.join(self.parameters['datadir'],'phrasal.cache')
-        self.parameters['headcache']=os.path.join(self.parameters['datadir'],'head.cache')
-        self.parameters['modcache']=os.path.join(self.parameters['datadir'],'mod.cache')
+        self.parameters['phrasalcache']=os.path.join(self.parameters['datadir'],'phrasal.cache'+self.whoami)
+        self.parameters['headcache']=os.path.join(self.parameters['datadir'],'head.cache'+self.whoami)
+        self.parameters['modcache']=os.path.join(self.parameters['datadir'],'mod.cache'+self.whoami)
 
         if not self.parameters['cached']:
             #phrasal
@@ -306,7 +315,7 @@ class Composer:
             totalsquared=0
             zs=[]
             for y in ys:
-                print y
+                #print y
                 z=y[i]
                 zs.append(z)
                 total+=z
