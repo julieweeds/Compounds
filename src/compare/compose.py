@@ -43,6 +43,14 @@ class FeatureVector:
 
         return newvector
 
+    def selecthead(self,avector):
+        newvector=FeatureVector(self.signifier+'@h@'+avector.signifier,fdict=self.featuredict)
+        return newvector
+
+    def selectmod(self,avector):
+        newvector=FeatureVector(self.signifier+'@m@'+avector.signifier,fdict=avector.featuredict)
+        return newvector
+
     def recall(self,avector):
         num=0
         den=0
@@ -350,6 +358,12 @@ class Composer:
 
     def _compose_mult(self,head,modifier):
         return head.mult(modifier)
+
+    def _compose_selecthead(self,head,modifier):
+        return head.selecthead(modifier)
+
+    def _compose_selectmod(self,head,modifier):
+        return head.selectmod(modifier)
 
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)

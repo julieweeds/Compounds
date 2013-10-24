@@ -20,6 +20,8 @@ def configure(args):
         elif arg=='diff': parameters['diff']=True
         elif arg=='mod':parameters['mod']=True
         elif arg=='mult':parameters['compop']='mult'
+        elif arg=="selecthead":parameters['compop']='selecthead'
+        elif arg=="selectmod":parameters['compop']='selectmod'
         elif arg=='cached':parameters['cached']=True
         elif arg=='f':parameters['metric']=setadd(parameters['metric'],'f')
         elif arg=='precision':parameters['metric']=setadd(parameters['metric'],'precision')
