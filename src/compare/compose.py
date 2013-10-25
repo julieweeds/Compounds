@@ -323,7 +323,7 @@ class Composer:
         if self.statsreq:
             statspath=os.path.join(parameters['datadir'],'stats'+self.whoami)
             with open(statspath,'w') as outstream:
-                outstream.write(self.parameters['metrics'])
+                outstream.write(self.parameters['metric'])
                 outstream.write('\n')
                 outstream.write(phrases)
                 outstream.write('\n')
