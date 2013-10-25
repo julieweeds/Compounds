@@ -330,10 +330,10 @@ class Composer:
                     outstream.write(phrase+',')
                 outstream.write('\n')
                 for x in xs:
-                    outstream.write(x+',')
+                    outstream.write(str(x)+',')
                 outstream.write('\n')
                 for y in ys:
-                    outstream.write(y+',')
+                    outstream.write(str(y)+',')
                 outstream.write('\n')
         else:
             return
