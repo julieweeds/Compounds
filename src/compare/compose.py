@@ -119,7 +119,7 @@ class Composer:
             self.whoami=self.whoami+'.diff'
         else:
             self.whoami=self.whoami+'.nodiff'
-
+        self.statsreq=True
 
         self.readcomps()
         self.makecaches()
@@ -316,7 +316,22 @@ class Composer:
 
         return res
 
+    def writestats(self,xs,ys):
+        if self.statsreq:
+            statspath=os.path.join(parameters['datadir'],'stats'+self.whoami)
+            with open(statspath,'w') as outstream:
+                outstream.write(self.parameters['metrics'])
+                outstream.write('\n')
+                outstream.write(xs)
+                outstream.write('\n')
+                outstream.write(ys)
+                outstream.write('\n')
+        else:
+            return
+
     def computestats(self,xs,ys):
+
+        self.writestats(xs,ys)
 
         for i,metric in enumerate(self.parameters['metric']):
             total=0
