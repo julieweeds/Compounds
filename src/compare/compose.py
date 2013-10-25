@@ -332,9 +332,10 @@ class Composer:
                 for x in xs:
                     outstream.write(str(x)+',')
                 outstream.write('\n')
-                for y in ys:
-                    outstream.write(str(y)+',')
-                outstream.write('\n')
+                for i,metric in enumerate(self.parameters['metric']):
+                    for y in ys:
+                        outstream.write(str(y[i])+',')
+                    outstream.write('\n')
         else:
             return
 
