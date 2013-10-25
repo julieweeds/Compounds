@@ -60,7 +60,7 @@ class FeatureVector:
                 num+=avector.featuredict[feature]
             #else:
             #    print "Not found "+feature
-        print str(den)
+        #print str(den)
         if den>0:
             return num/den
         else:
