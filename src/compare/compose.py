@@ -324,7 +324,7 @@ class Composer:
             statspath=os.path.join(parameters['datadir'],'stats'+self.whoami+'.csv')
             with open(statspath,'w') as outstream:
                 for metric in self.parameters['metric']:
-                    outstream.write(metric+'\t')
+                    outstream.write(metric+',')
                 outstream.write('\n')
                 for phrase in phrases:
                     outstream.write(phrase+',')
