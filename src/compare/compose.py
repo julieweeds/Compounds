@@ -321,15 +321,19 @@ class Composer:
 
     def writestats(self,xs,ys,phrases):
         if self.statsreq:
-            statspath=os.path.join(parameters['datadir'],'stats'+self.whoami)
+            statspath=os.path.join(parameters['datadir'],'stats'+self.whoami+'.csv')
             with open(statspath,'w') as outstream:
-                outstream.write(self.parameters['metric'])
+                for metric in self.parameters['metric']:
+                    outstream.write(metric+'\t')
                 outstream.write('\n')
-                outstream.write(phrases)
+                for phrase in phrases:
+                    outstream.write(phrase+',')
                 outstream.write('\n')
-                outstream.write(xs)
+                for x in xs:
+                    outstream.write(x+',')
                 outstream.write('\n')
-                outstream.write(ys)
+                for y in ys:
+                    outstream.write(y+',')
                 outstream.write('\n')
         else:
             return
