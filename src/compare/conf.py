@@ -14,6 +14,7 @@ def configure(args):
     parameters['compop']='add'
     parameters['cached']=False
     parameters['apollo']=False
+    parameters['athome']=False
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -28,6 +29,7 @@ def configure(args):
         elif arg=='recall':parameters['metric']=setadd(parameters['metric'],'recall')
         elif arg=='cosine':parameters['metric']=setadd(parameters['metric'],'cosine')
         elif arg=='apollo':parameters['apollo']=True
+        elif arg=='athome':parameters['athome']=True
     parameters = setfilenames(parameters)
 
     return parameters
@@ -36,6 +38,8 @@ def setfilenames(parameters):
     basename='vectors'
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/wiki_nounsdeps'
+    if parameters['athome']:
+        parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.phrases')
     if parameters['diff']:
         parameters['headfile']=basename+'.heads.diff'
