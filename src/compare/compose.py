@@ -277,6 +277,7 @@ class Composer:
 
                     xs=[]
                     ys=[]
+                    phrases=[]
                     done=0
                     for line in phrasalstream:
                         phrasefields=line.rstrip().split('\t')
@@ -295,6 +296,8 @@ class Composer:
                         scores =self.compare(composedVector,phraseVector)
                         if self.parameters['testing']:
                             print scores
+
+                        phrases.append(phrasefields[0])
                         xs.append(self.collocdict[phrasefields[0]])
                         ys.append(scores)
                         done+=1
@@ -303,7 +306,7 @@ class Composer:
                         if self.parameters['testing'] and done%10==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
-        self.computestats(xs,ys)
+        self.computestats(xs,ys,phrases)
 
     def compose(self,head,mod):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
@@ -316,11 +319,13 @@ class Composer:
 
         return res
 
-    def writestats(self,xs,ys):
+    def writestats(self,xs,ys,phrases):
         if self.statsreq:
             statspath=os.path.join(parameters['datadir'],'stats'+self.whoami)
             with open(statspath,'w') as outstream:
                 outstream.write(self.parameters['metrics'])
+                outstream.write('\n')
+                outstream.write(phrases)
                 outstream.write('\n')
                 outstream.write(xs)
                 outstream.write('\n')
@@ -329,9 +334,9 @@ class Composer:
         else:
             return
 
-    def computestats(self,xs,ys):
+    def computestats(self,xs,ys,phrases):
 
-        self.writestats(xs,ys)
+        self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):
             total=0
