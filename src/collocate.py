@@ -9,10 +9,16 @@ from conf import configure
 class TaggingException(Exception):
     pass
 
-def untag(astring):
-    parts=astring.split('/')
+def untag(astring,achar='/'):
+    parts=astring.split(achar)
     if len(parts)==2:
         return(parts[0],parts[1])
+    elif len(parts)>1:
+        tag=parts.pop()
+        word=parts[0]
+        for part in parts[1:]:
+            word = word+'-'+part
+        return (word,tag)
     else:
         raise TaggingException
 
@@ -147,6 +153,36 @@ class Collocates:
                 outstream.write(tuple[0]+'\t'+str(tuple[1])+'\t'+str(tuple[2])+'\n')
 
 
+class SourceCollocates(Collocates):
+
+    def processsource(self):
+        self.srcdict={}
+        self.entrylist=[]
+        filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['source'])
+        with open(filepath,'r') as instream:
+            print "Reading "+filepath
+            for line in instream:
+                fields=line.rstrip().split('\t')
+                phrase=fields[0]
+                type=fields[1]
+                parts=phrase.split('_')
+                mod=parts[0]
+                head=parts[1]
+                try:
+                    noun=untag(head,'-')[0]
+                    adj=untag(mod,'-')[0]
+                    label=noun+'/N:'+self.parameters['featurematch']+':'+adj
+                    #print label
+                    self.srcdict[label]=type
+                    self.entrylist.append(noun)
+                    self.entrylist.append(adj)
+                except TaggingException:
+                    print "Ignoring "+line
+
+
+
+
+
 def go(parameters):
     mycollocates = Collocates(parameters)
     mycollocates.processentries()
@@ -158,9 +194,23 @@ def go(parameters):
     mycollocates.outputlist()
 
 
+def analyse(parameters):
+    mycollocates=SourceCollocates(parameters)
+    mycollocates.processsource()
+    mycollocates.processfreqfile()
+    print mycollocates.entrylist
+    print mycollocates.fdict
+    exit()
+    mycollocates.processassocfile()
+    mycollocates.viewlist()
+    mycollocates.outputlist()
+
 if __name__=='__main__':
 
     parameters=configure(sys.argv)
-    go(parameters)
+    if parameters['usesource']:
+        analyse(parameters)
+    else:
+        go(parameters)
 
 

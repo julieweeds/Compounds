@@ -12,7 +12,8 @@ def listfloat(inlist):
     return outlist
 
 class Grapher(Composer):
-    k = 5
+    k = 10
+    phrases=['roosevelt/N:nn-DEP:franklin','school/N:nn-DEP:high']
     def makegraphs(self):
         if self.parameters['athome']:
             filepath=self.parameters['datadir']+'stats'+self.whoami+'.csv'
@@ -63,6 +64,9 @@ class Grapher(Composer):
         tuples=sorted([t for t in zip(self.scores[metric],self.phrases,self.pmis)])
         print tuples[0:Grapher.k]
         print tuples[-Grapher.k:-1],tuples[-1]
+        for(sc,phr,pmi) in tuples:
+            if phr in Grapher.phrases:
+                print (sc,phr,pmi)
 
 if __name__ == "__main__":
     parameters=conf.configure(sys.argv)

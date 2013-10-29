@@ -15,7 +15,7 @@ def configure(args):
     parameters['entrythresh']=50000
     parameters['stopwordlimit']=3
     parameters['featurematch']='nn-DEP'
-    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP'}
+    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
     parameters['testing']=False
     parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD']
 
@@ -23,6 +23,8 @@ def configure(args):
     parameters['depfile']='wikipedia_nounsdeps_t100.pbfiltered'
     parameters['extract']=False
     parameters['build']=False
+    parameters['usesource']=False
+    parameters['source']='none'
 
     for arg in args:
         if arg=='testing':
@@ -31,5 +33,9 @@ def configure(args):
             parameters['extract']=True
         elif arg =='build':
             parameters['build']=True
-
+        elif arg =='boleda':
+            parameters['usesource']=True
+            parameters['source']='boleda.txt'
+            parameters['datadir']='data/ANcompounds'
+            parameters['featurematch']='amod-DEP'
     return parameters
