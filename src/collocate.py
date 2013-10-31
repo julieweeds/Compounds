@@ -62,7 +62,7 @@ class Collocates:
                                 feature=fields.pop()
                                 if freq> self.freqthresh:
                                     parts=feature.split(':')
-                                    if parts[0]==self.featurematch and parts[1] in self.entrylist:
+                                    if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
                                         label=entry+':'+feature
                                         self.fdict[label]=freq
                     except TaggingException:
@@ -89,16 +89,16 @@ class Collocates:
                     try:
                         if untag(entry)[0] in self.entrylist:
                             outstream.write(line)
-                        while len(fields[1:])>0:
-                            score=float(fields.pop())
-                            feature=fields.pop()
-                            parts=feature.split(':')
-                            if parts[0]==self.featurematch:
-                                label=entry+':'+feature
-                                freq=self.fdict.get(label,0)
-                                if freq>self.freqthresh:
-                                    #self.midict[label]=score
-                                    self.clist.append((label,freq,score))
+                            while len(fields[1:])>0:
+                                score=float(fields.pop())
+                                feature=fields.pop()
+                                parts=feature.split(':')
+                                if parts[0]==self.featurematch:
+                                    label=entry+':'+feature
+                                    freq=self.fdict.get(label,0)
+                                    if freq>self.freqthresh:
+                                        #self.midict[label]=score
+                                        self.clist.append((label,freq,score))
                     except (TaggingException):
                         print "Warning: ignoring ",line
                         continue
@@ -144,24 +144,60 @@ class Collocates:
         print "Bottom 10: ", self.clist[total-10:total]
 
     def outputlist(self):
+        headdict={}
+        headover={}
+        thresh=self.parameters['upperfreqthresh']
         if not self.sorted:
             self.clist.sort(key=itemgetter(2),reverse=True)
             self.sorted=True
         filepath=os.path.join(parameters['parentdir'],parameters['datadir'],parameters['collocatefile'])
         with open(filepath,'w') as outstream:
             for tuple in self.clist:
-                outstream.write(tuple[0]+'\t'+str(tuple[1])+'\t'+str(tuple[2])+'\n')
+                label=tuple[0]
+                head=label.split(':')[0]
+                outstream.write(label+'\t'+str(tuple[1])+'\t'+str(tuple[2])+'\n')
+                headdict[head]=headdict.get(head,0)+1
+                if tuple[1] > thresh-1:
+                    headover[head]=headover.get(head,0)+1
+        print "Number of phrases per head"
+        print len(headdict.keys()),headdict
+        print "Number of phrases with frequency over "+str(thresh)+" per head"
+        print len(headover.keys()),headover
+        soverlist=[]
+        for adj in headdict.keys():
+            if headdict[adj]>100:
+                soverlist.append(adj)
+        print "Adjectives with more than 100 phrases with frequency over "+str(self.freqthresh)+": " +str(len(soverlist))
+        print soverlist
+
+
+        soverlist=[]
+        for adj in headover.keys():
+            if headover[adj]>100:
+                soverlist.append(adj)
+        print "Adjectives with more than 100 phrases with frequency over 100: " +str(len(soverlist))
+        print soverlist
+        opath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],'adjectives')
+        with open(opath,'w') as outstream:
+            for adj in soverlist:
+                outstream.write(adj+'\n')
+
 
 
 class SourceCollocates(Collocates):
 
     def processsource(self):
-        self.srcdict={}
+        self.srctypedict={}
+        self.srcposdict={}
+        self.revposdict={}
         self.entrylist=[]
+        #self.modlist=[]
         filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['source'])
         with open(filepath,'r') as instream:
             print "Reading "+filepath
+            linesread=0
             for line in instream:
+                linesread+=1
                 fields=line.rstrip().split('\t')
                 phrase=fields[0]
                 type=fields[1]
@@ -171,17 +207,70 @@ class SourceCollocates(Collocates):
                 try:
                     noun=untag(head,'-')[0]
                     adj=untag(mod,'-')[0]
-                    label=noun+'/N:'+self.parameters['featurematch']+':'+adj
+                    if self.parameters['featurematch']=='amod-DEP':
+                        label=noun+'/N:'+self.parameters['featurematch']+':'+adj
+                        if not self.parameters['allheads']:
+                            self.entrylist.append(adj)
+                        self.entrylist.append(noun)
+                    elif self.parameters['featurematch']=='amod-HEAD':
+                        label=adj+'/J:'+self.parameters['featurematch']+':'+noun
+                        if not self.parameters['allheads']:
+                            self.entrylist.append(noun)
+                        self.entrylist.append(adj)
                     #print label
-                    self.srcdict[label]=type
-                    self.entrylist.append(noun)
-                    self.entrylist.append(adj)
+                    #self.srcdict[label]=type
+                    self.srcposdict[label]=linesread
+                    self.revposdict[linesread]=label
+                    self.srctypedict[label]=type
+
+
+                    #self.modlist.append(adj)
                 except TaggingException:
                     print "Ignoring "+line
+        self.largest=linesread
 
+    def mergelists(self):
 
+        reslist=[]
 
+        for (label,freq,pmi) in self.clist:
+            pos = self.srcposdict.get(label,0)
+            if pos > 0:
+                type = self.srctypedict[label]
+                reslist.append((pos,label,freq,pmi,type))
 
+        reslist.sort()
+
+        filepath=os.path.join(parameters['parentdir'],parameters['datadir'],parameters['mergefile'])
+        counter=1
+        missinglist=[]
+        under100=[]
+        with open(filepath,'w') as outstream:
+            for tuple in reslist:
+                while counter<tuple[0]:
+                    label=self.revposdict[counter]
+                    if self.testing:
+                        print label, self.srctypedict[label],0,0
+                    outstream.write(label+'\t'+self.srctypedict[label]+'\t0\t0\n')
+                    counter+=1
+                    missinglist.append(label)
+                outstream.write(tuple[1]+'\t'+tuple[4]+'\t'+str(tuple[2])+'\t'+str(tuple[3])+'\n')
+                if tuple[2] < 100:
+                    under100.append(label)
+                if self.testing:
+                    print tuple[1],tuple[4],tuple[2],tuple[3]
+                counter+=1
+            while counter<self.largest+1:
+                label=self.revposdict[counter]
+                if self.testing:
+                    print label, self.srctypedict[label],0,0
+                outstream.write(label+'\t'+self.srctypedict[label]+'\t0\t0\n')
+                counter+=1
+                missinglist.append(label)
+        print "Missing phrases: "+str(len(missinglist))
+        print missinglist
+        print "Frequency under 100: "+str(len(under100))
+        print under100
 
 def go(parameters):
     mycollocates = Collocates(parameters)
@@ -198,11 +287,14 @@ def analyse(parameters):
     mycollocates=SourceCollocates(parameters)
     mycollocates.processsource()
     mycollocates.processfreqfile()
-    print mycollocates.entrylist
-    print mycollocates.fdict
-    exit()
+    #print mycollocates.entrylist
+    #print len(mycollocates.fdict.keys()), mycollocates.fdict
+    #exit()
     mycollocates.processassocfile()
     mycollocates.viewlist()
+    #exit()
+    mycollocates.mergelists()
+    #exit()
     mycollocates.outputlist()
 
 if __name__=='__main__':

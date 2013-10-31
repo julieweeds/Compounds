@@ -11,8 +11,8 @@ def configure(args):
     parameters['entryfile']='events.strings_deprow'
     parameters['featurefile']='events.strings_depcol'
     parameters['freqthresh']=100
-    parameters['sample']=1000
-    parameters['entrythresh']=50000
+    parameters['sample']=1500
+    parameters['entrythresh']=10000
     parameters['stopwordlimit']=3
     parameters['featurematch']='nn-DEP'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
@@ -25,6 +25,7 @@ def configure(args):
     parameters['build']=False
     parameters['usesource']=False
     parameters['source']='none'
+    parameters['allheads']=False
 
     for arg in args:
         if arg=='testing':
@@ -38,4 +39,25 @@ def configure(args):
             parameters['source']='boleda.txt'
             parameters['datadir']='data/ANcompounds'
             parameters['featurematch']='amod-DEP'
+            parameters['freqthresh']=0
+            parameters['mergefile']='multiwords_boleda'
+            parameters['collocatefile']='multiwords_amod-DEP_boleda'
+
+        elif arg =='Jboleda':
+            parameters['usesource']=True
+            parameters['source']='boleda.txt'
+            parameters['datadir']='data/ANcompounds/deps/adjs'
+            parameters['featurematch']='amod-HEAD'
+            parameters['freqthresh']=0
+            parameters['mergefile']='multiwords_boleda'
+            parameters['collocatefile']='multiwords_amod-HEAD_boleda'
+            parameters['allheads']=True
+
+        elif arg == 'Jextract':
+            parameters['datadir']='data/ANcompounds/deps/adjs'
+            parameters['featurematch']='amod-HEAD'
+            parameters['freqthresh']=100
+            parameters['upperfreqthresh']=100
+            parameters['collocatefile']='multiwords_amod-HEAD'
+            parameters['allheads']=True
     return parameters
