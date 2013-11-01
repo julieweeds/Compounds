@@ -66,7 +66,7 @@ def configure(args):
             parameters['usesource']=True
             parameters['source']='adjs32'
             parameters['datadir']='data/ANcompounds/deps/adjs'
-            psrameters['altdatadir']='data/ANcompounds/deps/nouns'
+            parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test']
