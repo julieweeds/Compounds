@@ -325,7 +325,7 @@ class SourceCollocates(Collocates):
         adj=untag(alist[0][0].split(':')[0])[0]
         type = self.srctypedict[adj]
         for (label,freq,pmi) in alist:
-            outstream.write(label+'\t'+type+'\t'+freq+'\t'+pmi+'\n')
+            outstream.write(label+'\t'+type+'\t'+str(freq)+'\t'+str(pmi)+'\n')
 
 def go(parameters):
     mycollocates = Collocates(parameters)
