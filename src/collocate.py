@@ -319,7 +319,7 @@ class SourceCollocates(Collocates):
                     print len(row), row[0]
                     random.shuffle(row)
                     self.writetofile(row[0:50],training)
-                    self.writetotfile(row[50:100],testing)
+                    self.writetofile(row[50:100],testing)
 
     def writetofile(self,alist,outstream):
         adj=untag(alist[0][0].split(':')[0])[0]
