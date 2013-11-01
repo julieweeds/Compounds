@@ -339,13 +339,16 @@ class SourceCollocates(Collocates):
         print len(cmat)
         trainingpath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['collocatefile'][0])
         testingpath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['collocatefile'][1])
+        sparepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['collocatefile'][2])
         with open(trainingpath,'w') as training:
             with open(testingpath,'w') as testing:
-                for row in cmat:
-                    print len(row), row[0]
-                    random.shuffle(row)
-                    self.writetofile(row[0:50],training)
-                    self.writetofile(row[50:100],testing)
+                with open(sparepath,'w') as sparestream:
+                    for row in cmat:
+                        print len(row), row[0]
+                        random.shuffle(row)
+                        self.writetofile(row[0:50],training)
+                        self.writetofile(row[50:100],testing)
+                        self.writetofile(row[100:],sparestream)
 
     def writetofile(self,alist,outstream):
         adj=untag(alist[0][0].split(':')[0])[0]
