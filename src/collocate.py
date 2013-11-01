@@ -28,6 +28,7 @@ class Collocates:
         self.clist=[]
         self.fdict={}
         #self.midict={}
+        self.moddict={}
         self.entrylist=[]
         self.freqthresh=config['freqthresh']
         self.entrythresh=config['entrythresh']
@@ -43,9 +44,29 @@ class Collocates:
         random.seed(42)
         self.sorted=False
 
-    def processfreqfile(self):
+    def makemoddict(self):
+        filepath=os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['freqfile'])
+        with open(filepath,'r') as instream:
+            print "Reading "+filepath
+            linesread=0
+            for line in instream:
+                linesread+=1
+                fields=line.rstrip().split('\t')
+                try:
+                    noun = untag(fields[0])[0]
+                    self.moddict[noun]=1
+                except TaggingException:
+                    print "Ignoring "+line
+                if linesread%self.linestop==0:
+                    print "Read "+str(linesread)+" lines"
 
+    def processfreqfile(self):
+        if len(self.moddict.keys())>0:
+            usemoddict=True
+        else:
+            usemoddict=False
         filepath = os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['freqfile'])
+
         outpath = filepath+".cached"
         print "Reading "+filepath
         linesread=0
@@ -62,9 +83,10 @@ class Collocates:
                                 feature=fields.pop()
                                 if freq> self.freqthresh:
                                     parts=feature.split(':')
-                                    if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
-                                        label=entry+':'+feature
-                                        self.fdict[label]=freq
+                                    if not usemoddict or (usemoddict and self.moddict.get(parts[1],0)>0):
+                                        if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
+                                            label=entry+':'+feature
+                                            self.fdict[label]=freq
                     except TaggingException:
                         print "Warning: ignoring ",line
                         continue
@@ -77,7 +99,9 @@ class Collocates:
         return
 
     def processassocfile(self):
+
         filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['assocfile'])
+
         outpath=filepath+".cached"
         print "Reading "+filepath
         linesread=0
@@ -107,6 +131,7 @@ class Collocates:
                         print "Read "+str(linesread)+" lines"
                         if self.testing:
                             break
+
 
     def processentries(self):
         filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['entryfile'])
@@ -341,6 +366,8 @@ def go(parameters):
 def analyse(parameters):
     mycollocates=SourceCollocates(parameters)
     mycollocates.processsource()
+    if mycollocates.parameters['adjlist']:
+        mycollocates.makemoddict()
     mycollocates.processfreqfile()
 
     mycollocates.processassocfile()
