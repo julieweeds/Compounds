@@ -83,8 +83,9 @@ class Collocates:
                                 feature=fields.pop()
                                 if freq> self.freqthresh:
                                     parts=feature.split(':')
-                                    if not usemoddict or (usemoddict and self.moddict.get(parts[1],0)>0):
-                                        if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
+
+                                    if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
+                                        if not usemoddict or (usemoddict and self.moddict.get(parts[1],0)>0):
                                             label=entry+':'+feature
                                             self.fdict[label]=freq
                     except TaggingException:
