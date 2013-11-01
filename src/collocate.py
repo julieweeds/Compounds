@@ -186,6 +186,51 @@ class Collocates:
 
 class SourceCollocates(Collocates):
 
+    def processboledaline(self,line):
+        fields=line.rstrip().split('\t')
+        phrase=fields[0]
+        type=fields[1]
+        parts=phrase.split('_')
+        mod=parts[0]
+        head=parts[1]
+        try:
+            noun=untag(head,'-')[0]
+            adj=untag(mod,'-')[0]
+            if self.parameters['featurematch']=='amod-DEP':
+                label=noun+'/N:'+self.parameters['featurematch']+':'+adj
+                if not self.parameters['allheads']:
+                    self.entrylist.append(adj)
+                self.entrylist.append(noun)
+            elif self.parameters['featurematch']=='amod-HEAD':
+                label=adj+'/J:'+self.parameters['featurematch']+':'+noun
+                if not self.parameters['allheads']:
+                    self.entrylist.append(noun)
+                self.entrylist.append(adj)
+                #print label
+            #self.srcdict[label]=type
+            self.srcposdict[label]=self.linesread
+            self.revposdict[self.linesread]=label
+            self.srctypedict[label]=type
+
+
+            #self.modlist.append(adj)
+        except TaggingException:
+            print "Ignoring "+line
+
+    def processlistline(self,line):
+        fields=line.rstrip().split(' ')
+        try:
+            adj=untag(fields[0])[0]
+            type=fields[1]
+            self.entrylist.append(adj)
+            self.srcposdict[adj]=self.linesread
+            self.revposdict[self.linesread]=adj
+            self.srctypedict[adj]=type
+        except TaggingException:
+            print "Ignoring "+line
+
+
+
     def processsource(self):
         self.srctypedict={}
         self.srcposdict={}
@@ -195,39 +240,15 @@ class SourceCollocates(Collocates):
         filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['source'])
         with open(filepath,'r') as instream:
             print "Reading "+filepath
-            linesread=0
+            self.linesread=0
             for line in instream:
-                linesread+=1
-                fields=line.rstrip().split('\t')
-                phrase=fields[0]
-                type=fields[1]
-                parts=phrase.split('_')
-                mod=parts[0]
-                head=parts[1]
-                try:
-                    noun=untag(head,'-')[0]
-                    adj=untag(mod,'-')[0]
-                    if self.parameters['featurematch']=='amod-DEP':
-                        label=noun+'/N:'+self.parameters['featurematch']+':'+adj
-                        if not self.parameters['allheads']:
-                            self.entrylist.append(adj)
-                        self.entrylist.append(noun)
-                    elif self.parameters['featurematch']=='amod-HEAD':
-                        label=adj+'/J:'+self.parameters['featurematch']+':'+noun
-                        if not self.parameters['allheads']:
-                            self.entrylist.append(noun)
-                        self.entrylist.append(adj)
-                    #print label
-                    #self.srcdict[label]=type
-                    self.srcposdict[label]=linesread
-                    self.revposdict[linesread]=label
-                    self.srctypedict[label]=type
+                self.linesread+=1
+                if self.parameters['adjlist']:
+                    self.processlistline(line)
+                else:
+                    self.processboledaline(line)
 
-
-                    #self.modlist.append(adj)
-                except TaggingException:
-                    print "Ignoring "+line
-        self.largest=linesread
+        self.largest=self.linesread
 
     def mergelists(self):
 
@@ -241,7 +262,7 @@ class SourceCollocates(Collocates):
 
         reslist.sort()
 
-        filepath=os.path.join(parameters['parentdir'],parameters['datadir'],parameters['mergefile'])
+        filepath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['mergefile'])
         counter=1
         missinglist=[]
         under100=[]
@@ -272,6 +293,40 @@ class SourceCollocates(Collocates):
         print "Frequency under 100: "+str(len(under100))
         print under100
 
+    def divide(self):
+        #self.clist contains (label,freq,pmi) where label is adj:rel:noun where adj is in list
+
+        #convert to matrix
+        cmat=[]
+        row=[]
+        adj=''
+        for (label,freq,pmi) in self.clist:
+            parts=label.split(':')
+            thisadj=parts[0]
+            if thisadj != adj and len(row)>0:
+                cmat.append(row)
+                row=[]
+            adj=thisadj
+            row.append((label,freq,pmi))
+        if len(row)>0:
+            cmat.append(row)
+        print len(cmat)
+        trainingpath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['collocatefile'][0])
+        testingpath=os.path.join(self.parameters['parentdir'],self.parameters['datadir'],self.parameters['collocatefile'][1])
+        with open(trainingpath,'w') as training:
+            with open(testingpath,'w') as testing:
+                for row in cmat:
+                    print len(row), row[0]
+                    random.shuffle(row)
+                    self.writetofile(row[0:50],training)
+                    self.writetotfile(row[50:100],testing)
+
+    def writetofile(self,alist,outstream):
+        adj=alist[0][0].split(':')[0]
+        type = self.srctypedict[adj]
+        for (label,freq,pmi) in alist:
+            outstream.write(label+'\t'+type+'\t'+freq+'\t'+pmi+'\n')
+
 def go(parameters):
     mycollocates = Collocates(parameters)
     mycollocates.processentries()
@@ -287,15 +342,15 @@ def analyse(parameters):
     mycollocates=SourceCollocates(parameters)
     mycollocates.processsource()
     mycollocates.processfreqfile()
-    #print mycollocates.entrylist
-    #print len(mycollocates.fdict.keys()), mycollocates.fdict
-    #exit()
+
     mycollocates.processassocfile()
-    mycollocates.viewlist()
-    #exit()
-    mycollocates.mergelists()
-    #exit()
-    mycollocates.outputlist()
+
+    if mycollocates.parameters['adjlist']:
+        mycollocates.divide()
+    else:
+        mycollocates.viewlist()
+        mycollocates.mergelists()
+        mycollocates.outputlist()
 
 if __name__=='__main__':
 

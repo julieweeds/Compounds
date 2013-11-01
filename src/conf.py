@@ -26,6 +26,7 @@ def configure(args):
     parameters['usesource']=False
     parameters['source']='none'
     parameters['allheads']=False
+    parameters['adjlist']=False
 
     for arg in args:
         if arg=='testing':
@@ -60,4 +61,14 @@ def configure(args):
             parameters['upperfreqthresh']=100
             parameters['collocatefile']='multiwords_amod-HEAD'
             parameters['allheads']=True
+
+        elif arg =='Jlist':
+            parameters['usesource']=True
+            parameters['source']='adjs32'
+            parameters['datadir']='data/ANcompounds/deps/adjs'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords.train','multiwords.test']
+            parameters['freqthresh']=100
+            parameters['featurematch']='amod-HEAD'
     return parameters
