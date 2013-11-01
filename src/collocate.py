@@ -322,7 +322,7 @@ class SourceCollocates(Collocates):
                     self.writetotfile(row[50:100],testing)
 
     def writetofile(self,alist,outstream):
-        adj=alist[0][0].split(':')[0]
+        adj=untag(alist[0][0].split(':')[0])[0]
         type = self.srctypedict[adj]
         for (label,freq,pmi) in alist:
             outstream.write(label+'\t'+type+'\t'+freq+'\t'+pmi+'\n')
