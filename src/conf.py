@@ -69,7 +69,7 @@ def configure(args):
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['adjlist']=True
             parameters['allheads']=True
-            parameters['collocatefile']=['multiwords.train','multiwords.test']
+            parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
     return parameters
