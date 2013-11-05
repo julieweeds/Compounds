@@ -288,6 +288,8 @@ class VectorBuilder(VectorExtractor):
                         #else:
 
                             #print "Ignoring word "+currentvector.word
+                        if flag=='mod':
+                            thisword=thisword.split(':')[0]
                         currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
                 if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
@@ -305,11 +307,12 @@ class VectorBuilder(VectorExtractor):
         #black/J:amod-HEAD:swan  => want functional vector for black and non-functional for black and swan
         phrase=phrasevector.word.split(':')
         feature=phrase[1]+':'+phrase[2] #feature = 'amod-HEAD:swan'
-        try:
-            target=untag(phrase[0])[0]  #head = 'black'
-        except:
-            print "Warning: unable to untag "+phrase[0]
-            target=phrase[0]
+        #try:
+        #    target=untag(phrase[0])[0]  #head = 'black'
+        #except:
+        #    print "Warning: unable to untag "+phrase[0]
+        #    target=phrase[0]
+        target=phrase[0]
 
         moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
