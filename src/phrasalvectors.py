@@ -275,7 +275,7 @@ class VectorBuilder(VectorExtractor):
                     if thisword==currentvector.word:
                         currentvector.addfeats(fields[1:])
                     else:
-                        if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
+                        if currentvector.word in self.headdict.keys() or currentvector.word in self.collocdict.keys():
                             if flag=='mod':
                                 self.modvectordict[currentvector.word]=currentvector
                             elif flag=='nfmod':
