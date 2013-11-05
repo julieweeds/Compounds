@@ -47,7 +47,8 @@ class VectorExtractor:
                 parts=collocate.split(':')
                 feature=parts[1]+':'+parts[2] #amod-HEAD:swan
                 #self.entrydict[parts[0]]+= self.entrydict.get(parts[0],0)
-                head = untag(parts[0])[0] #black
+                #head = untag(parts[0])[0] #black
+                head = parts[0] #black/J
                 self.headdict[head]=self.headdict.get(head,0)+1
                 self.entrydict[feature]=self.entrydict.get(feature,0)+1
                 linesread+=1
