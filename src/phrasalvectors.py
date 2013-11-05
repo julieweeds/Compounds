@@ -13,30 +13,41 @@ class VectorExtractor:
 
         self.parameters=config
         self.datadir=os.path.join(self.parameters['parentdir'],self.parameters['datadir'])
+        self.altdatadir=os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'])
         self.entrydict={}
         self.collocdict={}
         self.headdict={}
         self.featdict={}
         self.featuretotal=0
-        self.deppath = os.path.join(self.datadir,self.parameters['depfile'])
+        self.deppath = os.path.join(self.datadir,self.parameters['depfile']) #for first POS (e.g., J in ANcompounds)
+        if self.parameters['adjlist']:
+            self.altdeppath = os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['altdepfile'])  #for other POS (e.g., N in ANcompounds)
+            self.deppaths=[self.deppath,self.altdeppath]
+        else:
+            self.deppaths=[self.deppath]
         self.phrasal_path = self.deppath+'_'+self.parameters['featurematch']+'_phrases'
         self.modifier_path=self.deppath+'_'+self.parameters['featurematch']+'_modifiers'
+        self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
         self.headvectordict={}
 
 
     def loadphrases(self):
-        filepath = os.path.join(self.datadir,self.parameters['collocatefile'])
+        if self.parameters['adjlist']:
+            filename='multiwords.'+self.parameters['usefile']
+        else:
+            filename=self.parameters['collocatefile']
+        filepath = os.path.join(self.datadir,filename)
         with open(filepath,'r') as instream:
             print "Reading "+filepath
             linesread=0
             for line in instream:
                 fields=line.rstrip().split('\t')
-                collocate=fields[0]
-                self.collocdict[collocate]=fields[2]
+                collocate=fields[0] #black/J:amod-HEAD:swan
+                self.collocdict[collocate]=fields[2]  #store PMI
                 parts=collocate.split(':')
-                feature=parts[1]+':'+parts[2]
+                feature=parts[1]+':'+parts[2] #amod-HEAD:swan
                 #self.entrydict[parts[0]]+= self.entrydict.get(parts[0],0)
-                head = untag(parts[0])[0]
+                head = untag(parts[0])[0] #black
                 self.headdict[head]=self.headdict.get(head,0)+1
                 self.entrydict[feature]=self.entrydict.get(feature,0)+1
                 linesread+=1
@@ -48,7 +59,11 @@ class VectorExtractor:
 
 
     def loadfeaturecounts(self):
-        filepath = os.path.join(self.datadir,self.parameters['featurefile'])
+        if self.parameters['adjlist']:
+
+            filepath = os.path.join(self.altdatadir,self.parameters['featurefile'])
+        else:
+            filepath = os.path.join(self.datadir,self.parameters['featurefile'])
         with open(filepath,'r') as instream:
             print "Reading "+filepath
             linesread=0
@@ -62,7 +77,11 @@ class VectorExtractor:
 
 
     def loadheadvectors(self):
-        filepath=os.path.join(self.datadir,self.parameters['freqfile'])
+        if self.parameters['adjlist']:
+
+            filepath=os.path.join(self.altdatadir,self.parameters['freqfile'])
+        else:
+            filepath=os.path.join(self.datadir,self.parameters['freqfile'])
         with open(filepath,'r') as instream:
             print "Reading "+filepath
             linesread=0
@@ -84,35 +103,54 @@ class VectorExtractor:
 
     def extractfromfile(self):
 
-        with open(self.deppath,'r') as instream:
-            with open(self.phrasal_path,'w') as outstream1:
-                with open(self.modifier_path,'w') as outstream2:
-                    print "Reading "+self.deppath
-                    linesread=0
-                    for line in instream:
-                        linesread+=1
-                        if linesread%100000==0:
-                            print "Read "+str(linesread)+" lines"
-                            if self.parameters['testing']:exit()
-                        fields=line.rstrip().split('\t')
-                        word =untag(fields[0])[0]
-                        for index,feature in enumerate(fields[1:]):
-                            parts = feature.split(':')
-                            invertedfeature=self.parameters['featurematch']+':'+word
-                            #print invertedfeature,self.entrydict.get(invertedfeature,0)
-                            if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:
-                                phrase=fields[0]+':'+feature
-                                newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                newfields=self.depfilter(newfields)
-                                self.writeoutput(phrase,newfields,outstream1,'head')
-                                self.writeoutput(feature,newfields,outstream2,'head')
-                            elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
-                                #print "Found inverse match"
-                                phrase=parts[1]+'/N:'+self.parameters['featurematch']+':'+word
-                                newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                newfields=self.depfilter(newfields)
-                                self.writeoutput(phrase,newfields,outstream1,'mod')
-                                self.writeoutput(invertedfeature,newfields,outstream2,'mod')
+
+        nfmodifier_path=self.nfmod_path
+
+        phrasal_path=self.phrasal_path
+        modifier_path=self.modifier_path
+
+        for i,deppath in enumerate(self.deppaths):
+            with open(deppath,'r') as instream:
+                if i==0:code='w'
+                else:code='a'
+                with open(phrasal_path,code) as outstream1:
+                    with open(modifier_path,code) as outstream2:
+                        with open(nfmodifier_path,code) as outstream3:
+                            print "Reading "+deppath
+                            linesread=0
+                            for line in instream:
+                                linesread+=1
+                                if linesread%100000==0:
+                                    print "Read "+str(linesread)+" lines"
+                                    if self.parameters['testing']:break
+                                fields=line.rstrip().split('\t')
+                                word =untag(fields[0])[0]
+                                if self.parameters['nfmod'] and i == 0:
+                                    if self.headdict.get(word,0)>0:
+                                        newfields=self.depfilter(fields)
+                                        self.writeoutput(word+'/J',newfields,outstream3,'f')
+                                for index,feature in enumerate(fields[1:]):
+                                    parts = feature.split(':')
+                                    #invertedfeature=self.parameters['featurematch']+':'+word
+                                    #print invertedfeature,self.entrydict.get(invertedfeature,0)
+                                    #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
+                                    if parts[0] == self.parameters['featurematch'] and self.headdict.get(word,0)>0: #for ANs, extract all phrases with word (J) leading
+                                        phrase=fields[0]+':'+feature
+                                        newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                        newfields=self.depfilter(newfields)
+                                        self.writeoutput(phrase,newfields,outstream1,'f')
+                                        self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
+                                    #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
+                                    elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1],0)>0:
+                                        #print "Found inverse match"
+                                        phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
+                                        newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                        newfields=self.depfilter(newfields)
+                                        self.writeoutput(phrase,newfields,outstream1,'b')
+                                        if i==1:
+                                            self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'b')
+
+
     def depfilter(self,fields):
         newfields=[]
 
@@ -123,7 +161,7 @@ class VectorExtractor:
         return newfields
 
 
-    def writeoutput(self,head,features,outstream,tag):
+    def writeoutput(self,head,features,outstream,tag='f'):
 
         if len(features)>0:
             outstream.write(head)
@@ -164,9 +202,9 @@ class FeatureVector:
         #type is 'head', 'mod' or 'all' to label type of self and therefore which features of avector you should be subtracting
         result=FeatureVector(self.word+'!'+avector.word)
         for feat in self.featdict.keys():
-            if type=='head':
+            if type=='head' or type =='f':
                 remove = avector.headfeatdict.get(feat,0)
-            elif type=='mod':
+            elif type=='mod' or type =='b':
                 remove = avector.featdict.get(feat,0)-avector.headfeatdict.get(feat,0)
             elif type=='all':
                 remove = avector.featdict.get(feat,0)
@@ -206,11 +244,15 @@ class VectorBuilder(VectorExtractor):
 
         if flag=='mod':
             self.modvectordict={}
+        #elif flag=='nfmod':
+            #self.nfmodvectordict={}
         else:
-            moddiffpath=self.deppath+'_moddiff'
-            headdiffpath=self.deppath+'_headdiff'
-            moddiffstream=open(moddiffpath,'w')
-            headdiffstream=open(headdiffpath,'w')
+            moddiffpath=self.deppath+'_moddiff'  #for functional vectors
+            headdiffpath=self.deppath+'_headdiff'  #for non-functional vectors (i.e., plain vectors)
+            #nfmoddiffpath=self.deppath+'_nfmoddiff'
+            moddiffstream=open(moddiffpath,'w')  #functional
+            headdiffstream=open(headdiffpath,'w')  #non-functional (both words)
+            #nfmoddiffstream=open(nfmoddiffpath,'w')
         outpath=filepath+'_vectors'
         currentvector=FeatureVector()
 
@@ -236,6 +278,8 @@ class VectorBuilder(VectorExtractor):
                         if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
                             if flag=='mod':
                                 self.modvectordict[currentvector.word]=currentvector
+                            elif flag=='nfmod':
+                                self.headvectordict[currentvector.word]=currentvector
                             else:
                                 self.makedifferences(currentvector,moddiffstream,headdiffstream)
                             currentvector.finalise(self.featdict,self.featuretotal,outstream)
@@ -249,25 +293,28 @@ class VectorBuilder(VectorExtractor):
                     #do last vector
                     if flag=='mod':
                         self.modvectordict[currentvector.word]=currentvector
+                    elif flag=='nfmod':
+                        self.headvectordict[currentvector.word]=currentvector
                     else:
                         self.makedifferences(currentvector,moddiffstream,headdiffstream)
                     currentvector.finalise(self.featdict,self.featuretotal,outstream)
 
 
     def makedifferences(self,phrasevector,mstream,hstream):
+        #black/J:amod-HEAD:swan  => want functional vector for black and non-functional for black and swan
         phrase=phrasevector.word.split(':')
-        mod=phrase[1]+':'+phrase[2]
+        feature=phrase[1]+':'+phrase[2] #feature = 'amod-HEAD:swan'
         try:
-            head=untag(phrase[0])[0]
+            target=untag(phrase[0])[0]  #head = 'black'
         except:
             print "Warning: unable to untag "+phrase[0]
-            head=phrase[0]
+            target=phrase[0]
 
-        moddiffvector=self.modvectordict[mod].finddiff(phrasevector,type='all')
+        moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
-        headdiffvector=self.headvectordict[head].finddiff(phrasevector,type='head')
+        headdiffvector=self.headvectordict[target].finddiff(phrasevector,type='f')
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
-        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='mod')
+        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='b')
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
 
@@ -282,11 +329,9 @@ def gobuild(parameters):
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
     myBuilder.loadheadvectors()
+    myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
     myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
     myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
-
-
-
 
 if __name__ == '__main__':
     parameters = configure(sys.argv)

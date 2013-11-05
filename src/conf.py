@@ -17,7 +17,7 @@ def configure(args):
     parameters['featurematch']='nn-DEP'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
     parameters['testing']=False
-    parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD']
+    parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD','amod-HEAD']
 
     parameters['collocatefile']='multiwords_'+parameters['featurematch']
     parameters['depfile']='wikipedia_nounsdeps_t100.pbfiltered'
@@ -67,9 +67,15 @@ def configure(args):
             parameters['source']='adjs32'
             parameters['datadir']='data/ANcompounds/deps/adjs'
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
+            parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
+            parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
+            parameters['usefile']='train'
+            parameters['nfmod']=True
+        elif arg =='NFmod':
+            parameters['nfmod']=True
     return parameters
