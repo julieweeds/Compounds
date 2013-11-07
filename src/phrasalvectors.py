@@ -121,6 +121,7 @@ class VectorExtractor:
 
         phrasal_path=self.phrasal_path
         modifier_path=self.modifier_path
+        #print self.headdict
 
         for i,deppath in enumerate(self.deppaths):
             with open(deppath,'r') as instream:
@@ -139,7 +140,7 @@ class VectorExtractor:
                                 fields=line.rstrip().split('\t')
                                 word =untag(fields[0])[0]
                                 if self.parameters['nfmod'] and i == 0:
-                                    if self.headdict.get(word,0)>0:
+                                    if self.headdict.get(fields[0],0)>0:
                                         newfields=self.depfilter(fields)
                                         self.writeoutput(word+'/J',newfields,outstream3,'f')
                                 for index,feature in enumerate(fields[1:]):
@@ -147,14 +148,14 @@ class VectorExtractor:
                                     #invertedfeature=self.parameters['featurematch']+':'+word
                                     #print invertedfeature,self.entrydict.get(invertedfeature,0)
                                     #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
-                                    if parts[0] == self.parameters['featurematch'] and self.headdict.get(word,0)>0: #for ANs, extract all phrases with word (J) leading
+                                    if parts[0] == self.parameters['featurematch'] and self.headdict.get(fields[0],0)>0: #for ANs, extract all phrases with word (J) leading
                                         phrase=fields[0]+':'+feature
                                         newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                         newfields=self.depfilter(newfields)
                                         self.writeoutput(phrase,newfields,outstream1,'f')
                                         self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
                                     #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
-                                    elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1],0)>0:
+                                    elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1]+'/J',0)>0:
                                         #print "Found inverse match"
                                         phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
                                         newfields=fields[1:index+1]+fields[index+2:len(fields)]
@@ -251,9 +252,13 @@ class FeatureVector:
             for feature in self.pmidict.keys():
                 outstream.write('\t'+feature+'\t'+str(self.pmidict[feature]))
             outstream.write('\n')
+        else:
+            print "Warning: no vector for "+self.word
+
 class VectorBuilder(VectorExtractor):
 
     def build(self,filepath,flag):
+
 
         if flag=='mod':
             self.modvectordict={}
