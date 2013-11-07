@@ -61,8 +61,9 @@ class VectorExtractor:
 
     def loadfeaturecounts(self):
         if self.parameters['adjlist']:
-
+            #features of ANcompounds are features of Ns
             filepath = os.path.join(self.altdatadir,self.parameters['featurefile'])
+
         else:
             filepath = os.path.join(self.datadir,self.parameters['featurefile'])
         with open(filepath,'r') as instream:
@@ -101,6 +102,17 @@ class VectorExtractor:
                 linesread+=1
                 if linesread%10000==0:print "Read "+str(linesread)+" lines"
             print "Loaded "+str(loaded)+" head vectors"
+
+    def cacheheadvectors(self):
+
+        filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors')
+        with open(filepath,'w') as outstream:
+            print "Writing "+filepath
+
+            for featurevector in self.headvectordict.values():
+                featurevector.finalise(self.featdict,self.featuretotal,outstream)
+
+
 
     def extractfromfile(self):
 
@@ -273,6 +285,8 @@ class VectorBuilder(VectorExtractor):
 
                     fields=line.rstrip().split('\t')
                     thisword=fields[0]
+                    if flag=='mod':
+                        thisword=thisword.split(':')[0]
                     if thisword==currentvector.word:
                         currentvector.addfeats(fields[1:])
                     else:
@@ -292,7 +306,7 @@ class VectorBuilder(VectorExtractor):
                             thisword=thisword.split(':')[0]
                         currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
-                if currentvector.word in self.entrydict.keys() or currentvector.word in self.collocdict.keys():
+                if currentvector.word in self.headdict.keys() or currentvector.word in self.collocdict.keys():
                     #do last vector
                     if flag=='mod':
                         self.modvectordict[currentvector.word]=currentvector
@@ -333,6 +347,7 @@ def gobuild(parameters):
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
     myBuilder.loadheadvectors()
+    myBuilder.cacheheadvectors()
     myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
     myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
     myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
