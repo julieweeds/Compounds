@@ -220,8 +220,8 @@ class Composer:
                         vectordict[collocmatch]=line
                         added+=1
 
-                    else:
-                       print "No match for "+headmatch, str(self.headdict.get(headmatch,0))
+                    #else:
+                       #print "No match for "+headmatch, str(self.headdict.get(headmatch,0))
                     if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
             print "Read "+str(linesread)+" lines"
             print "Copying "+str(added)+" vectors"
