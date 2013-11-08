@@ -162,7 +162,7 @@ class VectorExtractor:
                                         newfields=self.depfilter(newfields)
                                         self.writeoutput(phrase,newfields,outstream1,'b')
                                         if i==1:
-                                            self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'b')
+                                            self.writeoutput(parts[1]+'/J:'+self.parameters['featurematch'],newfields,outstream2,'b')
 
 
     def depfilter(self,fields):
