@@ -8,8 +8,8 @@ def configure(args):
     #defaults
     parameters['testing']=False
     parameters['diff']=False
-    parameters['mod']=False
-    parameters['metric']=['recall']
+    parameters['funct']=False
+    parameters['metric']=['recall','precision','cosine']
     parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
@@ -19,7 +19,7 @@ def configure(args):
     for arg in args:
         if arg=='testing':parameters['testing']=True
         elif arg=='diff': parameters['diff']=True
-        elif arg=='mod':parameters['mod']=True
+        elif arg=='funct':parameters['funct']=True
         elif arg=='mult':parameters['compop']='mult'
         elif arg=="selecthead":parameters['compop']='selecthead'
         elif arg=="selectmod":parameters['compop']='selectmod'
@@ -42,17 +42,17 @@ def setfilenames(parameters):
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.phrases')
     if parameters['diff']:
-        parameters['headfile']=basename+'.heads.diff'
-        if parameters['mod']:
-            parameters['modfile']=basename+'.mod.diff'
+        parameters['headfile']=basename+'.NF.DIFF'
+        if parameters['funct']:
+            parameters['modfile']=basename+'.FMOD.DIFF'
         else:
-            parameters['modfile']=basename+'.heads.diff'
+            parameters['modfile']=basename+'.NF.DIFF'
     else:
-        parameters['headfile']=basename+'.heads'
-        if parameters['mod']:
-            parameters['modfile']=basename+'.mod'
+        parameters['headfile']=basename+'.NFHEAD'
+        if parameters['funct']:
+            parameters['modfile']=basename+'.FMOD'
         else:
-            parameters['modfile']=basename+'.heads'
+            parameters['modfile']=basename+'.NFMOD'
     parameters['headpath']=os.path.join(parameters['datadir'],parameters['headfile'])
     parameters['modpath']=os.path.join(parameters['datadir'],parameters['modfile'])
     parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords_nn-DEP')
