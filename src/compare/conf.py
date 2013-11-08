@@ -17,6 +17,7 @@ def configure(args):
     parameters['cached']=False
     parameters['apollo']=False
     parameters['athome']=False
+    parameters['usefile']='train'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -42,7 +43,7 @@ def configure(args):
     return parameters
 
 def setfilenames(parameters):
-    basename='vectors'
+    basename='vectors.'+parameters['usefile']
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/wiki_nounsdeps'
     if parameters['athome']:
@@ -62,7 +63,7 @@ def setfilenames(parameters):
             parameters['modfile']=basename+'.NFMOD'
     parameters['headpath']=os.path.join(parameters['datadir'],parameters['headfile'])
     parameters['modpath']=os.path.join(parameters['datadir'],parameters['modfile'])
-    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords_nn-DEP')
+    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
     return parameters
 
 def setadd(myset,item):
