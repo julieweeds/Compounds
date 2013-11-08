@@ -134,8 +134,9 @@ class Composer:
                 self.collocdict[fields[0]]=float(fields[2])
                 parts=fields[0].split(':')
                 try:
-                    head = untag(parts[0])[0]
-                    mod=parts[2]
+                    mod = untag(parts[0])[0]
+                    head=parts[2]
+                    print "mod: ",mod,"head: ",head
                     self.headdict[head]=self.headdict.get(head,0)+1
                     self.moddict[mod]=self.moddict.get(mod,0)+1
                 except TaggingError:
