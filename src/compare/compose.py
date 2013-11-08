@@ -274,7 +274,7 @@ class Composer:
                     if self.parameters['diff']:
                         collocmatch=colloc
                     else:
-                        collocmatch=untag(colloc.split(':')[2])[0]
+                        collocmatch=untag(colloc.split(':')[0])[0]
                     outstream.write(vectordict[collocmatch])
 
     def process(self):
