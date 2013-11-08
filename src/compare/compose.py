@@ -136,7 +136,7 @@ class Composer:
                 try:
                     mod = untag(parts[0])[0]
                     head=parts[2]
-                    print "mod: ",mod,"head: ",head
+                    #print "mod: ",mod,"head: ",head
                     self.headdict[head]=self.headdict.get(head,0)+1
                     self.moddict[mod]=self.moddict.get(mod,0)+1
                 except TaggingError:
@@ -144,7 +144,7 @@ class Composer:
 
         print "Number of collocations is "+str(len(self.collocdict.keys()))
         print "Number of heads is "+str(len(self.headdict.keys()))
-        print "Number of modifiers is "+str(len(self.headdict.keys()))
+        print "Number of modifiers is "+str(len(self.moddict.keys()))
         self.collocorder=sorted(self.collocdict.keys())
         return
 
@@ -214,8 +214,8 @@ class Composer:
                         vectordict[collocmatch]=line
                         added+=1
 
-                    #else:
-                        #print "No match for "+headmatch
+                    else:
+                        print "No match for "+headmatch
                     if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
             print "Read "+str(linesread)+" lines"
             print "Copying "+str(added)+" vectors"
