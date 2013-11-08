@@ -9,6 +9,7 @@ def configure(args):
     parameters['testing']=False
     parameters['diff']=False
     parameters['funct']=False
+    parameters['mod']=False
     parameters['metric']=['recall','precision','cosine']
     parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
@@ -19,7 +20,12 @@ def configure(args):
     for arg in args:
         if arg=='testing':parameters['testing']=True
         elif arg=='diff': parameters['diff']=True
-        elif arg=='funct':parameters['funct']=True
+        elif arg=='funct':
+            parameters['funct']=True
+            parameters['mod']=True  #funct and mod are aliases for same 'functional modifier' parameter
+        elif arg=='mod':
+            parameters['mod']=True
+            parameters['funct']=True
         elif arg=='mult':parameters['compop']='mult'
         elif arg=="selecthead":parameters['compop']='selecthead'
         elif arg=="selectmod":parameters['compop']='selectmod'
