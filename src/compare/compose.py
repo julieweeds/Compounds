@@ -253,10 +253,11 @@ class Composer:
                             ismodmatch=collocmatch.split(':')[0]
                         else:
                             modmatch=fields[0]
-                            if self.parameters['mod']:
-                                modmatch = modmatch.split(':')[0]
-                            else:
+                            try:
                                 modmatch = untag(modmatch)[0]
+                            except TaggingError:
+                                print "Error untagging ",modmatch
+                                break
                             ismodmatch=modmatch
                             collocmatch=modmatch
                         if modmatch==ismodmatch and self.moddict.get(modmatch,0)>0:
