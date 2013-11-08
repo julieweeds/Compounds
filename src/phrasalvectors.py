@@ -200,7 +200,7 @@ class FeatureVector:
             type=fields.pop()
             field=fields.pop()
             self.featdict[field]=self.featdict.get(field,0)+1
-            if type=='head':
+            if type=='head' or type=='f':
                 self.headfeatdict[field]=self.headfeatdict.get(field,0)+1
             self.total+=1
 
@@ -333,11 +333,11 @@ class VectorBuilder(VectorExtractor):
         #    target=phrase[0]
         target=phrase[0]
 
-        moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')
+        moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')#f modifier
         moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
-        headdiffvector=self.headvectordict[target].finddiff(phrasevector,type='f')
+        headdiffvector=self.headvectordict[target].finddiff(phrasevector,type='f')#nf modifier
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
-        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='b')
+        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='b')#nf head
         headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
 

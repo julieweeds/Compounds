@@ -112,9 +112,9 @@ class Composer:
         self.moddict={}
         self.whoami='.'+self.parameters['compop']
         if self.parameters['mod']:
-            self.whoami=self.whoami+".mod"
+            self.whoami=self.whoami+".funct"
         else:
-            self.whoami=self.whoami+'.nomod'
+            self.whoami=self.whoami+'.nofunct'
         if self.parameters['diff']:
             self.whoami=self.whoami+'.diff'
         else:
@@ -385,10 +385,11 @@ class Composer:
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
+                outstream.write(parameters['usefile']+',')
                 if parameters['mod']:
-                    outstream.write('mod,')
+                    outstream.write('funct,')
                 else:
-                    outstream.write('nomod,')
+                    outstream.write('nofunct,')
                 if parameters['diff']:
                     outstream.write('diff,')
                 else:
