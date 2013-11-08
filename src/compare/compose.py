@@ -200,7 +200,8 @@ class Composer:
                         except TaggingError:
                             print "Ignoring "+fields[0]
                             break
-                        isheadmatch=untag(collocmatch.split(':')[0])[0]
+ #                       isheadmatch=untag(collocmatch.split(':')[0])[0]
+                        isheadmatch=collocmatch.split(':')[2]
 
                     else:
                         try:
@@ -247,13 +248,13 @@ class Composer:
                         if self.parameters['diff']:
                             (modmatch,collocmatch)=untag(fields[0],'!')
                             if self.parameters['mod']:
-                                modmatch = modmatch.split(':')[1]
+                                modmatch = modmatch.split(':')[0]
 
-                            ismodmatch=collocmatch.split(':')[2]
+                            ismodmatch=collocmatch.split(':')[0]
                         else:
                             modmatch=fields[0]
                             if self.parameters['mod']:
-                                modmatch = modmatch.split(':')[1]
+                                modmatch = modmatch.split(':')[0]
                             else:
                                 modmatch = untag(modmatch)[0]
                             ismodmatch=modmatch
