@@ -192,21 +192,27 @@ class Composer:
                 for line in instream:
                     linesread+=1
                     fields=line.split('\t')
-                    try:
-                        if self.parameters['diff']:
+
+                    if self.parameters['diff']:
+                        try:
                             (headmatch,collocmatch)=untag(fields[0],'!')
-                            isheadmatch=untag(collocmatch.split(':')[0])[0]
+                        except TaggingError:
+                            print "Ignoring "+fields[0]
+                            break
+                        isheadmatch=untag(collocmatch.split(':')[0])[0]
 
-                        else:
+                    else:
+                        try:
                             headmatch=untag(fields[0])[0]
-                            collocmatch=headmatch
-                            isheadmatch=headmatch
+                        except TaggingError:
+                            headmatch=fields[0]
+                        collocmatch=headmatch
+                        isheadmatch=headmatch
 
-                        if headmatch==isheadmatch and self.headdict.get(headmatch,0)>0:
-                            vectordict[collocmatch]=line
-                            added+=1
-                    except TaggingError:
-                        print "Ignoring "+fields[0]
+                    if headmatch==isheadmatch and self.headdict.get(headmatch,0)>0:
+                        vectordict[collocmatch]=line
+                        added+=1
+
                     #else:
                         #print "No match for "+headmatch
                     if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
@@ -410,7 +416,7 @@ def go(parameters):
 if __name__=='__main__':
     parameters=conf.configure(sys.argv)
     print "Metrics:",parameters['metric']
-    print "MOD:",parameters['mod']
+    print "FUNCT:",parameters['funct']
     print "DIFF:",parameters['diff']
     print "Composition Operation:",parameters['compop']
     go(parameters)
