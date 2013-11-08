@@ -260,6 +260,7 @@ class Composer:
                                 pass
 
                             ismodmatch=collocmatch.split(':')[0]
+                            ismodmatch=untag(ismodmatch)[0]
                         else:
                             modmatch=fields[0]
                             try:
