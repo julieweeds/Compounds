@@ -45,10 +45,10 @@ def configure(args):
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
     if parameters['apollo']:
-        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/wiki_nounsdeps'
+        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/data/adjs'
     if parameters['athome']:
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
-    parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.phrases')
+    parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
     if parameters['diff']:
         parameters['headfile']=basename+'.NF.DIFF'
         if parameters['funct']:
