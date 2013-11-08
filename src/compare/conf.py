@@ -45,7 +45,7 @@ def configure(args):
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
     if parameters['apollo']:
-        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/data/adjs'
+        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/deps/adjs'
     if parameters['athome']:
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
