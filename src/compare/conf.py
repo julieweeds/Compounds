@@ -11,7 +11,8 @@ def configure(args):
     parameters['funct']=False
     parameters['mod']=False
     parameters['metric']=['recall','precision','cosine']
-    parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
+    #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
+    parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/deps/adjs'
     parameters['compop']='add'
     parameters['cached']=False
     parameters['apollo']=False
