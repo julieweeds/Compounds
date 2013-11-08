@@ -27,6 +27,7 @@ def configure(args):
     parameters['source']='none'
     parameters['allheads']=False
     parameters['adjlist']=False
+    parameters['usefile']='train'
 
     for arg in args:
         if arg=='testing':
@@ -61,20 +62,24 @@ def configure(args):
             parameters['upperfreqthresh']=100
             parameters['collocatefile']='multiwords_amod-HEAD'
             parameters['allheads']=True
+        elif arg=='train':
+            parameters['usefile']='train'
+        elif arg=='test':
+            parameters['usefile']='test'
 
         elif arg =='Jlist':
             parameters['usesource']=True
             parameters['source']='adjs32'
+#            parameters['usefile']='train'
             parameters['datadir']='data/ANcompounds/deps/adjs'
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
-            parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered'
+            parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
-            parameters['usefile']='train'
             parameters['nfmod']=True
         elif arg =='NFmod':
             parameters['nfmod']=True
