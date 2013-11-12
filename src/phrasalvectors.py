@@ -222,8 +222,23 @@ class WindowVectorExtractor(VectorExtractor):
                                                 phrase=fields[0]+':'+feature
                                                 newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                                 newfields=self.depfilter(newfields)
+                                                newfields=self.headfilter(newfields,parts[1])
                                                 self.writeoutput(phrase,newfields,outstream1,'f')
                                                 self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
+
+    def headfilter(self,fields,head):
+        #to remove 1 window occurrence of head from phrasal vector
+        newfields=[]
+        found=0
+        for field in fields:
+            parts=field.split(':')
+            if parts[1]==head:
+                found+=1
+                if found>1:
+                    newfields.append(field)
+            else:
+                newfields.append(field)
+        return newfields
 
 class FeatureVector:
 
