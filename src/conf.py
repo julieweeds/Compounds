@@ -66,6 +66,24 @@ def configure(args):
             parameters['usefile']='train'
         elif arg=='test':
             parameters['usefile']='test'
+        elif arg=='Jwin':
+            parameters['windows']=True
+            parameters['usesource']=True
+            parameters['source']='adjs32'
+            #            parameters['usefile']='train'
+            parameters['datadir']='data/ANcompounds/wins/adjs'
+            parameters['altdatadir']='data/ANcompounds/wins/nouns'
+            #parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
+            #parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
+            parameters['depfile']='wikipedia_AN_t100.pbfiltered'
+            parameters['deplist']='T'
+            parameters['totalfile']='events.strings_domcol'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
+            parameters['freqthresh']=100
+            parameters['featurematch']='amod-HEAD'
+            parameters['nfmod']=True
 
         elif arg =='Jlist':
             parameters['usesource']=True
@@ -75,6 +93,7 @@ def configure(args):
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
             parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
+            parameters['totalfile']='events.strings_depcol'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']

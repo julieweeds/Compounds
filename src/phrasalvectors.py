@@ -184,6 +184,61 @@ class VectorExtractor:
             outstream.write('\n')
 
 
+class WindowVectorExtractor(VectorExtractor):
+
+
+
+    def extractfromfile(self):
+            #needs updating for windows with a single dependency path
+            self.deppaths=[self.deppath]  # single file for dependencies
+
+            nfmodifier_path=self.nfmod_path #output paths
+            phrasal_path=self.phrasal_path
+            modifier_path=self.modifier_path
+            #print self.headdict
+
+            for i,deppath in enumerate(self.deppaths):
+                with open(deppath,'r') as instream:
+                    if i==0:code='w'
+                    else:code='a'
+                    with open(phrasal_path,code) as outstream1:
+                        with open(modifier_path,code) as outstream2:
+                            with open(nfmodifier_path,code) as outstream3:
+                                print "Reading "+deppath
+                                linesread=0
+                                for line in instream:
+                                    linesread+=1
+                                    if linesread%100000==0:
+                                        print "Read "+str(linesread)+" lines"
+                                        if self.parameters['testing']:break
+                                    fields=line.rstrip().split('\t')
+                                    (word,pos) =untag(fields[0])
+                                    if self.parameters['nfmod'] and i == 0:
+                                        if self.headdict.get(fields[0],0)>0:  #POS tagged
+                                            newfields=self.depfilter(fields)
+                                            self.writeoutput(word+'/J',newfields,outstream3,'f')
+                                    for index,feature in enumerate(fields[1:]):
+                                        parts = feature.split(':')
+                                        #invertedfeature=self.parameters['featurematch']+':'+word
+                                        #print invertedfeature,self.entrydict.get(invertedfeature,0)
+                                        #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
+                                        if parts[0] == self.parameters['featurematch'] and self.headdict.get(fields[0],0)>0: #for ANs, extract all phrases with word (J) leading
+                                            phrase=fields[0]+':'+feature
+                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                            newfields=self.depfilter(newfields)
+                                            self.writeoutput(phrase,newfields,outstream1,'f')
+                                            self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
+                                        #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
+                                        elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1]+'/J',0)>0:
+                                            #print "Found inverse match"
+                                            phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
+                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                            newfields=self.depfilter(newfields)
+                                            self.writeoutput(phrase,newfields,outstream1,'b')
+                                            if pos=='N':
+                                                self.writeoutput(parts[1]+'/J:'+self.parameters['featurematch'],newfields,outstream2,'b')
+
+
 class FeatureVector:
 
     def __init__(self,word=''):
@@ -343,7 +398,10 @@ class VectorBuilder(VectorExtractor):
 
 
 def extract(parameters):
-    myExtractor=VectorExtractor(parameters)
+    if parameters['windows']:
+        myExtractor=WindowVectorExtractor(parameters)
+    else:
+        myExtractor=VectorExtractor(parameters)
     myExtractor.loadphrases()
     myExtractor.extractfromfile()
 
