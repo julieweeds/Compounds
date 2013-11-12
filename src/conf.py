@@ -73,7 +73,7 @@ def configure(args):
             #            parameters['usefile']='train'
             parameters['datadir']='data/ANcompounds/wins/adjs'
             parameters['altdatadir']='data/ANcompounds/wins/nouns'
-            #parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
+            parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
             #parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
             parameters['depfile']='wikipedia_AN_t100.pbfiltered'
             parameters['deplist']='T'
