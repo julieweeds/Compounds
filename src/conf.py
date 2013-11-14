@@ -77,7 +77,7 @@ def configure(args):
             #parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
             parameters['depfile']='wikipedia_AN_t100.pbfiltered'
             parameters['deplist']='T'
-            parameters['totalfile']='events.strings_domcol'
+            parameters['featurefile']='events.strings_domcol'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
@@ -93,7 +93,7 @@ def configure(args):
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
             parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
-            parameters['totalfile']='events.strings_depcol'
+            parameters['featurefile']='events.strings_depcol'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']

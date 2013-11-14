@@ -29,7 +29,10 @@ class Collocates:
         self.fdict={}
         #self.midict={}
         self.moddict={}
+        self.modfdict={}
         self.entrylist=[]
+        self.entrydict={}
+        self.noundict={}
         self.freqthresh=config['freqthresh']
         self.entrythresh=config['entrythresh']
         self.featurematch=config['featurematch']
@@ -40,7 +43,7 @@ class Collocates:
         if self.testing:
             self.linestop=10
         else:
-            self.linestop=1000
+            self.linestop=100
         random.seed(42)
         self.sorted=False
 
@@ -55,10 +58,21 @@ class Collocates:
                 try:
                     noun = untag(fields[0])[0]
                     self.moddict[noun]=1
+                    if self.noundict.get(noun,0)>0:
+                        while len(fields[1:])>0:
+                            freq=float(fields.pop())
+                            feature=fields.pop()
+                            if freq>self.freqthresh:
+                                parts=feature.split(':')
+                                if parts[0]==self.parameters['inversefeatures'][self.featurematch] and self.entrydict.get(parts[1],0)>0:
+                                    label=parts[1]+'/J:'+self.featurematch+':'+noun
+                                    self.modfdict[label]=freq
                 except TaggingException:
                     print "Ignoring "+line
                 if linesread%self.linestop==0:
                     print "Read "+str(linesread)+" lines"
+                    if self.testing: break
+            print "Size of mod freq dict is "+str(len(self.modfdict.keys()))
 
     def processfreqfile(self):
         if len(self.moddict.keys())>0:
@@ -88,6 +102,7 @@ class Collocates:
                                         if not usemoddict or (usemoddict and self.moddict.get(parts[1],0)>0):
                                             label=entry+':'+feature
                                             self.fdict[label]=freq
+                                            self.noundict[parts[1]]=1
                     except TaggingException:
                         print "Warning: ignoring ",line
                         continue
@@ -97,7 +112,9 @@ class Collocates:
                         if self.testing:
                             break
 
-        return
+        print "Size of freq dict is "+str(len(self.fdict))
+        print "Size of noun dict is "+str(len(self.noundict))
+        print self.noundict
 
     def processassocfile(self):
 
@@ -121,9 +138,14 @@ class Collocates:
                                 if parts[0]==self.featurematch:
                                     label=entry+':'+feature
                                     freq=self.fdict.get(label,0)
+
                                     if freq>self.freqthresh:
-                                        #self.midict[label]=score
-                                        self.clist.append((label,freq,score))
+                                        altfreq=self.modfdict.get(label,0)
+                                        if altfreq>self.freqthresh:
+                                            #self.midict[label]=score
+                                            self.clist.append((label,freq,score))
+                                        else:
+                                            print "Ignoring "+label+" f1 = "+str(freq)+" f2 = "+str(altfreq)
                     except (TaggingException):
                         print "Warning: ignoring ",line
                         continue
@@ -249,6 +271,7 @@ class SourceCollocates(Collocates):
             adj=untag(fields[0])[0]
             type=fields[1]
             self.entrylist.append(adj)
+            self.entrydict[adj]=1
             self.srcposdict[adj]=self.linesread
             self.revposdict[self.linesread]=adj
             self.srctypedict[adj]=type
@@ -351,10 +374,17 @@ class SourceCollocates(Collocates):
                         self.writetofile(row[100:],sparestream)
 
     def writetofile(self,alist,outstream):
-        adj=untag(alist[0][0].split(':')[0])[0]
-        type = self.srctypedict[adj]
-        for (label,freq,pmi) in alist:
-            outstream.write(label+'\t'+str(freq)+'\t'+str(pmi)+'\t'+type+'\n')
+        if len(alist)==0:
+            return
+        else:
+            try:
+                adj=untag(alist[0][0].split(':')[0])[0]
+                type = self.srctypedict[adj]
+                for (label,freq,pmi) in alist:
+                    outstream.write(label+'\t'+str(freq)+'\t'+str(pmi)+'\t'+type+'\n')
+            except TaggingException:
+                print "Tagging error ",alist
+
 
 def go(parameters):
     mycollocates = Collocates(parameters)
@@ -370,10 +400,10 @@ def go(parameters):
 def analyse(parameters):
     mycollocates=SourceCollocates(parameters)
     mycollocates.processsource()
+
+    mycollocates.processfreqfile()
     if mycollocates.parameters['adjlist']:
         mycollocates.makemoddict()
-    mycollocates.processfreqfile()
-
     mycollocates.processassocfile()
 
     if mycollocates.parameters['adjlist']:

@@ -29,6 +29,7 @@ class VectorExtractor:
         self.modifier_path=self.deppath+'_'+self.parameters['featurematch']+'_modifiers'
         self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
         self.headvectordict={}
+        self.builtlist=[]
 
 
     def loadphrases(self):
@@ -111,7 +112,7 @@ class VectorExtractor:
 
             for featurevector in self.headvectordict.values():
                 featurevector.finalise(self.featdict,self.featuretotal,outstream)
-
+        self.builtlist.append('head')
 
 
     def extractfromfile(self):
@@ -186,8 +187,6 @@ class VectorExtractor:
 
 class WindowVectorExtractor(VectorExtractor):
 
-
-
     def extractfromfile(self):
             #needs updating for windows with a single dependency path
             self.deppaths=[self.deppath]  # single file for dependencies
@@ -242,13 +241,14 @@ class WindowVectorExtractor(VectorExtractor):
 
 class FeatureVector:
 
-    def __init__(self,word=''):
+    def __init__(self,word='',windows=False):
 
         self.featdict={}
         self.headfeatdict={}
         self.word=word
         self.total=0
         self.pmidict={}
+        self.windows=windows
 
     def addfeats(self,fields):
         #assuming new format where features are labelled head and mod
@@ -302,6 +302,10 @@ class FeatureVector:
                 #    print "Ignoring feature "+feature
 
         self.writetofile(outstream)
+        self.pmidict={}  #free memory as pmi values are just used in composition not building process
+        if self.windows:
+            self.headfeatdict={} #don't use this in windows vector
+
     def writetofile(self,outstream):
         if len(self.pmidict.keys())>0:
             outstream.write(self.word)
@@ -325,7 +329,15 @@ class VectorBuilder(VectorExtractor):
             headdiffpath=self.deppath+'_headdiff'  #for non-functional vectors (i.e., plain vectors)
             #nfmoddiffpath=self.deppath+'_nfmoddiff'
             moddiffstream=open(moddiffpath,'w')  #functional
-            headdiffstream=open(headdiffpath,'w')  #non-functional (both words)
+            if self.parameters['windows']:
+                if 'head' in self.builtlist:
+                    headdiffstream=open(headdiffpath,'w')
+                elif 'nfmod' in self.builtlist:
+                    headdiffstream=open(headdiffpath,'a')
+                else:
+                    headdiffstream=open(headdiffpath,'a')
+            else:
+                headdiffstream=open(headdiffpath,'w')  #non-functional (both words)
             #nfmoddiffstream=open(nfmoddiffpath,'w')
         outpath=filepath+'_vectors'
         currentvector=FeatureVector()
@@ -365,7 +377,7 @@ class VectorBuilder(VectorExtractor):
                             #print "Ignoring word "+currentvector.word
                         if flag=='mod':
                             thisword=thisword.split(':')[0]
-                        currentvector=FeatureVector(thisword)
+                        currentvector=FeatureVector(thisword,windows=self.parameters['windows'])
                         currentvector.addfeats(fields[1:])
                 if currentvector.word in self.headdict.keys() or currentvector.word in self.collocdict.keys():
                     #do last vector
@@ -376,7 +388,12 @@ class VectorBuilder(VectorExtractor):
                     else:
                         self.makedifferences(currentvector,moddiffstream,headdiffstream)
                     currentvector.finalise(self.featdict,self.featuretotal,outstream)
-
+        self.builtlist.append(flag)
+        if flag =='phrase' and self.parameters['windows']:
+            #empty memory
+            self.headvectordict={}
+            self.modvectordict={}
+            self.builtlist=[]
 
     def makedifferences(self,phrasevector,mstream,hstream):
         #black/J:amod-HEAD:swan  => want functional vector for black and non-functional for black and swan
@@ -389,13 +406,25 @@ class VectorBuilder(VectorExtractor):
         #    target=phrase[0]
         target=phrase[0]
 
-        moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')#f modifier
-        moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
-        headdiffvector=self.headvectordict[target].finddiff(phrasevector,type='f')#nf modifier
-        headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
-        headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type='b')#nf head
-        headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
+
+        if self.parameters['windows']:
+            mtype='all'
+            htype='all'
+        else:
+            mtype='f'
+            htype='b'
+
+        if 'mod' in self.builtlist:
+            moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')#f modifier
+            moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
+        if 'nfmod' in self.builtlist:
+            headdiffvector=self.headvectordict[target].finddiff(phrasevector,type=mtype)#nf modifier
+            headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
+        if 'head' in self.builtlist:
+            headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type=htype)#nf head
+            headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
         return
+
 
 
 def extract(parameters):
@@ -407,14 +436,22 @@ def extract(parameters):
     myExtractor.extractfromfile()
 
 def gobuild(parameters):
+
     myBuilder=VectorBuilder(parameters)
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
     myBuilder.loadheadvectors()
     myBuilder.cacheheadvectors()
-    myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
-    myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
-    myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+    if parameters['windows']:
+        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+        myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
+        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+        myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
+        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+    else:
+        myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
+        myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
+        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
 
 if __name__ == '__main__':
     parameters = configure(sys.argv)

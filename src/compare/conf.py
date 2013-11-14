@@ -12,12 +12,12 @@ def configure(args):
     parameters['mod']=False
     parameters['metric']=['recall','precision','cosine']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
-    parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/deps/adjs'
     parameters['compop']='add'
     parameters['cached']=False
     parameters['apollo']=False
     parameters['athome']=False
     parameters['usefile']='train'
+    parameters['ftype']='deps'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -38,14 +38,16 @@ def configure(args):
         elif arg=='cosine':parameters['metric']=setadd(parameters['metric'],'cosine')
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
+        elif arg=='windows':parameters['ftype']='wins'
     parameters = setfilenames(parameters)
 
     return parameters
 
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
+    parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
     if parameters['apollo']:
-        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/deps/adjs'
+        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
     if parameters['athome']:
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
