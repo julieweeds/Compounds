@@ -92,7 +92,14 @@ class FeatureVector:
         total=0
         for feature in self.featuredict.keys():
             total+=self.featuredict[feature]*avector.featuredict.get(feature,0)
-        sim = total / (self.computelength() * avector.computelength())
+
+        if self.computelength()==0:
+            if avector.computelength()==0:
+                sim=1
+            else:
+                sim=0
+        else:
+            sim = total / (self.computelength() * avector.computelength())
         return sim
 
     def toString(self):

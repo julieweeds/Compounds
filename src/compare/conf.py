@@ -38,7 +38,7 @@ def configure(args):
         elif arg=='cosine':parameters['metric']=setadd(parameters['metric'],'cosine')
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
-        elif arg=='windows':parameters['ftype']='wins'
+        elif arg=='wins':parameters['ftype']='wins'
     parameters = setfilenames(parameters)
 
     return parameters
