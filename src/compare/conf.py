@@ -31,6 +31,8 @@ def configure(args):
         elif arg=='mult':parameters['compop']='mult'
         elif arg=="selecthead":parameters['compop']='selecthead'
         elif arg=="selectmod":parameters['compop']='selectmod'
+        elif arg=="min":parameters['compop']='min'
+        elif arg=='max':parameters['compop']='max'
         elif arg=='cached':parameters['cached']=True
         elif arg=='f':parameters['metric']=setadd(parameters['metric'],'f')
         elif arg=='precision':parameters['metric']=setadd(parameters['metric'],'precision')

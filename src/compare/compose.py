@@ -56,7 +56,7 @@ class FeatureVector:
         for feature in self.featuredict.keys():
             if avector.featuredict.get(feature,0)>0:
                 newvector.featuredict[feature]=min(self.featuredict[feature],avector.featuredict.get(feature,0))
-        print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
+        #print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
         return newvector
 
     def selecthead(self,avector):
