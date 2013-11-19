@@ -10,7 +10,7 @@ def configure(args):
     parameters['diff']=False
     parameters['funct']=False
     parameters['mod']=False
-    parameters['metric']=['recall','precision','cosine']
+    parameters['metric']=['recall','precision','cosine','weighted_recall','weighted_precision']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
@@ -38,6 +38,8 @@ def configure(args):
         elif arg=='precision':parameters['metric']=setadd(parameters['metric'],'precision')
         elif arg=='recall':parameters['metric']=setadd(parameters['metric'],'recall')
         elif arg=='cosine':parameters['metric']=setadd(parameters['metric'],'cosine')
+        elif arg=='weighted_recall':parameters['metric']=setadd(parameters['metric'],'weighted_recall')
+        elif arg=='weighted_precision':parameters['metric']=setadd(parameters['metric'],'weighted_precision')
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
         elif arg=='wins':parameters['ftype']='wins'

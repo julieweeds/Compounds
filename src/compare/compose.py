@@ -67,7 +67,7 @@ class FeatureVector:
         newvector=FeatureVector(self.signifier+'@m@'+avector.signifier,fdict=avector.featuredict)
         return newvector
 
-    def recall(self,avector): #weighted recall#
+    def weighted_recall(self,avector): #weighted recall#
         num=0
         den=0
         for feature in avector.featuredict.keys():
@@ -79,6 +79,22 @@ class FeatureVector:
         #print str(den)
         if den>0:
             return num/den
+        else:
+            return 0
+
+    def weighted_precision(self,avector):
+        return avector.weighted_recall(self)
+
+    def recall(self,avector):
+        num=0
+        den=0
+        for feature in avector.featuredict.keys():
+            den+=1
+            if self.featuredict.get(feature)>0:
+                num+=1
+        #print self.signifier, num, den
+        if den>0:
+            return float(num)/float(den)
         else:
             return 0
 
@@ -345,7 +361,7 @@ class Composer:
                         ys.append(scores)
                         done+=1
                         if done % 1000 == 0:
-                            print "Processed "+str(done)+"phrasal expressions"
+                            print "Processed "+str(done)+" phrasal expressions"
                         if self.parameters['testing'] and done%10==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
@@ -444,6 +460,12 @@ class Composer:
 
     def _compare_precision(self,hypothesis,target):
         return hypothesis.precision(target)
+
+    def _compare_weighted_recall(self,hypothesis,target):
+        return hypothesis.weighted_recall(target)
+
+    def _compare_weighted_precision(self,hypothesis,target):
+        return hypothesis.weighted_precision(target)
 
     def _compare_f(self,hypothesis,target):
         return hypothesis.fscore(target)
