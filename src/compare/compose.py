@@ -26,6 +26,7 @@ class FeatureVector:
             feat=features.pop()
             if score>0:
                 self.featuredict[feat]=score
+        self.normalised=False
 
     def add(self,avector):
         newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
@@ -68,6 +69,8 @@ class FeatureVector:
         return newvector
 
     def weighted_recall(self,avector): #weighted recall#
+        self.normalise()
+        avector.normalise()
         num=0
         den=0
         for feature in avector.featuredict.keys():
@@ -83,6 +86,8 @@ class FeatureVector:
             return 0
 
     def weighted_precision(self,avector):
+        self.normalise()
+        avector.normalise()
         return avector.weighted_recall(self)
 
     def recall(self,avector):
@@ -133,6 +138,18 @@ class FeatureVector:
         else:
             sim = total / (self.computelength() * avector.computelength())
         return sim
+
+    def normalise(self):
+        if self.normalised:
+            return
+        else:
+            self.normalised=True
+            mylength=self.computelength()
+            for feat in self.featuredict.keys():
+                self.featuredict[feat]=self.featuredict[feat]/mylength
+
+            self.length=1.0
+            return
 
     def toString(self):
         res=self.signifier+'('+str(len(self.featuredict.keys()))+')'
@@ -369,6 +386,8 @@ class Composer:
 
     def compose(self,head,mod):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
+        #head.normalise()  #makes no difference to normalise vectors before composition
+        #mod.normalise()
         return compfunct(head,mod)
     def compare(self,composed,phrasal):
         res=[]
