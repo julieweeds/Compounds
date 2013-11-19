@@ -75,6 +75,7 @@ class Collocates:
             print "Size of mod freq dict is "+str(len(self.modfdict.keys()))
 
     def processfreqfile(self):
+        self.inversedict={}
         if len(self.moddict.keys())>0:
             usemoddict=True
         else:
@@ -84,6 +85,7 @@ class Collocates:
         outpath = filepath+".cached"
         print "Reading "+filepath
         linesread=0
+        #print self.parameters['inversefeatures'][self.featurematch]
         with open(filepath,'r') as instream:
             with open(outpath,'w')as outstream:
                 for line in instream:
@@ -103,6 +105,9 @@ class Collocates:
                                             label=entry+':'+feature
                                             self.fdict[label]=freq
                                             self.noundict[parts[1]]=1
+                                #print parts[0]
+                                #if parts[0]==self.parameters['inversefeatures'][self.featurematch]:  #amod-DEP has not been included as possible feature of adjective so cannot pick up these internal modifiers here
+                                #    self.inversedict[entry]=self.inversedict.get(entry,0)+freq
                     except TaggingException:
                         print "Warning: ignoring ",line
                         continue
@@ -114,7 +119,8 @@ class Collocates:
 
         print "Size of freq dict is "+str(len(self.fdict))
         print "Size of noun dict is "+str(len(self.noundict))
-        print self.noundict
+   #     print self.noundict
+   #     print self.inversedict
 
     def processassocfile(self):
 

@@ -34,6 +34,13 @@ class FeatureVector:
             newvector.featuredict[feature]=newvector.featuredict.get(feature,0)+avector.featuredict[feature]
         return newvector
 
+    def max(self,avector):
+        newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
+        for feature in avector.featuredict.keys():
+            newvector.featuredict[feature]=max(self.featuredict.get(feature,0),avector.featuredict[feature])
+
+        return newvector
+
     def mult(self,avector):
         newvector=FeatureVector(self.signifier+'*'+avector.signifier,features=[],fdict={})
 
@@ -41,6 +48,15 @@ class FeatureVector:
             if avector.featuredict.get(feature,0)>0:
                 newvector.featuredict[feature]=self.featuredict[feature]*avector.featuredict[feature]
 
+        return newvector
+
+    def min(self,avector):
+        newvector=FeatureVector(self.signifier+'@MIN@'+avector.signifier,features=[],fdict={})
+
+        for feature in self.featuredict.keys():
+            if avector.featuredict.get(feature,0)>0:
+                newvector.featuredict[feature]=min(self.featuredict[feature],avector.featuredict.get(feature,0))
+        print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
         return newvector
 
     def selecthead(self,avector):
@@ -417,6 +433,11 @@ class Composer:
 
     def _compose_selectmod(self,head,modifier):
         return head.selectmod(modifier)
+    def _compose_min(self,head,modifier):
+        return head.min(modifier)
+
+    def _compose_max(self,head,modifier):
+        return head.max(modifier)
 
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)

@@ -124,7 +124,7 @@ class VectorExtractor:
         modifier_path=self.modifier_path
         #print self.headdict
 
-        for i,deppath in enumerate(self.deppaths):
+        for i,deppath in enumerate(self.deppaths):  #go through adjs file then nouns file - if you don't want modifiers of modifier then just need second run through nouns file
             with open(deppath,'r') as instream:
                 if i==0:code='w'
                 else:code='a'
@@ -133,6 +133,7 @@ class VectorExtractor:
                         with open(nfmodifier_path,code) as outstream3:
                             print "Reading "+deppath
                             linesread=0
+
                             for line in instream:
                                 linesread+=1
                                 if linesread%100000==0:
@@ -144,26 +145,28 @@ class VectorExtractor:
                                     if self.headdict.get(fields[0],0)>0:
                                         newfields=self.depfilter(fields)
                                         self.writeoutput(word+'/J',newfields,outstream3,'f')
-                                for index,feature in enumerate(fields[1:]):
-                                    parts = feature.split(':')
-                                    #invertedfeature=self.parameters['featurematch']+':'+word
-                                    #print invertedfeature,self.entrydict.get(invertedfeature,0)
-                                    #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
-                                    if parts[0] == self.parameters['featurematch'] and self.headdict.get(fields[0],0)>0: #for ANs, extract all phrases with word (J) leading
-                                        phrase=fields[0]+':'+feature
-                                        newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                        newfields=self.depfilter(newfields)
-                                        self.writeoutput(phrase,newfields,outstream1,'f')
-                                        self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
-                                    #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
-                                    elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1]+'/J',0)>0:
-                                        #print "Found inverse match"
-                                        phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
-                                        newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                        newfields=self.depfilter(newfields)
-                                        self.writeoutput(phrase,newfields,outstream1,'b')
-                                        if i==1:
-                                            self.writeoutput(parts[1]+'/J:'+self.parameters['featurematch'],newfields,outstream2,'b')
+                                if i==1 or self.parameters['domods']:
+                                    for index,feature in enumerate(fields[1:]):
+                                        parts = feature.split(':')
+                                        #invertedfeature=self.parameters['featurematch']+':'+word
+                                        #print invertedfeature,self.entrydict.get(invertedfeature,0)
+                                        #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
+                                        if parts[0] == self.parameters['featurematch'] and self.headdict.get(fields[0],0)>0: #for ANs, extract all phrases with word (J) leading
+                                            phrase=fields[0]+':'+feature
+                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                            newfields=self.depfilter(newfields)
+                                            self.writeoutput(phrase,newfields,outstream1,'f')
+                                            self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
+                                        #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
+                                        elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1]+'/J',0)>0:
+                                            #print "Found inverse match"
+                                            phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
+                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                            newfields=self.depfilter(newfields)
+                                            self.writeoutput(phrase,newfields,outstream1,'b')
+                                            newfields.append(self.parameters['featurematch']+':'+word) #keep modified word as feature of modifier
+                                            if i==1:
+                                                self.writeoutput(parts[1]+'/J:'+self.parameters['featurematch'],newfields,outstream2,'b')
 
 
     def depfilter(self,fields):

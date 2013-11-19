@@ -28,6 +28,7 @@ def configure(args):
     parameters['allheads']=False
     parameters['adjlist']=False
     parameters['usefile']='train'
+    parameters['windows']=False
 
     for arg in args:
         if arg=='testing':
@@ -100,6 +101,7 @@ def configure(args):
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
             parameters['nfmod']=True
+            parameters['domods']=False
         elif arg =='NFmod':
             parameters['nfmod']=True
     return parameters
