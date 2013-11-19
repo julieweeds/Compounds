@@ -21,6 +21,7 @@ class FeatureVector:
         self.featuredict=dict(fdict)
         self.computedlength=False
         self.length=-1
+        self.total=-1
         while len(features)>0:
             score=float(features.pop())
             feat=features.pop()
@@ -118,11 +119,13 @@ class FeatureVector:
         if self.computedlength:
             return self.length
         else:
+            self.sum=0
             self.computedlength=True
             total=0
             for feat in self.featuredict.keys():
                 score=self.featuredict[feat]
                 total+=score*score
+                self.sum+=score
             self.length=math.pow(total,0.5)
             return self.length
     def cosine(self,avector):
@@ -144,11 +147,11 @@ class FeatureVector:
             return
         else:
             self.normalised=True
-            mylength=self.computelength()
+            self.computelength()
             for feat in self.featuredict.keys():
-                self.featuredict[feat]=self.featuredict[feat]/mylength
+                self.featuredict[feat]=self.featuredict[feat]/self.sum
 
-            self.length=1.0
+            self.sum=1.0
             return
 
     def toString(self):

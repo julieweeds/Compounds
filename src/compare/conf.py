@@ -10,7 +10,7 @@ def configure(args):
     parameters['diff']=False
     parameters['funct']=False
     parameters['mod']=False
-    parameters['metric']=['recall','precision','cosine','weighted_recall','weighted_precision']
+    parameters['metric']=['recall','precision','cosine','weighted_recall']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
