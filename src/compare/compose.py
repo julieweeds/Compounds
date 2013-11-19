@@ -67,13 +67,13 @@ class FeatureVector:
         newvector=FeatureVector(self.signifier+'@m@'+avector.signifier,fdict=avector.featuredict)
         return newvector
 
-    def recall(self,avector):
+    def recall(self,avector): #weighted recall#
         num=0
         den=0
         for feature in avector.featuredict.keys():
             den += avector.featuredict[feature]
             if self.featuredict.get(feature)>0:
-                num+=avector.featuredict[feature]
+                num+=min(avector.featuredict[feature],self.featuredict.get(feature,0))
             #else:
             #    print "Not found "+feature
         #print str(den)
