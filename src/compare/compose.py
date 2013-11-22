@@ -514,7 +514,10 @@ class Composer:
                 else:
                     outstream.write('nodiff,')
                 if parameters['raw']:
-                    outstream.write('raw,')
+                    if parameters['pmi']:
+                        outstream.write('PPMI->compose,')
+                    else:
+                        outstream.write('compose->PPMI,')
                 else:
                     outstream.write('ppmi,')
                 outstream.write(parameters['compop']+',')
