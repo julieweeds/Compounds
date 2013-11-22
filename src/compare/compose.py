@@ -198,6 +198,8 @@ class Composer:
             self.whoami=self.whoami+'.diff'
         else:
             self.whoami=self.whoami+'.nodiff'
+        if self.parameters['pmi']:
+            self.whomam=self.whoami+".pmi"
         self.statsreq=True
 
         self.readcomps()
