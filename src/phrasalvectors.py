@@ -66,7 +66,7 @@ class VectorExtractor:
             filepath = os.path.join(self.altdatadir,self.parameters['featurefile'])
 
         else:
-            filepath = os.path.join(self.datadir,self.parameters['featurefile'])
+            filepath = os.path.join(self.datadir,self.parameters['featurefile'])  #historic use
         with open(filepath,'r') as instream:
             print "Reading "+filepath
             linesread=0
@@ -106,12 +106,15 @@ class VectorExtractor:
 
     def cacheheadvectors(self):
 
-        filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors')
+        if parameters['raw']:
+            filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors.raw')
+        else:
+            filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors')
         with open(filepath,'w') as outstream:
             print "Writing "+filepath
 
             for featurevector in self.headvectordict.values():
-                featurevector.finalise(self.featdict,self.featuretotal,outstream)
+                featurevector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
         self.builtlist.append('head')
 
 
@@ -292,20 +295,26 @@ class FeatureVector:
              #   print "Removing feature "+feat+':'+str(self.featdict[feat])+':'+str(avector.featdict.get(feat,0))
         return result
 
-    def finalise(self,allfeatdict,featuretotal,outstream):
+    def finalise(self,allfeatdict,featuretotal,outstream, rawflag=False):
+
 
         for feature in self.featdict.keys():
             feattot=allfeatdict.get(feature,0)
             if feattot>0:
-                ratio = (self.featdict[feature]*featuretotal)/(self.total*feattot)
-                pmi = math.log(ratio)
-                if pmi>0:
-                    self.pmidict[feature] = math.log(ratio)
-                #else:
-                #    print "Ignoring feature "+feature
+                if rawflag:
+                    self.pmidict[feature]=self.featdict[feature]  #still need to check feattot>0 to ensure that the feature wasn't filtered out on low frequency
+                else:
+                    ratio = (self.featdict[feature]*featuretotal)/(self.total*feattot)
+                    pmi = math.log(ratio)
+                    if pmi>0:
+                        self.pmidict[feature] = math.log(ratio)
+                    #else:
+                    #    print "Ignoring feature "+feature
+
 
         self.writetofile(outstream)
-        self.pmidict={}  #free memory as pmi values are just used in composition not building process
+        if not rawflag:
+            self.pmidict={}  #free memory as pmi values are just used in composition not building process
         if self.windows:
             self.headfeatdict={} #don't use this in windows vector
 
@@ -330,6 +339,9 @@ class VectorBuilder(VectorExtractor):
         else:
             moddiffpath=self.deppath+'_moddiff'  #for functional vectors
             headdiffpath=self.deppath+'_headdiff'  #for non-functional vectors (i.e., plain vectors)
+            if self.parameters['raw']:
+                moddiffpath+='.raw'
+                headdiffpath+='.raw'
             #nfmoddiffpath=self.deppath+'_nfmoddiff'
             moddiffstream=open(moddiffpath,'w')  #functional
             if self.parameters['windows']:
@@ -343,6 +355,9 @@ class VectorBuilder(VectorExtractor):
                 headdiffstream=open(headdiffpath,'w')  #non-functional (both words)
             #nfmoddiffstream=open(nfmoddiffpath,'w')
         outpath=filepath+'_vectors'
+        if self.parameters['raw']:
+            outpath=outpath+'.raw'
+
         currentvector=FeatureVector()
 
         #print self.entrydict.keys()
@@ -373,7 +388,7 @@ class VectorBuilder(VectorExtractor):
                                 self.headvectordict[currentvector.word]=currentvector
                             else:
                                 self.makedifferences(currentvector,moddiffstream,headdiffstream)
-                            currentvector.finalise(self.featdict,self.featuretotal,outstream)
+                            currentvector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
 
                         #else:
 
@@ -390,7 +405,7 @@ class VectorBuilder(VectorExtractor):
                         self.headvectordict[currentvector.word]=currentvector
                     else:
                         self.makedifferences(currentvector,moddiffstream,headdiffstream)
-                    currentvector.finalise(self.featdict,self.featuretotal,outstream)
+                    currentvector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
         self.builtlist.append(flag)
         if flag =='phrase' and self.parameters['windows']:
             #empty memory
@@ -419,13 +434,13 @@ class VectorBuilder(VectorExtractor):
 
         if 'mod' in self.builtlist:
             moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')#f modifier
-            moddiffvector.finalise(self.featdict,self.featuretotal,mstream)
+            moddiffvector.finalise(self.featdict,self.featuretotal,mstream,rawflag=self.parameters['raw'])
         if 'nfmod' in self.builtlist:
             headdiffvector=self.headvectordict[target].finddiff(phrasevector,type=mtype)#nf modifier
-            headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
+            headdiffvector.finalise(self.featdict,self.featuretotal,hstream,rawflag=self.parameters['raw'])
         if 'head' in self.builtlist:
             headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type=htype)#nf head
-            headdiffvector.finalise(self.featdict,self.featuretotal,hstream)
+            headdiffvector.finalise(self.featdict,self.featuretotal,hstream,rawflag=self.parameters['raw'])
         return
 
 

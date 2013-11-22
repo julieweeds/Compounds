@@ -21,7 +21,7 @@ class FeatureVector:
         self.featuredict=dict(fdict)
         self.computedlength=False
         self.length=-1
-        self.total=-1
+        self.sum=-1
         while len(features)>0:
             score=float(features.pop())
             feat=features.pop()
@@ -154,11 +154,31 @@ class FeatureVector:
             self.sum=1.0
             return
 
+    def transform(self,featdict,featuretotal):
+        #transform raw featurecounts into ppmi values
+        self.computelength()
+        self.rawdict=dict(self.featuredict)
+        self.featuredict={}
+        for feature in self.rawdict.keys():
+            feattot=featdict.get(feature,0)
+            if feattot>0:
+                ratio = (self.rawdict[feature]*featuretotal)/(self.sum*feattot)
+                pmi = math.log(ratio)
+                if pmi>0:
+                    self.featuredict[feature] = math.log(ratio)
+            else:
+                print "Warning "+feature+" not in feature dict"
+        self.computedlength=False
+        self.computelength()
+
     def toString(self):
         res=self.signifier+'('+str(len(self.featuredict.keys()))+')'
-#        for feat in self.featuredict.keys():
-#            res+='\t'+feat+'\t'+str(self.featuredict[feat])
-#        res+='\n'
+        width=0
+        for feat in self.featuredict.keys():
+            #res+='\t'+feat+'\t'+str(self.featuredict[feat])
+            if self.featuredict[feat]>0: width+=1
+        res+='\t'+str(width)
+        #res+='\n'
         return res
 
 
@@ -348,6 +368,23 @@ class Composer:
                         collocmatch=untag(colloc.split(':')[0])[0]
                     outstream.write(vectordict[collocmatch])
 
+    def loadfeaturefile(self):
+        #read in feature totals for pmi calculations
+        self.featdict={}
+        self.featuretotal=0
+        with open(self.parameters['featurepath'],'r') as instream:
+            print "Reading "+self.parameters['featurepath']
+            linesread=0
+            for line in instream:
+                fields=line.rstrip().split('\t')
+                feature=fields[0]
+                self.featdict[feature]=float(fields[1])
+                self.featuretotal+=float(fields[1])
+                linesread+=1
+        print "Read "+str(linesread)+" lines"
+
+        return
+
     def process(self):
 
         with open(self.parameters['phrasalcache'],'r') as phrasalstream:
@@ -365,13 +402,30 @@ class Composer:
                         phraseVector=FeatureVector(phrasefields[0],phrasefields[1:])
                         headVector=FeatureVector(headfields[0],headfields[1:])
                         modVector=FeatureVector(modfields[0],modfields[1:])
-
-                        composedVector=self.compose(headVector,modVector)
                         if self.parameters['testing']:
                             print phraseVector.toString()
                             print headVector.toString()
                             print modVector.toString()
+                        if self.parameters['pmi']:
+                            headVector.transform(self.featdict,self.featuretotal)
+                            modVector.transform(self.featdict,self.featuretotal)
+                            phraseVector.transform(self.featdict,self.featuretotal)
+                        else: #normalise to probabilities before composing
+                            headVector.normalise()
+                            modVector.normalise()
+                        composedVector=self.compose(headVector,modVector)
+                        if self.parameters['testing']:
                             print composedVector.toString()
+                        if self.parameters['raw'] and not self.parameters['pmi']:
+                            composedVector.transform(self.featdict,self.featuretotal)
+                            phraseVector.transform(self.featdict,self.featuretotal)
+                        if self.parameters['testing']:
+                            print phraseVector.toString()
+                            print headVector.toString()
+                            print modVector.toString()
+                            #print modVector.featuredict
+                            print composedVector.toString()
+
                         scores =self.compare(composedVector,phraseVector)
                         if self.parameters['testing']:
                             print scores
@@ -382,7 +436,7 @@ class Composer:
                         done+=1
                         if done % 1000 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%10==0:
+                        if self.parameters['testing'] and done%3==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
         self.computestats(xs,ys,phrases)
@@ -394,6 +448,7 @@ class Composer:
         return compfunct(head,mod)
     def compare(self,composed,phrasal):
         res=[]
+
         for metric in self.parameters['metric']:
             simfunct=getattr(self,'_compare_'+metric)
             res.append(simfunct(composed,phrasal))
@@ -442,7 +497,10 @@ class Composer:
                 sd=0
             print "Mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
 
-            correlation=stats.spearmanr(np.array(xs),np.array(zs))
+            if variance>0:
+                correlation=stats.spearmanr(np.array(xs),np.array(zs))
+            else:
+                correlation=(float('nan'),float('nan'))
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
@@ -455,6 +513,10 @@ class Composer:
                     outstream.write('diff,')
                 else:
                     outstream.write('nodiff,')
+                if parameters['raw']:
+                    outstream.write('raw,')
+                else:
+                    outstream.write('ppmi,')
                 outstream.write(parameters['compop']+',')
                 outstream.write(metric+','+str(mean)+','+str(sd)+','+str(c1)+','+str(c2)+'\n')
 
@@ -497,6 +559,8 @@ class Composer:
 
 def go(parameters):
     myComposer=Composer(parameters)
+    if parameters['raw']:
+        myComposer.loadfeaturefile()
     myComposer.process()
 
 

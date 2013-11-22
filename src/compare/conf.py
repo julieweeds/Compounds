@@ -18,6 +18,8 @@ def configure(args):
     parameters['athome']=False
     parameters['usefile']='train'
     parameters['ftype']='deps'
+    parameters['raw']=False
+    parameters['pmi']=False
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -43,12 +45,16 @@ def configure(args):
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
         elif arg=='wins':parameters['ftype']='wins'
+        elif arg=='raw':parameters['raw']=True
+        elif arg=='pmi':parameters['pmi']=True
     parameters = setfilenames(parameters)
 
     return parameters
 
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
+    if parameters['raw']:
+        basename=basename+'.raw'
     parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
@@ -70,6 +76,11 @@ def setfilenames(parameters):
     parameters['headpath']=os.path.join(parameters['datadir'],parameters['headfile'])
     parameters['modpath']=os.path.join(parameters['datadir'],parameters['modfile'])
     parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
+
+    parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
+    parameters['featurefile']='events.strings_depcol'
+    parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
+
     return parameters
 
 def setadd(myset,item):

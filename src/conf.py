@@ -29,6 +29,7 @@ def configure(args):
     parameters['adjlist']=False
     parameters['usefile']='train'
     parameters['windows']=False
+    parameters['raw']=False
 
     for arg in args:
         if arg=='testing':
@@ -37,6 +38,8 @@ def configure(args):
             parameters['extract']=True
         elif arg =='build':
             parameters['build']=True
+        elif arg=='raw':
+            parameters['raw']=True  #leave vectors in raw frequency form rather than converting to PPMI
         elif arg =='boleda':
             parameters['usesource']=True
             parameters['source']='boleda.txt'
