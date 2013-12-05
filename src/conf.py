@@ -97,14 +97,16 @@ def configure(args):
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
             parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
             parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
-            parameters['featurefile']='events.strings_depcol'
+            parameters['featurefile']='events.strings_depcol.tagged'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
-            parameters['nfmod']=True
-            parameters['domods']=False
+            parameters['tagall']=False
+            parameters['tag']='N'
+            #parameters['nfmod']=True
+            #parameters['domods']=True
         elif arg =='NFmod':
             parameters['nfmod']=True
     return parameters

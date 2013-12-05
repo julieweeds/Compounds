@@ -14,11 +14,14 @@ class VectorExtractor:
         self.parameters=config
         self.datadir=os.path.join(self.parameters['parentdir'],self.parameters['datadir'])
         self.altdatadir=os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'])
-        self.entrydict={}
+        #self.entrydict={}
         self.collocdict={}
-        self.headdict={}
+        #self.headdict={}
         self.featdict={}
-        self.featuretotal=0
+        self.featdict['left']={}  #features of leftmost constituent i.e., features of adjectives
+        self.featdict['right']={}  #features of rightmost constituent i.e., features of nouns
+        self.featuretotal={'left':0,'right':0}
+
         self.deppath = os.path.join(self.datadir,self.parameters['depfile']) #for first POS (e.g., J in ANcompounds)
         if self.parameters['adjlist']:
             self.altdeppath = os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['altdepfile'])  #for other POS (e.g., N in ANcompounds)
@@ -26,15 +29,19 @@ class VectorExtractor:
         else:
             self.deppaths=[self.deppath]
         self.phrasal_path = self.deppath+'_'+self.parameters['featurematch']+'_phrases'
-        self.modifier_path=self.deppath+'_'+self.parameters['featurematch']+'_modifiers'
-        self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
-        self.headvectordict={}
-        self.builtlist=[]
-
+        self.constituent_path=self.deppath+'_'+self.parameters['featurematch']+'_constituents'
+        #self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
+        #self.headvectordict={}
+        self.worddict={}
+        self.worddict['left']={}
+        self.worddict['right']={}
+        self.positions=['left','right']# #for adjectives and nouns - have corresponding dependency files in self.deppaths
+        self.fmatch=[self.parameters['featurematch'],self.parameters['inversefeatures'][self.parameters['featurematch']]] #for corresponding features to match in these files
+        self.tags=['J','N']
 
     def loadphrases(self):
         if self.parameters['adjlist']:
-            filename='multiwords.'+self.parameters['usefile']
+            filename='multiwords.'+self.parameters['usefile']+'.tagged'
         else:
             filename=self.parameters['collocatefile']
         filepath = os.path.join(self.datadir,filename)
@@ -46,130 +53,63 @@ class VectorExtractor:
                 collocate=fields[0] #black/J:amod-HEAD:swan
                 self.collocdict[collocate]=fields[2]  #store PMI
                 parts=collocate.split(':')
-                feature=parts[1]+':'+parts[2] #amod-HEAD:swan
-                #self.entrydict[parts[0]]+= self.entrydict.get(parts[0],0)
-                #head = untag(parts[0])[0] #black
-                head = parts[0] #black/J
-                self.headdict[head]=self.headdict.get(head,0)+1
-                self.entrydict[feature]=self.entrydict.get(feature,0)+1
+                left=untag(parts[0])[0] #black
+                right=parts[2] #swan
+                self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
+                self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
                 linesread+=1
             print "Read "+str(linesread)+" lines"
-
-        #print self.headdict.get('childhood',0)
-        #print self.entrydict.get('nn-DEP:childhood',0)
-        #exit()
 
 
     def loadfeaturecounts(self):
-        if self.parameters['adjlist']:
-            #features of ANcompounds are features of Ns
-            filepath = os.path.join(self.altdatadir,self.parameters['featurefile'])
 
-        else:
-            filepath = os.path.join(self.datadir,self.parameters['featurefile'])  #historic use
-        with open(filepath,'r') as instream:
-            print "Reading "+filepath
-            linesread=0
-            for line in instream:
-                fields=line.rstrip().split('\t')
-                feature=fields[0]
-                self.featdict[feature]=float(fields[1])
-                self.featuretotal+=float(fields[1])
-                linesread+=1
-            print "Read "+str(linesread)+" lines"
-
-
-    def loadheadvectors(self):
-        if self.parameters['adjlist']:
-
-            filepath=os.path.join(self.altdatadir,self.parameters['freqfile'])
-        else:
-            filepath=os.path.join(self.datadir,self.parameters['freqfile'])
-        with open(filepath,'r') as instream:
-            print "Reading "+filepath
-            linesread=0
-            loaded=0
-            for line in instream:
-                fields=line.rstrip().split('\t')
-                try:
-                    head=untag(fields[0])[0]
-                    if self.headdict.get(head,self.entrydict.get(self.parameters['featurematch']+':'+head,0))>0:
-                        #print "Loading head vector for "+head
-                        loaded+=1
-                        self.headvectordict[head]=FeatureVector(head)
-                        self.headvectordict[head].addfeaturecounts(fields[1:])
-                except:
-                    print "Warning: unable to untag "+fields[0]
-                linesread+=1
-                if linesread%10000==0:print "Read "+str(linesread)+" lines"
-            print "Loaded "+str(loaded)+" head vectors"
-
-    def cacheheadvectors(self):
-
-        if parameters['raw']:
-            filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors.raw')
-        else:
-            filepath=os.path.join(self.datadir,self.parameters['freqfile']+'_headvectors')
-        with open(filepath,'w') as outstream:
-            print "Writing "+filepath
-
-            for featurevector in self.headvectordict.values():
-                featurevector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
-        self.builtlist.append('head')
-
+        filepaths = [os.path.join(self.datadir,self.parameters['featurefile']),os.path.join(self.altdatadir,self.parameters['featurefile'])]
+        for i,filepath in enumerate(filepaths):
+            with open(filepath,'r') as instream:
+                print "Reading "+filepath
+                linesread=0
+                for line in instream:
+                    fields=line.rstrip().split('\t')
+                    feature=fields[0]
+                    self.featdict[self.positions[i]][feature]=float(fields[1])
+                    self.featuretotal[self.positions[i]]+=float(fields[1])
+                    linesread+=1
+                print "Read "+str(linesread)+" lines"
 
     def extractfromfile(self):
 
 
-        nfmodifier_path=self.nfmod_path
+        with open(self.phrasal_path,'w') as outstream1:
+            with open(self.constituent_path,'w') as outstream2:
 
-        phrasal_path=self.phrasal_path
-        modifier_path=self.modifier_path
-        #print self.headdict
+                for i,deppath in enumerate(self.deppaths):  #go through adjs file then nouns file - if you don't want modifiers of modifier then just need second run through nouns file
+                    with open(deppath,'r') as instream:
+                        print "Reading "+deppath
+                        linesread=0
 
-        for i,deppath in enumerate(self.deppaths):  #go through adjs file then nouns file - if you don't want modifiers of modifier then just need second run through nouns file
-            with open(deppath,'r') as instream:
-                if i==0:code='w'
-                else:code='a'
-                with open(phrasal_path,code) as outstream1:
-                    with open(modifier_path,code) as outstream2:
-                        with open(nfmodifier_path,code) as outstream3:
-                            print "Reading "+deppath
-                            linesread=0
+                        for line in instream:
+                            linesread+=1
+                            if linesread%100000==0:
+                                print "Read "+str(linesread)+" lines"
+                                if self.parameters['testing']:break
+                            fields=line.rstrip().split('\t')
+                            entry=fields[0]  #e.g., "African/J"
+                            (word,tag) =untag(entry)
 
-                            for line in instream:
-                                linesread+=1
-                                if linesread%100000==0:
-                                    print "Read "+str(linesread)+" lines"
-                                    if self.parameters['testing']:break
-                                fields=line.rstrip().split('\t')
-                                word =untag(fields[0])[0]
-                                if self.parameters['nfmod'] and i == 0:
-                                    if self.headdict.get(fields[0],0)>0:
-                                        newfields=self.depfilter(fields)
-                                        self.writeoutput(word+'/J',newfields,outstream3,'f')
-                                if i==1 or self.parameters['domods']:
-                                    for index,feature in enumerate(fields[1:]):
-                                        parts = feature.split(':')
-                                        #invertedfeature=self.parameters['featurematch']+':'+word
-                                        #print invertedfeature,self.entrydict.get(invertedfeature,0)
-                                        #if parts[0] == self.parameters['featurematch'] and self.entrydict.get(feature,0)>0:  #for NN compounds
-                                        if parts[0] == self.parameters['featurematch'] and self.headdict.get(fields[0],0)>0: #for ANs, extract all phrases with word (J) leading
-                                            phrase=fields[0]+':'+feature
-                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                            newfields=self.depfilter(newfields)
-                                            self.writeoutput(phrase,newfields,outstream1,'f')
-                                            self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
-                                        #elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.entrydict.get(invertedfeature,0)>0:
-                                        elif parts[0] == self.parameters['inversefeatures'][self.parameters['featurematch']] and self.headdict.get(parts[1]+'/J',0)>0:
-                                            #print "Found inverse match"
-                                            phrase=parts[1]+'/J:'+self.parameters['featurematch']+':'+word
-                                            newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                            newfields=self.depfilter(newfields)
-                                            self.writeoutput(phrase,newfields,outstream1,'b')
-                                            newfields.append(self.parameters['featurematch']+':'+word) #keep modified word as feature of modifier
-                                            if i==1:
-                                                self.writeoutput(parts[1]+'/J:'+self.parameters['featurematch'],newfields,outstream2,'b')
+                            if self.worddict[self.positions[i]].get(word,0)>0:  #if we care about this word
+                                newfields=self.depfilter(fields)  #filter to interesting dependencies
+                                self.writeoutput(entry,newfields,outstream2,'')  #conventional dependency features (1st order)
+
+                            for index,feature in enumerate(fields[1:]):  #get each feature and its position
+                                parts = feature.split(':')  #split into feature type and word
+
+                                if parts[0] == self.fmatch[i] and self.worddict[self.positions[i]].get(word,0)>0: #correct feature (given file) and we care about the entry word
+                                    phrase=entry+':'+feature
+                                    newfields=fields[1:index+1]+fields[index+2:len(fields)]
+                                    newfields=self.depfilter(newfields)
+                                    self.writeoutput(phrase,newfields,outstream1,'')  #1st order phrasal dependencies of the entry in the context of the feature
+                                    self.writeoutput(parts[1]+'/'+self.tags[(i+1)%2],newfields,outstream2,self.fmatch[(i+1)%2]+':') #2nd order dependencies of the feature word when used as this type of feature
+                                   # self.writeoutput(entry+':'+parts[0],newfields.append(fields[index]),outstream2,'1st') #1st order dependencies of entry when it has this type of feature
 
 
     def depfilter(self,fields):
@@ -182,88 +122,31 @@ class VectorExtractor:
         return newfields
 
 
-    def writeoutput(self,head,features,outstream,tag='f'):
+    def writeoutput(self,head,features,outstream,tag=''):
 
         if len(features)>0:
             outstream.write(head)
             for feature in features:
-                outstream.write('\t'+feature+'\t'+tag)
+                outstream.write('\t'+tag+feature)
             outstream.write('\n')
 
 
-class WindowVectorExtractor(VectorExtractor):
-
-    def extractfromfile(self):
-            #needs updating for windows with a single dependency path
-            self.deppaths=[self.deppath]  # single file for dependencies
-
-            nfmodifier_path=self.nfmod_path #output paths
-            phrasal_path=self.phrasal_path
-            modifier_path=self.modifier_path
-            #print self.headdict
-
-            for i,deppath in enumerate(self.deppaths):
-                with open(deppath,'r') as instream:
-                    if i==0:code='w'
-                    else:code='a'
-                    with open(phrasal_path,code) as outstream1:
-                        with open(modifier_path,code) as outstream2:
-                            with open(nfmodifier_path,code) as outstream3:
-                                print "Reading "+deppath
-                                linesread=0
-                                for line in instream:
-                                    linesread+=1
-                                    if linesread%100000==0:
-                                        print "Read "+str(linesread)+" lines"
-                                        if self.parameters['testing']:break
-                                    fields=line.rstrip().split('\t')
-                                    #(word,pos) =untag(fields[0])
-                                    if self.headdict.get(fields[0],0)>0:  #POS tagged
-                                        newfields=self.depfilter(fields)
-                                        self.writeoutput(fields[0],newfields,outstream3,'f')
-                                        for index,feature in enumerate(fields[1:]):
-                                            parts = feature.split(':')
-                                            if parts[0] == self.parameters['featurematch']: #for ANs, extract all phrases with word (J) leading
-                                                phrase=fields[0]+':'+feature
-                                                newfields=fields[1:index+1]+fields[index+2:len(fields)]
-                                                newfields=self.depfilter(newfields)
-                                                newfields=self.headfilter(newfields,parts[1])
-                                                self.writeoutput(phrase,newfields,outstream1,'f')
-                                                self.writeoutput(fields[0]+':'+self.parameters['featurematch'],newfields,outstream2,'f')
-
-    def headfilter(self,fields,head):
-        #to remove 1 window occurrence of head from phrasal vector
-        newfields=[]
-        found=0
-        for field in fields:
-            parts=field.split(':')
-            if parts[1]==head:
-                found+=1
-                if found>1:
-                    newfields.append(field)
-            else:
-                newfields.append(field)
-        return newfields
 
 class FeatureVector:
 
     def __init__(self,word='',windows=False):
 
         self.featdict={}
-        self.headfeatdict={}
         self.word=word
         self.total=0
-        self.pmidict={}
+        self.indict={}
         self.windows=windows
 
     def addfeats(self,fields):
         #assuming new format where features are labelled head and mod
         while len(fields)>0:
-            type=fields.pop()
             field=fields.pop()
             self.featdict[field]=self.featdict.get(field,0)+1
-            if type=='head' or type=='f':
-                self.headfeatdict[field]=self.headfeatdict.get(field,0)+1
             self.total+=1
 
     def addfeaturecounts(self,featurecounts):
@@ -273,19 +156,21 @@ class FeatureVector:
             self.featdict[feature]=count
             self.total+=count
 
-    def finddiff(self,avector,type='all'):
+    def finddiff(self,avector):
         #return (positive) difference between self and avector
-        #type is 'head', 'mod' or 'all' to label type of self and therefore which features of avector you should be subtracting
+        #self will be constituent vector, avector is phrase vector
+        #need to check 1st and 2nd order dependencies
+
         result=FeatureVector(self.word+'!'+avector.word)
         for feat in self.featdict.keys():
-            if type=='head' or type =='f':
-                remove = avector.headfeatdict.get(feat,0)
-            elif type=='mod' or type =='b':
-                remove = avector.featdict.get(feat,0)-avector.headfeatdict.get(feat,0)
-            elif type=='all':
-                remove = avector.featdict.get(feat,0)
+            order=len(feat.split(':'))-1
+            if order ==1 and avector.word.split(':')[0] == self.word: #1st order features match between word and left constituent
+                remove=avector.featdict.get(feat,0)
+            elif order ==2 and avector.word.split(':')[2] == self.word: #2nd order features match between word and right constituent
+                feat=feat[1:]  #strip off 1st bit of feature name as 2nd order constituent feature matches 1st order phrase feature
+                remove=avector.featdict.get(feat,0)
             else:
-                print "Warning: Unknown vector type "+type
+                print "Warning: not expecting features of order higher than 2"
 
             score=self.featdict[feat]-remove
             if score > 0:
@@ -295,159 +180,140 @@ class FeatureVector:
              #   print "Removing feature "+feat+':'+str(self.featdict[feat])+':'+str(avector.featdict.get(feat,0))
         return result
 
-    def finalise(self,allfeatdict,featuretotal,outstream, rawflag=False):
+    def finalise(self,allfeatdict,outstream):
+        #basically just filters low frequency features and then writes to file
 
-
+        #oldwidth=len(self.featdict.keys())
         for feature in self.featdict.keys():
             feattot=allfeatdict.get(feature,0)
             if feattot>0:
-                if rawflag:
-                    self.pmidict[feature]=self.featdict[feature]  #still need to check feattot>0 to ensure that the feature wasn't filtered out on low frequency
-                else:
-                    ratio = (self.featdict[feature]*featuretotal)/(self.total*feattot)
-                    pmi = math.log(ratio)
-                    if pmi>0:
-                        self.pmidict[feature] = math.log(ratio)
-                    #else:
-                    #    print "Ignoring feature "+feature
+                self.indict[feature]=self.featdict[feature]  #still need to check feattot>0 to ensure that the feature wasn't filtered out on low frequency
 
+
+        #newwidth=len(self.indict.keys())
+        #print self.word,oldwidth,newwidth
+        #if newwidth==0:
+        #    print self.featdict
+        self.featdict=dict(self.indict)
+        self.indict={}
 
         self.writetofile(outstream)
-        if not rawflag:
-            self.pmidict={}  #free memory as pmi values are just used in composition not building process
-        if self.windows:
-            self.headfeatdict={} #don't use this in windows vector
+
 
     def writetofile(self,outstream):
-        if len(self.pmidict.keys())>0:
+        if len(self.featdict.keys())>0:
             outstream.write(self.word)
-            for feature in self.pmidict.keys():
-                outstream.write('\t'+feature+'\t'+str(self.pmidict[feature]))
+            for feature in self.featdict.keys():
+                outstream.write('\t'+feature+'\t'+str(self.featdict[feature]))
             outstream.write('\n')
         else:
             print "Warning: no vector for "+self.word
 
 class VectorBuilder(VectorExtractor):
 
+    def finalise(self,currentvector):
+        self.inwordflag='none'
+        if self.flag=='constituents':
+            if self.worddict['left'].get(currentvector.word,0)>0:self.inwordflag='left'
+            elif self.worddict['right'].get(currentvector.word,0)>0:self.inwordflag='right'
+            if self.inwordflag !='none':
+                 self.makedifferences(currentvector)  #do differences with phrases
+        else:  #self.flag=="phrases"
+            #print "Checking "+currentvector.word
+            if self.collocdict.get(currentvector.word,0)>0:self.inwordflag='left'
+            else:
+                parts=currentvector.word.split(':')
+                if len(parts)>2:
+                    invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
+                    #print "Checking "+invphrase
+                    if self.collocdict.get(invphrase,0)>0:self.inwordflag='right'
+            if self.inwordflag!='none':
+                self.phrasevectordict[currentvector.word]=currentvector  #store phrasevector for differences on constituents run
+                #print "storing vector for "+currentvector.word
+
+
+        if self.inwordflag !='none':
+            #print "Outputting vector for "+currentvector.word
+            currentvector.finalise(self.featdict[self.inwordflag],self.outstream) #finalise and output currentvector
+        else:
+            #print "Ignoring vector for "+currentvector.word
+            pass
+        return
+
     def build(self,filepath,flag):
 
 
-        if flag=='mod':
-            self.modvectordict={}
-        #elif flag=='nfmod':
-            #self.nfmodvectordict={}
+        if flag=='phrase':
+            self.phrasevectordict={}
         else:
-            moddiffpath=self.deppath+'_moddiff'  #for functional vectors
-            headdiffpath=self.deppath+'_headdiff'  #for non-functional vectors (i.e., plain vectors)
-            if self.parameters['raw']:
-                moddiffpath+='.raw'
-                headdiffpath+='.raw'
-            #nfmoddiffpath=self.deppath+'_nfmoddiff'
-            moddiffstream=open(moddiffpath,'w')  #functional
-            if self.parameters['windows']:
-                if 'head' in self.builtlist:
-                    headdiffstream=open(headdiffpath,'w')
-                elif 'nfmod' in self.builtlist:
-                    headdiffstream=open(headdiffpath,'a')
-                else:
-                    headdiffstream=open(headdiffpath,'a')
-            else:
-                headdiffstream=open(headdiffpath,'w')  #non-functional (both words)
-            #nfmoddiffstream=open(nfmoddiffpath,'w')
+            diffpath = self.constituent_path+'_diff'
+            self.diffstream=open(diffpath,'w')
+
         outpath=filepath+'_vectors'
-        if self.parameters['raw']:
-            outpath=outpath+'.raw'
-
         currentvector=FeatureVector()
-
-        #print self.entrydict.keys()
-        #print self.collocdict.keys()
+        self.flag=flag
 
         with open(filepath,'r') as instream:
             print "Reading "+filepath
-            with open(outpath,'w') as outstream:
+            with open(outpath,'w') as self.outstream:
                 linesread=0
                 for line in instream:
                     linesread+=1
                     if linesread%100000==0:
                         print "Read "+str(linesread)+" lines"
-                        if self.parameters['testing'] and flag == 'phrase':
+                        #if self.parameters['testing']:
+                        if self.parameters['testing'] and flag == 'constituents':
                             exit()
 
                     fields=line.rstrip().split('\t')
                     thisword=fields[0]
-                    if flag=='mod':
-                        thisword=thisword.split(':')[0]
+                    #if flag=='mod':
+                    #    thisword=thisword.split(':')[0]
                     if thisword==currentvector.word:
                         currentvector.addfeats(fields[1:])
                     else:
-                        if currentvector.word in self.headdict.keys() or currentvector.word in self.collocdict.keys():
-                            if flag=='mod':
-                                self.modvectordict[currentvector.word]=currentvector
-                            elif flag=='nfmod':
-                                self.headvectordict[currentvector.word]=currentvector
-                            else:
-                                self.makedifferences(currentvector,moddiffstream,headdiffstream)
-                            currentvector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
+                        #finish off last vector
+                        self.finalise(currentvector)
 
-                        #else:
-
-                            #print "Ignoring word "+currentvector.word
-                        if flag=='mod':
+                        #start new vector with current line
+                        if flag=='constituents':
                             thisword=thisword.split(':')[0]
-                        currentvector=FeatureVector(thisword,windows=self.parameters['windows'])
+                        currentvector=FeatureVector(thisword)
                         currentvector.addfeats(fields[1:])
-                if currentvector.word in self.headdict.keys() or currentvector.word in self.collocdict.keys():
-                    #do last vector
-                    if flag=='mod':
-                        self.modvectordict[currentvector.word]=currentvector
-                    elif flag=='nfmod':
-                        self.headvectordict[currentvector.word]=currentvector
-                    else:
-                        self.makedifferences(currentvector,moddiffstream,headdiffstream)
-                    currentvector.finalise(self.featdict,self.featuretotal,outstream,rawflag=self.parameters['raw'])
-        self.builtlist.append(flag)
-        if flag =='phrase' and self.parameters['windows']:
-            #empty memory
-            self.headvectordict={}
-            self.modvectordict={}
-            self.builtlist=[]
 
-    def makedifferences(self,phrasevector,mstream,hstream):
-        #black/J:amod-HEAD:swan  => want functional vector for black and non-functional for black and swan
-        phrase=phrasevector.word.split(':')
-        feature=phrase[1]+':'+phrase[2] #feature = 'amod-HEAD:swan'
-        #try:
-        #    target=untag(phrase[0])[0]  #head = 'black'
-        #except:
-        #    print "Warning: unable to untag "+phrase[0]
-        #    target=phrase[0]
-        target=phrase[0]
+                #do last vector
+                self.finalise(currentvector)
 
 
-        if self.parameters['windows']:
-            mtype='all'
-            htype='all'
-        else:
-            mtype='f'
-            htype='b'
+    def makedifferences(self,constituent_vector):
+        #black/J:amod-HEAD:swan  => black in context of swan
+        #swan/N:amod-DEP:black  => swan in context of black
+        #non-functional is now just 1st order dependencies so don't need to do this separately
+        #need to find all phrases in self.collocdict, subtract phrase and inverse from constituent and then finalise
 
-        if 'mod' in self.builtlist:
-            moddiffvector=self.modvectordict[target].finddiff(phrasevector,type='all')#f modifier
-            moddiffvector.finalise(self.featdict,self.featuretotal,mstream,rawflag=self.parameters['raw'])
-        if 'nfmod' in self.builtlist:
-            headdiffvector=self.headvectordict[target].finddiff(phrasevector,type=mtype)#nf modifier
-            headdiffvector.finalise(self.featdict,self.featuretotal,hstream,rawflag=self.parameters['raw'])
-        if 'head' in self.builtlist:
-            headdiffvector=self.headvectordict[phrase[2]].finddiff(phrasevector,type=htype)#nf head
-            headdiffvector.finalise(self.featdict,self.featuretotal,hstream,rawflag=self.parameters['raw'])
+        constituent = constituent_vector.word
+        mycollocs=[]
+        for colloc in self.collocdict.keys():
+            parts=colloc.split(':')
+            if (self.inwordflag=='left' and parts[0]==constituent) or (self.inwordflag=='right' and parts[2]==untag(constituent)[0]):
+                mycollocs.add(colloc)
+
+        for colloc in mycollocs:
+            parts=colloc.split(':')
+            invcolloc=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
+            diffvector=constituent_vector.finddiff(self.phrasevectordict[colloc])  #swan!black swan
+            diffvector=diffvector.finddiff(self.phrasevectordict[invcolloc])    #swan!swan black
+            diffvector.finalise(self.featdict[self.inwordflag],self.diffstream)
+
         return
 
 
 
 def extract(parameters):
     if parameters['windows']:
-        myExtractor=WindowVectorExtractor(parameters)
+        print "Windows not supported currently"
+        return
+        #myExtractor=WindowVectorExtractor(parameters)
     else:
         myExtractor=VectorExtractor(parameters)
     myExtractor.loadphrases()
@@ -458,18 +324,10 @@ def gobuild(parameters):
     myBuilder=VectorBuilder(parameters)
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
-    myBuilder.loadheadvectors()
-    myBuilder.cacheheadvectors()
-    if parameters['windows']:
-        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
-        myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
-        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
-        myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
-        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
-    else:
-        myBuilder.build(myBuilder.nfmod_path+'.sorted','nfmod')
-        myBuilder.build(myBuilder.modifier_path+'.sorted','mod')
-        myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase')
+
+    myBuilder.build(myBuilder.phrasal_path+'.sorted.tagged','phrase') #do phrases first so both can be taken away from a single constituent
+    myBuilder.build(myBuilder.constituent_path+'.sorted.tagged','constituents') #constituents formally mod
+
 
 if __name__ == '__main__':
     parameters = configure(sys.argv)
