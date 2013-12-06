@@ -61,11 +61,11 @@ class FeatureVector:
         #print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
         return newvector
 
-    def selecthead(self,avector):
+    def selectright(self,avector):
         newvector=FeatureVector(self.signifier+'@h@'+avector.signifier,fdict=self.featuredict)
         return newvector
 
-    def selectmod(self,avector):
+    def selectleft(self,avector):
         newvector=FeatureVector(self.signifier+'@m@'+avector.signifier,fdict=avector.featuredict)
         return newvector
 
@@ -187,24 +187,28 @@ class Composer:
     def __init__(self,parameters):
         self.parameters=parameters
         self.collocdict={}
-        self.headdict={}
-        self.moddict={}
-        self.whoami='.'+self.parameters['compop']
-        if self.parameters['mod']:
-            self.whoami=self.whoami+".funct"
-        else:
-            self.whoami=self.whoami+'.nofunct'
+        self.rightdict={}
+        self.leftdict={}
         if self.parameters['diff']:
             self.whoami=self.whoami+'.diff'
         else:
             self.whoami=self.whoami+'.nodiff'
-        if self.parameters['pmi']:
-            self.whomam=self.whoami+".pmi"
+
         self.statsreq=True
 
         self.readcomps()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],'results.csv')
+
+    def inverse(self,colloc):
+        try:
+            parts = colloc.split(':')
+            inverted = parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
+            return inverted
+        except IndexError:
+            print "Error inverting "+colloc
+            return colloc
+
 
     def readcomps(self):
 
@@ -214,26 +218,24 @@ class Composer:
                 fields=line.rstrip().split('\t')
                 self.collocdict[fields[0]]=float(fields[2])
                 parts=fields[0].split(':')
-                try:
-                    mod = untag(parts[0])[0]
-                    head=parts[2]
-                    #print "mod: ",mod,"head: ",head
-                    self.headdict[head]=self.headdict.get(head,0)+1
-                    self.moddict[mod]=self.moddict.get(mod,0)+1
-                except TaggingError:
-                    print "Error untagging "+parts[0]
+                left = parts[0]
+                right=parts[2]
+                #print "mod: ",mod,"head: ",head
+                self.leftdict[left]=self.leftdict.get(left,0)+1
+                self.rightdict[right]=self.rightdict.get(right,0)+1
+
 
         print "Number of collocations is "+str(len(self.collocdict.keys()))
-        print "Number of heads is "+str(len(self.headdict.keys()))
-        print "Number of modifiers is "+str(len(self.moddict.keys()))
+        print "Number of right heads is "+str(len(self.rightdict.keys()))
+        print "Number of left modifiers is "+str(len(self.leftdict.keys()))
         self.collocorder=sorted(self.collocdict.keys())
         return
 
     def makecaches(self):
 
         self.parameters['phrasalcache']=os.path.join(self.parameters['datadir'],'phrasal.cache'+self.whoami)
-        self.parameters['headcache']=os.path.join(self.parameters['datadir'],'head.cache'+self.whoami)
-        self.parameters['modcache']=os.path.join(self.parameters['datadir'],'mod.cache'+self.whoami)
+        self.parameters['rightcache']=os.path.join(self.parameters['datadir'],'right.cache'+self.whoami)
+        self.parameters['leftcache']=os.path.join(self.parameters['datadir'],'left.cache'+self.whoami)
 
         if not self.parameters['cached']:
             #phrasal
@@ -250,8 +252,12 @@ class Composer:
                     if self.collocdict.get(fields[0],-1)>-1:
                         vectordict[fields[0]]=line
                         added+=1
-                        #else:
+                    elif self.collocdict.get(self.inverse(fields[0]),-1)>-1:
+                        vectordict[fields[0]]=line
+                        added+=1
+                    else:
                         #   print "Not added vector for "+fields[0]
+                        pass
                     if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
 
                 print "Read "+str(linesread)+" lines"
@@ -259,116 +265,70 @@ class Composer:
 
             with open(self.parameters['phrasalcache'],'w') as outstream:
                 for colloc in self.collocorder:
-                    outstream.write(vectordict[colloc])
+                    outstream.write(vectordict.get(colloc,'\n'))
+                    outstream.write(vectordict.get(self.inverse(colloc),'\n'))
 
+            vectordict={} #free memory
+            #load constituents
 
+            leftvectordict={}
+            rightvectordict={}
 
-            #head
-            vectordict={}
-            #print self.headdict.keys()
-
-            with open(self.parameters['headpath'],'r') as instream:
-                print "Reading "+self.parameters['headpath']
+            with open(self.parameters['constituentpath'],'r') as instream:
+                print "Reading "+self.parameters['constituentpath']
                 linesread=0
                 added=0
                 for line in instream:
                     linesread+=1
-                    fields=line.split('\t')
-
+                    fields=line.rstrip().split('\t')
                     if self.parameters['diff']:
-                        try:
-                            (headmatch,collocmatch)=untag(fields[0],'!')
-                        except TaggingError:
-                            print "Ignoring "+fields[0]
-                            break
-
-                        try:
-                            headmatch=untag(headmatch)[0]  #adjs are tagged, nouns aren't!
-                        except TaggingError:
-                            pass
- #                       isheadmatch=untag(collocmatch.split(':')[0])[0]
-                        isheadmatch=collocmatch.split(':')[2]
-
-                    else:
-                        try:
-                            headmatch=untag(fields[0])[0]
-                        except TaggingError:
-                            headmatch=fields[0]
-                        collocmatch=headmatch
-                        isheadmatch=headmatch
-
-                    if headmatch==isheadmatch and self.headdict.get(headmatch,0)>0:
-                        vectordict[collocmatch]=line
-                        added+=1
-
-                    #else:
-                       #print "No match for "+headmatch, str(self.headdict.get(headmatch,0))
-                    if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
-            print "Read "+str(linesread)+" lines"
-            print "Copying "+str(added)+" vectors"
-
-            with open(self.parameters['headcache'],'w') as outstream:
-
-                for colloc in self.collocorder:
-
-                    if self.parameters['diff']:
-                        collocmatch=colloc
-                    else:
-                        #collocmatch=untag(colloc.split(':')[0])[0]
-                        collocmatch=colloc.split(':')[2] #head is 3rd part of colloc
-                    outstream.write(vectordict[collocmatch])
-
-
-            #mod
-            vectordict={}
-
-            with open(self.parameters['modpath'],'r') as instream:
-                print "Reading "+self.parameters['modpath']
-                linesread=0
-                added=0
-                #print self.moddict.keys()
-                for line in instream:
-                    linesread+=1
-                    fields=line.split('\t')
-                    try:
-                        if self.parameters['diff']:
-                            (modmatch,collocmatch)=untag(fields[0],'!')
-                            if self.parameters['mod']:
-                                modmatch = modmatch.split(':')[0]
-                            try:
-                                modmatch=untag(modmatch)[0]
-                            except TaggingError:
-                                pass
-
-                            ismodmatch=collocmatch.split(':')[0]
-                            ismodmatch=untag(ismodmatch)[0]
+                        (headmatch,collocmatch,invmatch)=fields[0].split('!')
+                        if self.leftdict.get(headmatch,-1)>-1:
+                            leftvectordict[collocmatch]=line
+                            rightvectordict[invmatch]=line
+                            added+=2
+                        elif self.rightdict.get(headmatch,-1)>-1:
+                            rightvectordict[collocmatch]=line
+                            leftvectordict[invmatch]=line
+                            added+=2
                         else:
-                            modmatch=fields[0]
-                            try:
-                                modmatch = untag(modmatch)[0]
-                            except TaggingError:
-                                print "Error untagging ",modmatch
-                                break
-                            ismodmatch=modmatch
-                            collocmatch=modmatch
-                        if modmatch==ismodmatch and self.moddict.get(modmatch,0)>0:
-                            vectordict[collocmatch]=line
-                            added+=1
-                        #else:
-                            #print "No match for "+modmatch
-                    except TaggingError:
-                        print "Ignoring "+fields[0]
-                    if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
-            print "Read "+str(linesread)+" lines"
-            print "Copying "+str(added)+" vectors"
-
-            with open(self.parameters['modcache'],'w') as outstream:
-                for colloc in self.collocorder:
-                    if self.parameters['diff']:
-                        collocmatch=colloc
+                            print "Warning: ignoring "+headmatch
                     else:
-                        collocmatch=untag(colloc.split(':')[0])[0]
-                    outstream.write(vectordict[collocmatch])
+                        headmatch = fields[0]
+                        if self.leftdict.get(headmatch,-1)>-1:
+                            leftvectordict[headmatch]=line
+                            added+=1
+                        elif self.rightdict.get(headmatch,-1)>-1:
+                            rightvectordict[headmatch]=line
+                            added+=1
+                        else:
+                            print "Warning: ignoring "+headmatch
+                print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
+
+            with open(self.parameters['leftcache'],'w') as leftstream:
+                with open(self.parameters['rightcache'],'w') as rightstream:
+                    for colloc in self.collocorder:
+                        if self.parameters['diff']:
+                            leftstream.write(leftvectordict[colloc])
+                            rightstream.write(rightvectordict[colloc])
+                        else:
+                            parts=colloc.split(':')
+                            left=parts[0]
+                            right=parts[2]
+                            leftstream.write(leftvectordict[left])
+                            rightstream.write(rightvectordict[right])
+                        #inverse collocation
+                        inverted=self.inverse(colloc)
+                        if self.parameters['diff']:
+                            leftstream.write(leftvectordict[inverted])
+                            rightstream.write(rightvectordict[inverted])
+                        else:
+                            parts=inverted.split(':')
+                            left=parts[0]
+                            right=parts[2]
+                            leftstream.write(rightvectordict[left])
+                            rightstream.write(leftvectordict[right])
+
 
     def loadfeaturefile(self):
         #read in feature totals for pmi calculations
@@ -390,8 +350,8 @@ class Composer:
     def process(self):
 
         with open(self.parameters['phrasalcache'],'r') as phrasalstream:
-            with open(self.parameters['headcache'],'r') as headstream:
-                with open(self.parameters['modcache'],'r') as modstream:
+            with open(self.parameters['leftcache'],'r') as leftstream:
+                with open(self.parameters['rightcache'],'r') as rightstream:
 
                     xs=[]
                     ys=[]
@@ -399,23 +359,23 @@ class Composer:
                     done=0
                     for line in phrasalstream:
                         phrasefields=line.rstrip().split('\t')
-                        headfields=headstream.readline().rstrip().split('\t')
-                        modfields=modstream.readline().rstrip().split('\t')
+                        rightfields=rightstream.readline().rstrip().split('\t')
+                        leftfields=leftstream.readline().rstrip().split('\t')
                         phraseVector=FeatureVector(phrasefields[0],phrasefields[1:])
-                        headVector=FeatureVector(headfields[0],headfields[1:])
-                        modVector=FeatureVector(modfields[0],modfields[1:])
+                        rightVector=FeatureVector(rightfields[0],rightfields[1:])
+                        leftVector=FeatureVector(leftfields[0],leftfields[1:])
                         if self.parameters['testing']:
                             print phraseVector.toString()
-                            print headVector.toString()
-                            print modVector.toString()
+                            print rightVector.toString()
+                            print leftVector.toString()
                         if self.parameters['pmi']:
-                            headVector.transform(self.featdict,self.featuretotal)
-                            modVector.transform(self.featdict,self.featuretotal)
+                            rightVector.transform(self.featdict,self.featuretotal)
+                            leftVector.transform(self.featdict,self.featuretotal)
                             phraseVector.transform(self.featdict,self.featuretotal)
                         else: #normalise to probabilities before composing
-                            headVector.normalise()
-                            modVector.normalise()
-                        composedVector=self.compose(headVector,modVector)
+                            rightVector.normalise()
+                            leftVector.normalise()
+                        composedVector=self.compose(rightVector,leftVector)
                         if self.parameters['testing']:
                             print composedVector.toString()
                         if self.parameters['raw'] and not self.parameters['pmi']:
@@ -423,9 +383,9 @@ class Composer:
                             phraseVector.transform(self.featdict,self.featuretotal)
                         if self.parameters['testing']:
                             print phraseVector.toString()
-                            print headVector.toString()
-                            print modVector.toString()
-                            #print modVector.featuredict
+                            print rightVector.toString()
+                            print leftVector.toString()
+                            #print leftVector.featuredict
                             print composedVector.toString()
 
                         scores =self.compare(composedVector,phraseVector)
@@ -443,11 +403,11 @@ class Composer:
                             break
         self.computestats(xs,ys,phrases)
 
-    def compose(self,head,mod):
+    def compose(self,right,left):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
-        #head.normalise()  #makes no difference to normalise vectors before composition
-        #mod.normalise()
-        return compfunct(head,mod)
+        #right.normalise()  #makes no difference to normalise vectors before composition
+        #left.normalise()
+        return compfunct(right,left)
     def compare(self,composed,phrasal):
         res=[]
 
@@ -507,7 +467,7 @@ class Composer:
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
                 outstream.write(parameters['usefile']+',')
-                if parameters['mod']:
+                if parameters['left']:
                     outstream.write('funct,')
                 else:
                     outstream.write('nofunct,')
@@ -527,22 +487,22 @@ class Composer:
 
         return
 
-    def _compose_add(self,head,modifier):
-        return head.add(modifier)
+    def _compose_add(self,right,leftifier):
+        return right.add(leftifier)
 
-    def _compose_mult(self,head,modifier):
-        return head.mult(modifier)
+    def _compose_mult(self,right,leftifier):
+        return right.mult(leftifier)
 
-    def _compose_selecthead(self,head,modifier):
-        return head.selecthead(modifier)
+    def _compose_selectright(self,right,leftifier):
+        return right.selectright(leftifier)
 
-    def _compose_selectmod(self,head,modifier):
-        return head.selectmod(modifier)
-    def _compose_min(self,head,modifier):
-        return head.min(modifier)
+    def _compose_selectleft(self,right,leftifier):
+        return right.selectleft(leftifier)
+    def _compose_min(self,right,leftifier):
+        return right.min(leftifier)
 
-    def _compose_max(self,head,modifier):
-        return head.max(modifier)
+    def _compose_max(self,right,leftifier):
+        return right.max(leftifier)
 
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)
@@ -564,8 +524,10 @@ class Composer:
 
 def go(parameters):
     myComposer=Composer(parameters)
-    if parameters['raw']:
-        myComposer.loadfeaturefile()
+    if parameters['testing']:
+        exit(0)
+    #working up to this point.  Need to change loadfeaturefile to load both featurefiles into left and right worddicts
+    myComposer.loadfeaturefile()
     myComposer.process()
 
 

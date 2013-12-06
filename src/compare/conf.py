@@ -8,7 +8,7 @@ def configure(args):
     #defaults
     parameters['testing']=False
     parameters['diff']=False
-    parameters['funct']=False
+    parameters['funct']=True
     parameters['mod']=False
     parameters['metric']=['recall','precision','cosine','weighted_recall']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
@@ -18,8 +18,8 @@ def configure(args):
     parameters['athome']=False
     parameters['usefile']='train'
     parameters['ftype']='deps'
-    parameters['raw']=False
     parameters['pmi']=False
+    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -45,16 +45,13 @@ def configure(args):
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
         elif arg=='wins':parameters['ftype']='wins'
-        elif arg=='raw':parameters['raw']=True
-        elif arg=='pmi':parameters['pmi']=True
+        elif arg=='pmi':parameters['pmi']=True #compute PPMI then compose (alternative: compose then compute PPMI)
     parameters = setfilenames(parameters)
 
     return parameters
 
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
-    if parameters['raw']:
-        basename=basename+'.raw'
     parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
@@ -62,20 +59,11 @@ def setfilenames(parameters):
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
     if parameters['diff']:
-        parameters['headfile']=basename+'.NF.DIFF'
-        if parameters['funct']:
-            parameters['modfile']=basename+'.FMOD.DIFF'
-        else:
-            parameters['modfile']=basename+'.NF.DIFF'
+        parameters['constituentfile']=basename+'.CONSTITUENTS.DIFF'
     else:
-        parameters['headfile']=basename+'.NFHEAD'
-        if parameters['funct']:
-            parameters['modfile']=basename+'.FMOD'
-        else:
-            parameters['modfile']=basename+'.NFMOD'
-    parameters['headpath']=os.path.join(parameters['datadir'],parameters['headfile'])
-    parameters['modpath']=os.path.join(parameters['datadir'],parameters['modfile'])
-    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
+        parameters['constituentfile']=basename+'.CONSTITUENTS'
+    parameters['constituentpath']=os.path.join(parameters['datadir'],parameters['constituentfile'])
+    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile']+'.tagged')
 
     parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
     parameters['featurefile']='events.strings_depcol'
