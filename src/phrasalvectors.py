@@ -377,8 +377,8 @@ def gobuild(parameters):
     myBuilder.loadphrases()
     myBuilder.loadfeaturecounts()
 
-    myBuilder.build(myBuilder.phrasal_path+'.sorted.tagged','phrase') #do phrases first so both can be taken away from a single constituent
-    myBuilder.build(myBuilder.constituent_path+'.sorted.tagged','constituents') #constituents formally mod
+    myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase') #do phrases first so both can be taken away from a single constituent
+    myBuilder.build(myBuilder.constituent_path+'.sorted','constituents') #constituents formally mod
 
 
 if __name__ == '__main__':
