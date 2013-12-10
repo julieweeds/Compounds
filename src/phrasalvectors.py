@@ -54,7 +54,10 @@ class VectorExtractor:
             for line in instream:
                 fields=line.rstrip().split('\t')
                 collocate=fields[0] #black/J:amod-HEAD:swan
-                self.collocdict[collocate]=fields[2]  #store PMI
+                if len(fields)>1:
+                    self.collocdict[collocate]=fields[2]#store PMI
+                else:
+                    self.collocdict[collocate]=1
                 parts=collocate.split(':')
                 left=parts[0] #black/J
                 right=parts[2] #swan/N
@@ -94,24 +97,24 @@ class VectorExtractor:
                             linesread+=1
                             if linesread%100000==0:
                                 print "Read "+str(linesread)+" lines"
-                                if self.parameters['testing']:break
+                                if self.parameters['testing'] and linesread%1000000:break
                             fields=line.rstrip().split('\t')
                             entry=fields[0]  #e.g., "African/J"
-                            (word,tag) =untag(entry)
+                            #(word,tag) =untag(entry)
 
-                            if self.worddict[self.positions[i]].get(word,0)>0:  #if we care about this word
+                            if self.worddict[self.positions[i]].get(entry,0)>0:  #if we care about this word
                                 newfields=self.depfilter(fields)  #filter to interesting dependencies
                                 self.writeoutput(entry,newfields,outstream2,'')  #conventional dependency features (1st order)
 
                             for index,feature in enumerate(fields[1:]):  #get each feature and its position
                                 parts = feature.split(':')  #split into feature type and word
 
-                                if parts[0] == self.fmatch[i] and self.worddict[self.positions[i]].get(word,0)>0: #correct feature (given file) and we care about the entry word
+                                if parts[0] == self.fmatch[i] and self.worddict[self.positions[i]].get(entry,0)>0: #correct feature (given file) and we care about the entry word
                                     phrase=entry+':'+feature
                                     newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                     newfields=self.depfilter(newfields)
                                     self.writeoutput(phrase,newfields,outstream1,'')  #1st order phrasal dependencies of the entry in the context of the feature
-                                    self.writeoutput(parts[1]+'/'+self.tags[(i+1)%2],newfields,outstream2,self.fmatch[(i+1)%2]+':') #2nd order dependencies of the feature word when used as this type of feature
+                                    self.writeoutput(parts[1],newfields,outstream2,self.fmatch[(i+1)%2]+':') #2nd order dependencies of the feature word when used as this type of feature
                                    # self.writeoutput(entry+':'+parts[0],newfields.append(fields[index]),outstream2,'1st') #1st order dependencies of entry when it has this type of feature
 
 

@@ -29,11 +29,14 @@ def configure(args):
     parameters['adjlist']=False
     parameters['usefile']='train'
     parameters['windows']=False
-    parameters['raw']=False
-
+    #parameters['raw']=False
+    parameters['phrasetype']='ANs'
+    parameters['posdict']={'N':'nouns','J':'adjs','R':'advs','V':'verbs'}
     for arg in args:
         if arg=='testing':
             parameters['testing']=True
+        elif arg=='apollo':
+            parameters['parentdir']='/mnt/lustre/scratch/inf/juliewe/Compounds'
         elif arg =='extract':
             parameters['extract']=True
         elif arg =='build':
@@ -109,4 +112,28 @@ def configure(args):
             #parameters['domods']=True
         elif arg =='NFmod':
             parameters['nfmod']=True
+        elif arg=='ANs':
+            parameters['phrasetype']='ANs'
+            parameters['lefttype']='J'
+            parameters['righttype']='N'
+        elif arg=='NNs':
+            parameters['phrasetype']='NNs'
+            parameters['lefttype']='N'
+            parameters['righttype']='N'
+
+        elif arg=='miro':
+            parameters['datadir']='data/miro/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']='data/miro/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            parameters['depfile']='exp10'
+            parameters['altdepfile']='exp10'
+            parameters['featurefile']='features.strings'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords']
+            parameters['usefile']='all'
+            if parameters['phrasetype']=='ANs':
+                parameters['featurematch']='amod-HEAD'
+            elif parameters['phrasetype']=='NNs':
+                parameters['featurematch']='nn-DEP'
+            parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
     return parameters
