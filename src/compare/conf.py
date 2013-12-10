@@ -8,9 +8,9 @@ def configure(args):
     #defaults
     parameters['testing']=False
     parameters['diff']=False
-    parameters['funct']=True
+    parameters['funct']=False
     parameters['mod']=False
-    parameters['metric']=['recall','precision','cosine','weighted_recall']
+    parameters['metric']=['recall','precision','cosine']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
@@ -20,6 +20,7 @@ def configure(args):
     parameters['ftype']='deps'
     parameters['pmi']=False
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
+    parameters['featurematch']='amod-HEAD'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -27,6 +28,9 @@ def configure(args):
         elif arg=='funct':
             parameters['funct']=True
             parameters['mod']=True  #funct and mod are aliases for same 'functional modifier' parameter
+        elif arg=='nonfunct':
+            parameters['funct']=False
+            parameters['mod']=False
         elif arg=='mod':
             parameters['mod']=True
             parameters['funct']=True
@@ -66,7 +70,7 @@ def setfilenames(parameters):
     parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile']+'.tagged')
 
     parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
-    parameters['featurefile']='events.strings_depcol'
+    parameters['featurefile']='events.strings_depcol.tagged'
     parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters

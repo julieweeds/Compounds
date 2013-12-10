@@ -140,6 +140,14 @@ class FeatureVector:
     firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
 
+    @staticmethod
+    def strip(feat):
+        parts=feat.split(':')
+        res=parts[1]
+        for part in parts[2:]:
+            res=res+':'+part
+        return res
+
     def __init__(self,word='',windows=False):
 
         self.featdict={}
@@ -161,6 +169,19 @@ class FeatureVector:
             feature=featurecounts.pop()
             self.featdict[feature]=count
             self.total+=count
+    def findorder(self,feat):
+        order=len(feat.split(':'))-1
+        matchobj=FeatureVector.secondorderPATT.match(feat)
+        if matchobj:
+            order=2
+        else:
+            matchobj=FeatureVector.firstorderPATT.match(feat)
+            if matchobj:
+                order=1
+            else:
+                print "Warning: unmatched feature: ",feat,str(order)
+
+        return order
 
     def finddiff(self,avector):
         #return (positive) difference between self and avector
@@ -169,17 +190,7 @@ class FeatureVector:
 
         result=FeatureVector(self.word+'!'+avector.word)
         for feat in self.featdict.keys():
-            order=len(feat.split(':'))-1
-            matchobj=FeatureVector.secondorderPATT.match(feat)
-            if matchobj:
-                order=2
-            else:
-                matchobj=FeatureVector.firstorderPATT.match(feat)
-                if matchobj:
-                    order=1
-                else:
-                    print "Warning: unmatched feature: ",feat,str(order)
-
+            order=self.findorder(feat)
 
             if order ==1:
                 if avector.word.split(':')[0] == self.word: #1st order features match between word and left constituent
@@ -188,14 +199,16 @@ class FeatureVector:
                     remove =0
             elif order ==2:
                 if avector.word.split(':')[2] == self.word: #2nd order features match between word and right constituent
-                    fofeat=feat[1:]  #strip off 1st bit of feature name as 2nd order constituent feature matches 1st order phrase feature
+
+                    fofeat=FeatureVector.strip(feat)
+                         #strip off 1st bit of feature name as 2nd order constituent feature matches 1st order phrase feature
                     remove=avector.featdict.get(fofeat,0)
                 else:
                     remove=0
             else:
                 print "Warning: not expecting features of order higher than 2 - assuming 2nd order: ", feat, str(order)
                 if avector.word.split(':')[2] == self.word:
-                    fofeat=feat[1:]
+                    fofeat=FeatureVector.strip(feat)
                     remove=avector.featdict.get(fofeat,0)
                 else:
                     remove=0
@@ -208,12 +221,16 @@ class FeatureVector:
              #   print "Removing feature "+feat+':'+str(self.featdict[feat])+':'+str(avector.featdict.get(feat,0))
         return result
 
-    def finalise(self,allfeatdict,outstream):
+    def finalise(self,featdict1,featdict2,outstream):
         #basically just filters low frequency features and then writes to file
 
         oldwidth=len(self.featdict.keys())
         for feature in self.featdict.keys():
-            feattot=allfeatdict.get(feature,0)
+            order=self.findorder(feature)
+            if order>1: #check these in the other featdict
+                feattot=featdict2.get(FeatureVector.strip(feature))
+            else: #check first order features in their featdict
+                feattot=featdict1.get(feature,0)
             if feattot>0:
                 self.indict[feature]=self.featdict[feature]  #still need to check feattot>0 to ensure that the feature wasn't filtered out on low frequency
 
@@ -239,10 +256,13 @@ class FeatureVector:
 
 class VectorBuilder(VectorExtractor):
 
+    flags={'left':'right','right':'left'}
+
     def finalise(self,currentvector):
         self.inwordflag='none'
         if self.flag=='constituents':
-            if self.worddict['left'].get(currentvector.word,0)>0:self.inwordflag='left'
+            if self.worddict['left'].get(currentvector.word,0)>0:
+                self.inwordflag='left'
             elif self.worddict['right'].get(currentvector.word,0)>0:self.inwordflag='right'
             if self.inwordflag !='none':
                 print "Doing differences for ",currentvector.word,str(self.inwordflag)
@@ -263,7 +283,7 @@ class VectorBuilder(VectorExtractor):
 
         if self.inwordflag !='none':
             #print "Outputting vector for "+currentvector.word
-            currentvector.finalise(self.featdict[self.inwordflag],self.outstream) #finalise and output currentvector
+            currentvector.finalise(self.featdict[self.inwordflag],self.featdict[VectorBuilder.flags[self.inwordflag]],self.outstream) #finalise and output currentvector
         else:
             #print "Ignoring vector for "+currentvector.word
             pass
@@ -332,7 +352,7 @@ class VectorBuilder(VectorExtractor):
             invcolloc=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
             diffvector=constituent_vector.finddiff(self.phrasevectordict.get(colloc,FeatureVector(colloc)))  #swan!black swan - could be a zero vector
             diffvector=diffvector.finddiff(self.phrasevectordict.get(invcolloc,FeatureVector(invcolloc)))    #swan!swan black - could be a zero vector
-            diffvector.finalise(self.featdict[self.inwordflag],self.diffstream)
+            diffvector.finalise(self.featdict[self.inwordflag],self.featdict[VectorBuilder.flags[self.inwordflag]],self.diffstream)
 
         return
 

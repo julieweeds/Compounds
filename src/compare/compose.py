@@ -3,6 +3,7 @@ __author__ = 'juliewe'
 import conf,sys,os,math
 import scipy.stats as stats
 import numpy as np
+import re
 
 class TaggingError(Exception):
     pass
@@ -15,19 +16,51 @@ def untag(astring,achar='/'):
         raise TaggingError
 
 class FeatureVector:
+    firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
+    secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
 
-    def __init__(self,signifier,features=[],fdict={}):
+    @staticmethod
+    def strip(feat):
+        parts=feat.split(':')
+        res=parts[1]
+        for part in parts[2:]:
+            res=res+':'+part
+        return res
+
+    def __init__(self,signifier,functional=True,features=[],fdict={}):
         self.signifier=signifier
         self.featuredict=dict(fdict)
         self.computedlength=False
         self.length=-1
         self.sum=-1
+        #print features
         while len(features)>0:
             score=float(features.pop())
             feat=features.pop()
             if score>0:
-                self.featuredict[feat]=score
+                if not functional:
+                    #print "Order of "+feat+" is "+str(self.findorder(feat))
+                    if self.findorder(feat)>1:
+                         #print "Ignoring "+feat+" order "+str(self.findorder(feat))
+                         pass #ignore higher order features in non-functional vectors
+                    else: self.featuredict[feat]=score
+                else:
+                    self.featuredict[feat]=score
         self.normalised=False
+
+    def findorder(self,feat):
+        #establish order of given feature
+        order=len(feat.split(':'))-1
+        matchobj=FeatureVector.secondorderPATT.match(feat)
+        if matchobj:
+            order=2
+        else:
+            matchobj=FeatureVector.firstorderPATT.match(feat)
+            if matchobj:
+                order=1
+            else:
+                print "Warning: unmatched feature: ",feat,str(order)
+        return order
 
     def add(self,avector):
         newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
@@ -143,6 +176,7 @@ class FeatureVector:
         return sim
 
     def normalise(self):
+        #make scores sum to 1
         if self.normalised:
             return
         else:
@@ -167,7 +201,8 @@ class FeatureVector:
                 if pmi>0:
                     self.featuredict[feature] = math.log(ratio)
             else:
-                print "Warning "+feature+" not in feature dict"
+                #print "Warning "+feature+" not in feature dict"
+                pass
         self.computedlength=False
         self.computelength()
 
@@ -186,13 +221,18 @@ class Composer:
 
     def __init__(self,parameters):
         self.parameters=parameters
+        self.positions=['left','right']# #for adjectives and nouns - have corresponding dependency files in self.deppaths
         self.collocdict={}
         self.rightdict={}
         self.leftdict={}
+        self.featdict={}
+        self.featdict['left']={}  #features of leftmost constituent i.e., features of adjectives
+        self.featdict['right']={}  #features of rightmost constituent i.e., features of nouns
+        self.featuretotal={'left':0,'right':0}
         if self.parameters['diff']:
-            self.whoami=self.whoami+'.diff'
+            self.whoami='.diff'
         else:
-            self.whoami=self.whoami+'.nodiff'
+            self.whoami='.nodiff'
 
         self.statsreq=True
 
@@ -264,6 +304,7 @@ class Composer:
                 print "Copying "+str(added)+" vectors"
 
             with open(self.parameters['phrasalcache'],'w') as outstream:
+                print "Writing "+self.parameters['phrasalcache']
                 for colloc in self.collocorder:
                     outstream.write(vectordict.get(colloc,'\n'))
                     outstream.write(vectordict.get(self.inverse(colloc),'\n'))
@@ -307,6 +348,7 @@ class Composer:
 
             with open(self.parameters['leftcache'],'w') as leftstream:
                 with open(self.parameters['rightcache'],'w') as rightstream:
+                    print "Writing "+self.parameters['leftcache']+" and "+self.parameters['rightcache']
                     for colloc in self.collocorder:
                         if self.parameters['diff']:
                             leftstream.write(leftvectordict[colloc])
@@ -332,20 +374,19 @@ class Composer:
 
     def loadfeaturefile(self):
         #read in feature totals for pmi calculations
-        self.featdict={}
-        self.featuretotal=0
-        with open(self.parameters['featurepath'],'r') as instream:
-            print "Reading "+self.parameters['featurepath']
-            linesread=0
-            for line in instream:
-                fields=line.rstrip().split('\t')
-                feature=fields[0]
-                self.featdict[feature]=float(fields[1])
-                self.featuretotal+=float(fields[1])
-                linesread+=1
-        print "Read "+str(linesread)+" lines"
 
-        return
+        filepaths = [os.path.join(self.parameters['datadir'],self.parameters['featurefile']),os.path.join(self.parameters['altdatadir'],self.parameters['featurefile'])]
+        for i,filepath in enumerate(filepaths):
+            with open(filepath,'r') as instream:
+                print "Reading "+filepath
+                linesread=0
+                for line in instream:
+                    fields=line.rstrip().split('\t')
+                    feature=fields[0]
+                    self.featdict[self.positions[i]][feature]=float(fields[1])
+                    self.featuretotal[self.positions[i]]+=float(fields[1])
+                    linesread+=1
+                print "Read "+str(linesread)+" lines"
 
     def process(self):
 
@@ -361,26 +402,41 @@ class Composer:
                         phrasefields=line.rstrip().split('\t')
                         rightfields=rightstream.readline().rstrip().split('\t')
                         leftfields=leftstream.readline().rstrip().split('\t')
-                        phraseVector=FeatureVector(phrasefields[0],phrasefields[1:])
-                        rightVector=FeatureVector(rightfields[0],rightfields[1:])
-                        leftVector=FeatureVector(leftfields[0],leftfields[1:])
+                        phraseVector=FeatureVector(phrasefields[0],features=phrasefields[1:],functional=self.parameters['funct'])
+                        rightVector=FeatureVector(rightfields[0],features=rightfields[1:],functional=self.parameters['funct'])
+                        leftVector=FeatureVector(leftfields[0],features=leftfields[1:],functional=self.parameters['funct'])
+                        phraseparts=phrasefields[0].split(':')
+                        if phraseparts[1]==self.parameters['featurematch']:
+                            inverted=False
+                        elif phraseparts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                            inverted=True
+                        else:
+                            print "Warning: non-matching featuretype in phrase"+phrasefields[0]
+                            exit(1)
+
                         if self.parameters['testing']:
                             print phraseVector.toString()
                             print rightVector.toString()
                             print leftVector.toString()
                         if self.parameters['pmi']:
-                            rightVector.transform(self.featdict,self.featuretotal)
-                            leftVector.transform(self.featdict,self.featuretotal)
-                            phraseVector.transform(self.featdict,self.featuretotal)
+                            #transform to pmi values before composition
+                            if inverted:
+                                rightVector.transform(self.featdict['left'],self.featuretotal['left'])
+                                leftVector.transform(self.featdict['right'],self.featuretotal['right'])
+                            else:
+                                rightVector.transform(self.featdict['right'],self.featuretotal['right'])
+                                leftVector.transform(self.featdict['left'],self.featuretotal['left'])
+                            #phraseVector.transform(self.featdict,self.featuretotal)
                         else: #normalise to probabilities before composing
                             rightVector.normalise()
                             leftVector.normalise()
-                        composedVector=self.compose(rightVector,leftVector)
+                        composedVector=self.compose(leftVector,rightVector)
                         if self.parameters['testing']:
                             print composedVector.toString()
-                        if self.parameters['raw'] and not self.parameters['pmi']:
-                            composedVector.transform(self.featdict,self.featuretotal)
-                            phraseVector.transform(self.featdict,self.featuretotal)
+                        if not self.parameters['pmi']:
+                            composedVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
+
+                        phraseVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
                         if self.parameters['testing']:
                             print phraseVector.toString()
                             print rightVector.toString()
@@ -393,21 +449,22 @@ class Composer:
                             print scores
 
                         phrases.append(phrasefields[0])
-                        xs.append(self.collocdict[phrasefields[0]])
+
+                        xs.append(self.collocdict.get(phrasefields[0],self.collocdict.get(self.inverse(phrasefields[0]),0)))
                         ys.append(scores)
                         done+=1
                         if done % 1000 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%3==0:
+                        if self.parameters['testing'] and done%1==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
         self.computestats(xs,ys,phrases)
 
-    def compose(self,right,left):
+    def compose(self,left,right):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
         #right.normalise()  #makes no difference to normalise vectors before composition
         #left.normalise()
-        return compfunct(right,left)
+        return compfunct(left,right)
     def compare(self,composed,phrasal):
         res=[]
 
@@ -467,42 +524,37 @@ class Composer:
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
                 outstream.write(parameters['usefile']+',')
-                if parameters['left']:
-                    outstream.write('funct,')
-                else:
-                    outstream.write('nofunct,')
                 if parameters['diff']:
                     outstream.write('diff,')
                 else:
                     outstream.write('nodiff,')
-                if parameters['raw']:
-                    if parameters['pmi']:
-                        outstream.write('PPMI->compose,')
-                    else:
-                        outstream.write('compose->PPMI,')
+
+                if parameters['pmi']:
+                    outstream.write('PPMI->compose,')
                 else:
-                    outstream.write('ppmi,')
+                    outstream.write('compose->PPMI,')
+
                 outstream.write(parameters['compop']+',')
                 outstream.write(metric+','+str(mean)+','+str(sd)+','+str(c1)+','+str(c2)+'\n')
 
         return
 
-    def _compose_add(self,right,leftifier):
-        return right.add(leftifier)
+    def _compose_add(self,left,right):
+        return left.add(right)
 
-    def _compose_mult(self,right,leftifier):
-        return right.mult(leftifier)
+    def _compose_mult(self,left,right):
+        return left.mult(right)
 
-    def _compose_selectright(self,right,leftifier):
-        return right.selectright(leftifier)
+    def _compose_selectright(self,left,right):
+        return right.selectright(left)
 
-    def _compose_selectleft(self,right,leftifier):
-        return right.selectleft(leftifier)
-    def _compose_min(self,right,leftifier):
-        return right.min(leftifier)
+    def _compose_selectleft(self,left,right):
+        return left.selectleft(right)
+    def _compose_min(self,left,right):
+        return left.min(right)
 
-    def _compose_max(self,right,leftifier):
-        return right.max(leftifier)
+    def _compose_max(self,left,right):
+        return left.max(right)
 
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)
@@ -524,9 +576,6 @@ class Composer:
 
 def go(parameters):
     myComposer=Composer(parameters)
-    if parameters['testing']:
-        exit(0)
-    #working up to this point.  Need to change loadfeaturefile to load both featurefiles into left and right worddicts
     myComposer.loadfeaturefile()
     myComposer.process()
 
