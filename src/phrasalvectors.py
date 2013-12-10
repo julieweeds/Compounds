@@ -383,7 +383,7 @@ def gobuild(parameters):
 
 if __name__ == '__main__':
     parameters = configure(sys.argv)
-
+    print parameters
     if parameters['extract']:
         extract(parameters)
     if parameters['build']:
