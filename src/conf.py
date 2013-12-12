@@ -99,9 +99,9 @@ def configure(args):
 #            parameters['usefile']='train'
             parameters['datadir']='data/ANcompounds/deps/adjs'
             parameters['altdatadir']='data/ANcompounds/deps/nouns'
-            parameters['altdepfile']='wikipedia_nounsdeps_t100.pbfiltered'
-            parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
-            parameters['featurefile']='events.strings_depcol.tagged'
+            parameters['altdepfile']='wikiPOS_nounsdeps_t100.pbfiltered'
+            parameters['depfile']='wikiPOS_adjsdeps_t100.pbfiltered.'+parameters['usefile']
+            parameters['featurefile']='features.strings'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
@@ -109,7 +109,7 @@ def configure(args):
             parameters['featurematch']='amod-HEAD'
             parameters['tagmatch']='N'
             parameters['tagall']=False
-            parameters['tag']='N'
+            parameters['tag']=parameters['tagmatch'] #tag obsolete i think
             #parameters['nfmod']=True
             #parameters['domods']=True
         elif arg =='NFmod':
