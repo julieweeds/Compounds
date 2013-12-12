@@ -26,7 +26,7 @@ def configure(args):
     parameters['build']=False
     parameters['usesource']=False
     parameters['source']='none'
-    #parameters['allheads']=False
+    parameters['allheads']=False
     parameters['adjlist']=False
     parameters['usefile']='train'
     parameters['windows']=False
@@ -103,7 +103,7 @@ def configure(args):
             parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
             parameters['featurefile']='events.strings_depcol.tagged'
             parameters['adjlist']=True
-            #parameters['allheads']=True
+            parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
