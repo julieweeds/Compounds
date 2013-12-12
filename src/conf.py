@@ -15,6 +15,7 @@ def configure(args):
     parameters['entrythresh']=10000
     parameters['stopwordlimit']=3
     parameters['featurematch']='nn-DEP'
+    parameters['tagmatch']='N'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
     parameters['testing']=False
     parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD','amod-HEAD']
@@ -25,7 +26,7 @@ def configure(args):
     parameters['build']=False
     parameters['usesource']=False
     parameters['source']='none'
-    parameters['allheads']=False
+    #parameters['allheads']=False
     parameters['adjlist']=False
     parameters['usefile']='train'
     parameters['windows']=False
@@ -102,10 +103,11 @@ def configure(args):
             parameters['depfile']='wikipedia_adjsdeps_t100.pbfiltered.'+parameters['usefile']
             parameters['featurefile']='events.strings_depcol.tagged'
             parameters['adjlist']=True
-            parameters['allheads']=True
+            #parameters['allheads']=True
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
+            parameters['tagmatch']='J'
             parameters['tagall']=False
             parameters['tag']='N'
             #parameters['nfmod']=True
