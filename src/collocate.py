@@ -150,8 +150,8 @@ class Collocates:
                                     # if altfreq>self.freqthresh:
                                         #self.midict[label]=score
                                     self.clist.append((label,freq,score))
-                                    # else:
-                                    #     print "Ignoring "+label+" f1 = "+str(freq)+" f2 = "+str(altfreq)
+                                else:
+                                    print "Ignoring low frequency "+label+" f1 = "+str(freq)
 
                     linesread+=1
                     if linesread%self.linestop==0:
