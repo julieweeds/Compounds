@@ -47,32 +47,32 @@ class Collocates:
         random.seed(42)
         self.sorted=False
 
-    def makemoddict(self):
-        filepath=os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['freqfile'])
-        with open(filepath,'r') as instream:
-            print "Reading "+filepath
-            linesread=0
-            for line in instream:
-                linesread+=1
-                fields=line.rstrip().split('\t')
-                try:
-                    noun = fields[0]
-                    self.moddict[noun]=1
-                    if self.noundict.get(noun,0)>0:
-                        while len(fields[1:])>0:
-                            freq=float(fields.pop())
-                            feature=fields.pop()
-                            if freq>self.freqthresh:
-                                parts=feature.split(':')
-                                if parts[0]==self.parameters['inversefeatures'][self.featurematch] and self.entrydict.get(parts[1],0)>0:
-                                    label=parts[1]+self.featurematch+':'+noun
-                                    self.modfdict[label]=freq
-                except TaggingException:
-                    print "Ignoring "+line
-                if linesread%self.linestop==0:
-                    print "Read "+str(linesread)+" lines"
-                    if self.testing: break
-            print "Size of mod freq dict is "+str(len(self.modfdict.keys()))
+    # def makemoddict(self):
+    #     filepath=os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['freqfile'])
+    #     with open(filepath,'r') as instream:
+    #         print "Reading "+filepath
+    #         linesread=0
+    #         for line in instream:
+    #             linesread+=1
+    #             fields=line.rstrip().split('\t')
+    #             try:
+    #                 noun = fields[0]
+    #                 self.moddict[noun]=1
+    #                 if self.noundict.get(noun,0)>0:
+    #                     while len(fields[1:])>0:
+    #                         freq=float(fields.pop())
+    #                         feature=fields.pop()
+    #                         if freq>self.freqthresh:
+    #                             parts=feature.split(':')
+    #                             if parts[0]==self.parameters['inversefeatures'][self.featurematch] and self.entrydict.get(parts[1],0)>0:
+    #                                 label=parts[1]+self.featurematch+':'+noun
+    #                                 self.modfdict[label]=freq
+    #             except TaggingException:
+    #                 print "Ignoring "+line
+    #             if linesread%self.linestop==0:
+    #                 print "Read "+str(linesread)+" lines"
+    #                 if self.testing: break
+    #         print "Size of mod freq dict is "+str(len(self.modfdict.keys()))
 
     def processfreqfile(self):
         self.inversedict={}
@@ -134,27 +134,25 @@ class Collocates:
                 for line in instream:
                     fields=line.rstrip().split('\t')
                     entry=fields[0]
-                    try:
-                        if entry in self.entrylist:
-                            outstream.write(line)
-                            while len(fields[1:])>0:
-                                score=float(fields.pop())
-                                feature=fields.pop()
-                                parts=feature.split(':')
-                                if parts[0]==self.featurematch:
-                                    label=entry+':'+feature
-                                    freq=self.fdict.get(label,0)
 
-                                    if freq>self.freqthresh:
-                                        altfreq=self.modfdict.get(label,0)
-                                        if altfreq>self.freqthresh:
-                                            #self.midict[label]=score
-                                            self.clist.append((label,freq,score))
-                                        else:
-                                            print "Ignoring "+label+" f1 = "+str(freq)+" f2 = "+str(altfreq)
-                    except (TaggingException):
-                        print "Warning: ignoring ",line
-                        continue
+                    if entry in self.entrylist:
+                        outstream.write(line)
+                        while len(fields[1:])>0:
+                            score=float(fields.pop())
+                            feature=fields.pop()
+                            parts=feature.split(':')
+                            if parts[0]==self.featurematch:
+                                label=entry+':'+feature
+                                freq=self.fdict.get(label,0)
+
+                                if freq>self.freqthresh:
+                                    # altfreq=self.modfdict.get(label,0)
+                                    # if altfreq>self.freqthresh:
+                                        #self.midict[label]=score
+                                    self.clist.append((label,freq,score))
+                                    # else:
+                                    #     print "Ignoring "+label+" f1 = "+str(freq)+" f2 = "+str(altfreq)
+
                     linesread+=1
                     if linesread%self.linestop==0:
                         print "Read "+str(linesread)+" lines"
@@ -408,8 +406,8 @@ def analyse(parameters):
     mycollocates.processsource()
 
     mycollocates.processfreqfile()
-    if mycollocates.parameters['adjlist']:
-        mycollocates.makemoddict()
+    # if mycollocates.parameters['adjlist']:
+    #     mycollocates.makemoddict()
     mycollocates.processassocfile()
 
     if mycollocates.parameters['adjlist']:
