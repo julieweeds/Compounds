@@ -18,6 +18,7 @@ def untag(astring,achar='/'):
 class FeatureVector:
     firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
+    compareUptoOrder = 1
 
     @staticmethod
     def strip(feat):
@@ -59,7 +60,8 @@ class FeatureVector:
                     if FeatureVector.findorder(feat)>1:
                          #print "Ignoring "+feat+" order "+str(self.findorder(feat))
                          pass #ignore higher order features in non-functional vectors
-                    else: self.featuredict[feat]=score
+                    else:
+                        self.featuredict[feat]=score
                 else:
                     self.featuredict[feat]=score
         self.normalised=False
@@ -67,20 +69,34 @@ class FeatureVector:
 
 
     def add(self,avector):
+        newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
-            newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
 
             for feature in avector.featuredict.keys():
                 newvector.featuredict[feature]=newvector.featuredict.get(feature,0)+avector.featuredict[feature]
-            return newvector
+        else:
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature)
+                if aorder>1:
+                    fofeat=FeatureVector.strip(feature)
+                    newvector.featuredict[fofeat]=newvector.featuredict.get(fofeat,0)+avector.featuredict[feature]
+
+        return newvector
 
     def max(self,avector):
+        newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
-            newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
-            for feature in avector.featuredict.keys():
-                newvector.featuredict[feature]=max(self.featuredict.get(feature,0),avector.featuredict[feature])
 
-            return newvector
+            for feature in avector.featuredict.keys():
+                newvector.featuredict[feature]=max(newvector.featuredict.get(feature,0),avector.featuredict[feature])
+
+        else:
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature)
+                if aorder>1:
+                    fofeat=FeatureVector.strip(feature)
+                    newvector.featuredict[fofeat]=max(newvector.featuredict.get(fofeat,0),avector.featuredict[feature])
+        return newvector
 
     def mult(self,avector):
         newvector=FeatureVector(self.signifier+'*'+avector.signifier,features=[],fdict={})
@@ -92,16 +108,16 @@ class FeatureVector:
 
         else:
             #combine my 1st order features with avector's second order features
-            #my 2nd order features would be combined with avector's 3rd order features ... smoothing
+            #my 2nd order features would be combined with avector's 3rd order features ... smoothing ... may want different operations
 
             for feature in avector.featuredict.keys():
-                aorder=FeatureVector.findorder(feature)
-                if aorder==2:
+                aorder=FeatureVector.findorder(feature) #actually can do for all orders. order 1 won't match when stripped.
+                if aorder>1:
                     fofeat=FeatureVector.strip(feature)
                     if self.featuredict.get(fofeat,0)>0:
                         newvector.featuredict[fofeat]=self.featuredict[fofeat]*avector.featuredict[feature]
-                else:
-                   pass
+                    else:
+                       pass
 
             #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
         return newvector
@@ -116,19 +132,31 @@ class FeatureVector:
         else:
             for feature in avector.featuredict.keys():
                 aorder=FeatureVector.findorder(feature)
-                if aorder==2:
-                    pass
+                if aorder>1:
+                    fofeat=FeatureVector.strip(feature)
+                    if self.featuredict.get(fofeat,0)>0:
+                        newvector.featuredict[fofeat]=min(self.featuredict[fofeat],avector.featuredict.get(feature,0))
+
 
         return newvector
+
     def selectself(self,avector):
-        if not self.functional:
-            newvector=FeatureVector(self.signifier+'@ss@'+avector.signifier,fdict=self.featuredict)
-            return newvector
+
+        newvector=FeatureVector(self.signifier+'@ss@'+avector.signifier,fdict=self.featuredict)
+        return newvector
 
     def selectother(self,avector):
         if not self.functional:
             newvector=FeatureVector(self.signifier+'@so@'+avector.signifier,fdict=avector.featuredict)
-            return newvector
+        else:
+            newvector=FeatureVector(self.signifier+'@so@'+avector.signifier,features=[],fdict={})
+
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature)
+                if aorder>1:
+                    fofeat=FeatureVector.strip(feature)
+                    newvector.featuredict[fofeat]=avector.featuredict[feature]
+        return newvector
 
     def weighted_recall(self,avector): #weighted recall#
         self.normalise()
@@ -156,9 +184,11 @@ class FeatureVector:
         num=0
         den=0
         for feature in avector.featuredict.keys():
-            den+=1
-            if self.featuredict.get(feature)>0:
-                num+=1
+            aorder=FeatureVector.findorder(feature)
+            if aorder<=FeatureVector.compareUptoOrder:
+                den+=1
+                if self.featuredict.get(feature)>0:
+                    num+=1
         #print self.signifier, num, den
         if den>0:
             return float(num)/float(den)
@@ -180,19 +210,25 @@ class FeatureVector:
         if self.computedlength:
             return self.length
         else:
-            self.sum=0
+            self.sum={}
             self.computedlength=True
             total=0
             for feat in self.featuredict.keys():
+                aorder=FeatureVector.findorder(feat)
                 score=self.featuredict[feat]
-                total+=score*score
-                self.sum+=score
+                if aorder <= FeatureVector.compareUptoOrder:
+
+                    total+=score*score
+                self.sum[aorder]=self.sum.get(aorder,0)+score
             self.length=math.pow(total,0.5)
             return self.length
+
     def cosine(self,avector):
         total=0
         for feature in self.featuredict.keys():
-            total+=self.featuredict[feature]*avector.featuredict.get(feature,0)
+            aorder=FeatureVector.findorder(feature)
+            if aorder<=FeatureVector.compareUptoOrder:
+                total+=self.featuredict[feature]*avector.featuredict.get(feature,0)
 
         if self.computelength()==0:
             if avector.computelength()==0:
@@ -222,9 +258,13 @@ class FeatureVector:
         self.rawdict=dict(self.featuredict)
         self.featuredict={}
         for feature in self.rawdict.keys():
-            feattot=featdict.get(feature,0)
+            aorder=FeatureVector.findorder(feature)
+            fofeat=feature
+            while aorder>1:
+                fofeat=FeatureVector.strip(fofeat)
+            feattot=featdict.get(fofeat,0)
             if feattot>0:
-                ratio = (self.rawdict[feature]*featuretotal)/(self.sum*feattot)
+                ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
                 pmi = math.log(ratio)
                 if pmi>0:
                     self.featuredict[feature] = math.log(ratio)
