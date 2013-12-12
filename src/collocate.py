@@ -100,13 +100,14 @@ class Collocates:
                             feature=fields.pop()
                             if freq> self.freqthresh:
                                 parts=feature.split(':')
-                                tag=parts[1].split('/')[1]
 
-                                if parts[0]==self.featurematch and tag==self.tagmatch:
 
-                                    label=entry+':'+feature
-                                    self.fdict[label]=freq
-                                    self.noundict[parts[1]]=1
+                                if parts[0]==self.featurematch:
+                                    tag=parts[1].split('/')[1]
+                                    if tag==self.tagmatch:
+                                        label=entry+':'+feature
+                                        self.fdict[label]=freq
+                                        self.noundict[parts[1]]=1
                             #print parts[0]
                             #if parts[0]==self.parameters['inversefeatures'][self.featurematch]:  #amod-DEP has not been included as possible feature of adjective so cannot pick up these internal modifiers here
                             #    self.inversedict[entry]=self.inversedict.get(entry,0)+freq
