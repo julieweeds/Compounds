@@ -56,7 +56,7 @@ class Collocates:
                 linesread+=1
                 fields=line.rstrip().split('\t')
                 try:
-                    noun = untag(fields[0])[0]
+                    noun = fields[0]
                     self.moddict[noun]=1
                     if self.noundict.get(noun,0)>0:
                         while len(fields[1:])>0:
@@ -65,7 +65,7 @@ class Collocates:
                             if freq>self.freqthresh:
                                 parts=feature.split(':')
                                 if parts[0]==self.parameters['inversefeatures'][self.featurematch] and self.entrydict.get(parts[1],0)>0:
-                                    label=parts[1]+'/J:'+self.featurematch+':'+noun
+                                    label=parts[1]+self.featurematch+':'+noun
                                     self.modfdict[label]=freq
                 except TaggingException:
                     print "Ignoring "+line
@@ -92,7 +92,7 @@ class Collocates:
                     fields=line.rstrip().split('\t')
                     entry=fields[0]
                     try:
-                        if untag(entry)[0] in self.entrylist:
+                        if entry in self.entrylist:
                             outstream.write(line)
                             while len(fields[1:])>0:
                                 freq=float(fields.pop())
@@ -135,7 +135,7 @@ class Collocates:
                     fields=line.rstrip().split('\t')
                     entry=fields[0]
                     try:
-                        if untag(entry)[0] in self.entrylist:
+                        if entry in self.entrylist:
                             outstream.write(line)
                             while len(fields[1:])>0:
                                 score=float(fields.pop())
@@ -172,7 +172,7 @@ class Collocates:
                 try:
                     fields=line.rstrip().split('\t')
                     if float(fields[1])>self.entrythresh:
-                        entry=untag(fields[0])[0]
+                        entry=fields[0]
                         if len(entry)>self.stopwordlimit:
                             mylist.append(entry)
                 except TaggingException:
@@ -251,12 +251,12 @@ class SourceCollocates(Collocates):
             noun=untag(head,'-')[0]
             adj=untag(mod,'-')[0]
             if self.parameters['featurematch']=='amod-DEP':
-                label=noun+'/N:'+self.parameters['featurematch']+':'+adj
+                label=noun+'/N:'+self.parameters['featurematch']+':'+adj+'/J'
                 if not self.parameters['allheads']:
                     self.entrylist.append(adj)
                 self.entrylist.append(noun)
             elif self.parameters['featurematch']=='amod-HEAD':
-                label=adj+'/J:'+self.parameters['featurematch']+':'+noun
+                label=adj+'/J:'+self.parameters['featurematch']+':'+noun+'/N'
                 if not self.parameters['allheads']:
                     self.entrylist.append(noun)
                 self.entrylist.append(adj)
@@ -274,7 +274,7 @@ class SourceCollocates(Collocates):
     def processlistline(self,line):
         fields=line.rstrip().split(' ')
         try:
-            adj=untag(fields[0])[0]
+            adj=fields[0]
             type=fields[1]
             self.entrylist.append(adj)
             self.entrydict[adj]=1
@@ -384,7 +384,7 @@ class SourceCollocates(Collocates):
             return
         else:
             try:
-                adj=untag(alist[0][0].split(':')[0])[0]
+                adj=alist[0][0].split(':')[0]
                 type = self.srctypedict[adj]
                 for (label,freq,pmi) in alist:
                     outstream.write(label+'\t'+str(freq)+'\t'+str(pmi)+'\t'+type+'\n')

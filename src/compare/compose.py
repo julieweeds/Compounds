@@ -27,28 +27,8 @@ class FeatureVector:
             res=res+':'+part
         return res
 
-    def __init__(self,signifier,functional=True,features=[],fdict={}):
-        self.signifier=signifier
-        self.featuredict=dict(fdict)
-        self.computedlength=False
-        self.length=-1
-        self.sum=-1
-        #print features
-        while len(features)>0:
-            score=float(features.pop())
-            feat=features.pop()
-            if score>0:
-                if not functional:
-                    #print "Order of "+feat+" is "+str(self.findorder(feat))
-                    if self.findorder(feat)>1:
-                         #print "Ignoring "+feat+" order "+str(self.findorder(feat))
-                         pass #ignore higher order features in non-functional vectors
-                    else: self.featuredict[feat]=score
-                else:
-                    self.featuredict[feat]=score
-        self.normalised=False
-
-    def findorder(self,feat):
+    @staticmethod
+    def findorder(feat):
         #establish order of given feature
         order=len(feat.split(':'))-1
         matchobj=FeatureVector.secondorderPATT.match(feat)
@@ -62,45 +42,93 @@ class FeatureVector:
                 print "Warning: unmatched feature: ",feat,str(order)
         return order
 
-    def add(self,avector):
-        newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
+    def __init__(self,signifier,functional=True,features=[],fdict={}):
+        self.signifier=signifier
+        self.featuredict=dict(fdict)
+        self.computedlength=False
+        self.length=-1
+        self.sum=-1
+        self.functional=functional
+        #print features
+        while len(features)>0:
+            score=float(features.pop())
+            feat=features.pop()
+            if score>0:
+                if not functional:
+                    #print "Order of "+feat+" is "+str(self.findorder(feat))
+                    if FeatureVector.findorder(feat)>1:
+                         #print "Ignoring "+feat+" order "+str(self.findorder(feat))
+                         pass #ignore higher order features in non-functional vectors
+                    else: self.featuredict[feat]=score
+                else:
+                    self.featuredict[feat]=score
+        self.normalised=False
 
-        for feature in avector.featuredict.keys():
-            newvector.featuredict[feature]=newvector.featuredict.get(feature,0)+avector.featuredict[feature]
-        return newvector
+
+
+    def add(self,avector):
+        if not self.functional:
+            newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
+
+            for feature in avector.featuredict.keys():
+                newvector.featuredict[feature]=newvector.featuredict.get(feature,0)+avector.featuredict[feature]
+            return newvector
 
     def max(self,avector):
-        newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
-        for feature in avector.featuredict.keys():
-            newvector.featuredict[feature]=max(self.featuredict.get(feature,0),avector.featuredict[feature])
+        if not self.functional:
+            newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
+            for feature in avector.featuredict.keys():
+                newvector.featuredict[feature]=max(self.featuredict.get(feature,0),avector.featuredict[feature])
 
-        return newvector
+            return newvector
 
     def mult(self,avector):
         newvector=FeatureVector(self.signifier+'*'+avector.signifier,features=[],fdict={})
+        if not self.functional:
 
-        for feature in self.featuredict.keys():
-            if avector.featuredict.get(feature,0)>0:
-                newvector.featuredict[feature]=self.featuredict[feature]*avector.featuredict[feature]
+            for feature in self.featuredict.keys():
+                if avector.featuredict.get(feature,0)>0:
+                    newvector.featuredict[feature]=self.featuredict[feature]*avector.featuredict[feature]
 
+        else:
+            #combine my 1st order features with avector's second order features
+            #my 2nd order features would be combined with avector's 3rd order features ... smoothing
+
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature)
+                if aorder==2:
+                    fofeat=FeatureVector.strip(feature)
+                    if self.featuredict.get(fofeat,0)>0:
+                        newvector.featuredict[fofeat]=self.featuredict[fofeat]*avector.featuredict[feature]
+                else:
+                   pass
+
+            #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
         return newvector
 
     def min(self,avector):
         newvector=FeatureVector(self.signifier+'@MIN@'+avector.signifier,features=[],fdict={})
+        if not self.functional:
+            for feature in self.featuredict.keys():
+                if avector.featuredict.get(feature,0)>0:
+                    newvector.featuredict[feature]=min(self.featuredict[feature],avector.featuredict.get(feature,0))
+            #print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
+        else:
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature)
+                if aorder==2:
+                    pass
 
-        for feature in self.featuredict.keys():
-            if avector.featuredict.get(feature,0)>0:
-                newvector.featuredict[feature]=min(self.featuredict[feature],avector.featuredict.get(feature,0))
-        #print newvector.signifier, len(newvector.featuredict.keys()), len(self.featuredict.keys()), len(avector.featuredict.keys())
         return newvector
+    def selectself(self,avector):
+        if not self.functional:
+            newvector=FeatureVector(self.signifier+'@ss@'+avector.signifier,fdict=self.featuredict)
+            return newvector
 
-    def selectright(self,avector):
-        newvector=FeatureVector(self.signifier+'@h@'+avector.signifier,fdict=self.featuredict)
-        return newvector
-
-    def selectleft(self,avector):
-        newvector=FeatureVector(self.signifier+'@m@'+avector.signifier,fdict=avector.featuredict)
-        return newvector
+    def selectother(self,avector):
+        if not self.functional:
+            newvector=FeatureVector(self.signifier+'@so@'+avector.signifier,fdict=avector.featuredict)
+            return newvector
 
     def weighted_recall(self,avector): #weighted recall#
         self.normalise()
@@ -476,7 +504,7 @@ class Composer:
 
     def writestats(self,xs,ys,phrases):
         if self.statsreq:
-            statspath=os.path.join(parameters['datadir'],'stats'+self.whoami+'.csv')
+            statspath=os.path.join(self.parameters['datadir'],'stats'+self.whoami+'.csv')
             with open(statspath,'w') as outstream:
                 for metric in self.parameters['metric']:
                     outstream.write(metric+',')
@@ -523,18 +551,18 @@ class Composer:
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
-                outstream.write(parameters['usefile']+',')
-                if parameters['diff']:
+                outstream.write(self.parameters['usefile']+',')
+                if self.parameters['diff']:
                     outstream.write('diff,')
                 else:
                     outstream.write('nodiff,')
 
-                if parameters['pmi']:
+                if self.parameters['pmi']:
                     outstream.write('PPMI->compose,')
                 else:
                     outstream.write('compose->PPMI,')
 
-                outstream.write(parameters['compop']+',')
+                outstream.write(self.parameters['compop']+',')
                 outstream.write(metric+','+str(mean)+','+str(sd)+','+str(c1)+','+str(c2)+'\n')
 
         return
@@ -545,11 +573,12 @@ class Composer:
     def _compose_mult(self,left,right):
         return left.mult(right)
 
-    def _compose_selectright(self,left,right):
-        return right.selectright(left)
+    def _compose_selectself(self,left,right):
+        return left.makecopy(right)
 
-    def _compose_selectleft(self,left,right):
-        return left.selectleft(right)
+    def _compose_selectother(self,left,right):
+        return left.makecopy(right)
+
     def _compose_min(self,left,right):
         return left.min(right)
 
