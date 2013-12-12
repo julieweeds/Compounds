@@ -44,7 +44,7 @@ class VectorExtractor:
 
     def loadphrases(self):
         if self.parameters['adjlist']:
-            filename='multiwords.'+self.parameters['usefile']+'.tagged'
+            filename='multiwords.'+self.parameters['usefile']
         else:
             filename=self.parameters['collocatefile']
         filepath = os.path.join(self.datadir,filename)
