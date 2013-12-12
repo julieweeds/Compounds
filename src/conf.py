@@ -107,7 +107,7 @@ def configure(args):
             parameters['collocatefile']=['multiwords.train','multiwords.test','multiwords.spare']
             parameters['freqthresh']=100
             parameters['featurematch']='amod-HEAD'
-            parameters['tagmatch']='J'
+            parameters['tagmatch']='N'
             parameters['tagall']=False
             parameters['tag']='N'
             #parameters['nfmod']=True

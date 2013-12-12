@@ -36,6 +36,7 @@ class Collocates:
         self.freqthresh=config['freqthresh']
         self.entrythresh=config['entrythresh']
         self.featurematch=config['featurematch']
+        self.tagmatch=config['tagmatch']
         self.stopwordlimit=config['stopwordlimit']
         self.testing=config['testing']
         self.sample=config['sample']
@@ -91,26 +92,25 @@ class Collocates:
                 for line in instream:
                     fields=line.rstrip().split('\t')
                     entry=fields[0]
-                    try:
-                        if entry in self.entrylist:
-                            outstream.write(line)
-                            while len(fields[1:])>0:
-                                freq=float(fields.pop())
-                                feature=fields.pop()
-                                if freq> self.freqthresh:
-                                    parts=feature.split(':')
 
-                                    if parts[0]==self.featurematch and (self.parameters['allheads'] or parts[1] in self.entrylist):
-                                        if not usemoddict or (usemoddict and self.moddict.get(parts[1],0)>0):
-                                            label=entry+':'+feature
-                                            self.fdict[label]=freq
-                                            self.noundict[parts[1]]=1
-                                #print parts[0]
-                                #if parts[0]==self.parameters['inversefeatures'][self.featurematch]:  #amod-DEP has not been included as possible feature of adjective so cannot pick up these internal modifiers here
-                                #    self.inversedict[entry]=self.inversedict.get(entry,0)+freq
-                    except TaggingException:
-                        print "Warning: ignoring ",line
-                        continue
+                    if entry in self.entrylist:
+                        outstream.write(line)
+                        while len(fields[1:])>0:
+                            freq=float(fields.pop())
+                            feature=fields.pop()
+                            if freq> self.freqthresh:
+                                parts=feature.split(':')
+                                tag=parts[1].split('/')[1]
+
+                                if parts[0]==self.featurematch and tag==self.tagmatch:
+
+                                    label=entry+':'+feature
+                                    self.fdict[label]=freq
+                                    self.noundict[parts[1]]=1
+                            #print parts[0]
+                            #if parts[0]==self.parameters['inversefeatures'][self.featurematch]:  #amod-DEP has not been included as possible feature of adjective so cannot pick up these internal modifiers here
+                            #    self.inversedict[entry]=self.inversedict.get(entry,0)+freq
+
                     linesread+=1
                     if linesread%self.linestop==0:
                         print "Read "+str(linesread)+" lines"
@@ -151,7 +151,8 @@ class Collocates:
                                         #self.midict[label]=score
                                     self.clist.append((label,freq,score))
                                 else:
-                                    print "Ignoring low frequency "+label+" f1 = "+str(freq)
+                                    pass
+                                    #print "Ignoring low frequency "+label+" f1 = "+str(freq)
 
                     linesread+=1
                     if linesread%self.linestop==0:
