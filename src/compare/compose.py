@@ -375,8 +375,9 @@ class Composer:
             with open(self.parameters['phrasalcache'],'w') as outstream:
                 print "Writing "+self.parameters['phrasalcache']
                 for colloc in self.collocorder:
-                    outstream.write(vectordict.get(colloc,'\n'))
-                    outstream.write(vectordict.get(self.inverse(colloc),'\n'))
+                    outstream.write(vectordict.get(colloc,colloc+'\n'))
+                    inverted = self.inverse(colloc)
+                    outstream.write(vectordict.get(inverted,inverted+'\n'))
 
             vectordict={} #free memory
             #load constituents
