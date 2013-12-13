@@ -474,6 +474,7 @@ class Composer:
                         phraseVector=FeatureVector(phrasefields[0],features=phrasefields[1:],functional=self.parameters['funct'])
                         rightVector=FeatureVector(rightfields[0],features=rightfields[1:],functional=self.parameters['funct'])
                         leftVector=FeatureVector(leftfields[0],features=leftfields[1:],functional=self.parameters['funct'])
+                        print "Processing "+phrasefields[0]
                         phraseparts=phrasefields[0].split(':')
                         if phraseparts[1]==self.parameters['featurematch']:
                             inverted=False
