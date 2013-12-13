@@ -532,6 +532,7 @@ class Composer:
                             print scores
 
                         allphrases.append(phrasefields[0])
+                        allys.append(scores)
                         leftpmi=self.collocdict.get(phrasefields[0],0)
                         rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),0)
                         if leftpmi>0:
@@ -545,9 +546,10 @@ class Composer:
                             rightphrases.append(phrasefields[0])
                             rightys.append(scores)
 
+
                         if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%1==0:
+                        if self.parameters['testing'] and done%10==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
         self.computestats(allxs,allys,allphrases,'all')
@@ -603,11 +605,15 @@ class Composer:
                 zs.append(z)
                 total+=z
                 totalsquared+=z*z
-            mean = total/len(zs)
-            variance = totalsquared/len(zs)-mean*mean
-            if variance>0:
-                sd = math.pow(variance,0.5)
+            if len(zs)>0:
+                mean = total/len(zs)
+                variance = totalsquared/len(zs)-mean*mean
+                if variance>0:
+                    sd = math.pow(variance,0.5)
+                else:
+                    sd=0
             else:
+                mean=0
                 sd=0
             print type+" :mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
 
