@@ -301,7 +301,6 @@ class Composer:
             self.whoami='.diff'
         else:
             self.whoami='.nodiff'
-
         self.statsreq=True
 
         self.readcomps()
