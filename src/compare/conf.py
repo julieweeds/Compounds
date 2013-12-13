@@ -67,7 +67,7 @@ def setfilenames(parameters):
     else:
         parameters['constituentfile']=basename+'.CONSTITUENTS'
     parameters['constituentpath']=os.path.join(parameters['datadir'],parameters['constituentfile'])
-    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile']+'.tagged')
+    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
 
     parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
     parameters['featurefile']='events.strings_depcol.tagged'
