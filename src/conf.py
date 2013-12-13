@@ -18,7 +18,7 @@ def configure(args):
     parameters['tagmatch']='N'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
     parameters['testing']=False
-    parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD','amod-HEAD']
+    parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','conj-HEAD','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','pobj-HEAD','amod-HEAD','advmod-HEAD','advmod-DEP']
 
     parameters['collocatefile']='multiwords_'+parameters['featurematch']
     parameters['depfile']='wikipedia_nounsdeps_t100.pbfiltered'
