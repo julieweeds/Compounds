@@ -477,7 +477,7 @@ class Composer:
                         leftVector=FeatureVector(leftfields[0],features=leftfields[1:],functional=self.parameters['funct'])
                         print "Processing "+str(done)+":"+phrasefields[0]
                         phraseparts=phrasefields[0].split(':')
-                        if len(phraseparts<2):
+                        if len(phraseparts)<2:
                             print "Error with line "+line
                         else:
                             if phraseparts[1]==self.parameters['featurematch']:
