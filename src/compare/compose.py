@@ -687,6 +687,7 @@ if __name__=='__main__':
     print "Metrics:",parameters['metric']
     print "FUNCT:",parameters['funct']
     print "DIFF:",parameters['diff']
+    print "PMI (first):",parameters['pmi']
     print "Composition Operation:",parameters['compop']
     go(parameters)
 
