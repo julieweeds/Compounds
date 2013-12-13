@@ -35,8 +35,8 @@ def configure(args):
             parameters['mod']=True
             parameters['funct']=True
         elif arg=='mult':parameters['compop']='mult'
-        elif arg=="selecthead":parameters['compop']='selecthead'
-        elif arg=="selectmod":parameters['compop']='selectmod'
+        elif arg=="selectself":parameters['compop']='selectself'
+        elif arg=="selectother":parameters['compop']='selectother'
         elif arg=="min":parameters['compop']='min'
         elif arg=='max':parameters['compop']='max'
         elif arg=='cached':parameters['cached']=True
