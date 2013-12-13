@@ -614,10 +614,10 @@ class Composer:
         return left.mult(right)
 
     def _compose_selectself(self,left,right):
-        return left.makecopy(right)
+        return left.selectself(right)
 
     def _compose_selectother(self,left,right):
-        return left.makecopy(right)
+        return left.selectother(right)
 
     def _compose_min(self,left,right):
         return left.min(right)
