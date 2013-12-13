@@ -466,9 +466,15 @@ class Composer:
             with open(self.parameters['leftcache'],'r') as leftstream:
                 with open(self.parameters['rightcache'],'r') as rightstream:
 
-                    xs=[]
-                    ys=[]
-                    phrases=[]
+                    allxs=[]
+                    allys=[]
+                    allphrases=[]
+                    leftxs=[]
+                    leftys=[]
+                    leftphrases=[]
+                    rightxs=[]
+                    rightys=[]
+                    rightphrases=[]
                     done=0
                     for line in phrasalstream:
                         done+=1
@@ -525,16 +531,28 @@ class Composer:
                         if self.parameters['testing']:
                             print scores
 
-                        phrases.append(phrasefields[0])
+                        allphrases.append(phrasefields[0])
+                        leftpmi=self.collocdict.get(phrasefields[0],0)
+                        rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),0)
+                        if leftpmi>0:
+                            allxs.append(leftpmi)
+                            leftxs.append(leftpmi)
+                            leftphrases.append(phrasefields[0])
+                            leftys.append(scores)
+                        else:
+                            allxs.append(rightpmi)
+                            rightxs.append(rightpmi)
+                            rightphrases.append(phrasefields[0])
+                            rightys.append(scores)
 
-                        xs.append(self.collocdict.get(phrasefields[0],self.collocdict.get(self.inverse(phrasefields[0]),0)))
-                        ys.append(scores)
                         if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
                         if self.parameters['testing'] and done%1==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
-        self.computestats(xs,ys,phrases)
+        self.computestats(allxs,allys,allphrases,'all')
+        self.computestats(leftxs,leftys,leftphrases,'left')
+        self.computestats(rightxs,rightys,rightphrases,'right')
 
     def compose(self,left,right):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
@@ -570,9 +588,10 @@ class Composer:
         else:
             return
 
-    def computestats(self,xs,ys,phrases):
+    def computestats(self,xs,ys,phrases,type='all'):
 
-        self.writestats(xs,ys,phrases)
+        if type=='all':
+            self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):
             total=0
@@ -590,7 +609,7 @@ class Composer:
                 sd = math.pow(variance,0.5)
             else:
                 sd=0
-            print "Mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
+            print type+" :mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
 
             if variance>0:
                 correlation=stats.spearmanr(np.array(xs),np.array(zs))
@@ -599,7 +618,7 @@ class Composer:
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
-                outstream.write(self.parameters['usefile']+',')
+                outstream.write(self.parameters['usefile']+','+type+',')
                 if self.parameters['diff']:
                     outstream.write('diff,')
                 else:
