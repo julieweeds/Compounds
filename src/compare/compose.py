@@ -245,11 +245,12 @@ class FeatureVector:
             return
         else:
             self.normalised=True
-            self.computelength()
+            self.computelength() #ensures sums are computed as well as length
             for feat in self.featuredict.keys():
-                self.featuredict[feat]=self.featuredict[feat]/self.sum
+                aorder=FeatureVector.findorder(feat)
+                self.featuredict[feat]=self.featuredict[feat]/self.sum[aorder]
 
-            self.sum=1.0
+            self.computelength() #recomputes length and sums
             return
 
     def transform(self,featdict,featuretotal):
