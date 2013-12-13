@@ -263,6 +263,7 @@ class FeatureVector:
             fofeat=feature
             while aorder>1:
                 fofeat=FeatureVector.strip(fofeat)
+                aorder=aorder-1
             feattot=featdict.get(fofeat,0)
             if feattot>0:
                 ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
