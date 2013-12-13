@@ -57,8 +57,10 @@ def configure(args):
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
     parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
+    parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
+        parameters['altdatadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
     if parameters['athome']:
         parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
@@ -69,9 +71,9 @@ def setfilenames(parameters):
     parameters['constituentpath']=os.path.join(parameters['datadir'],parameters['constituentfile'])
     parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
 
-    parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
+
     parameters['featurefile']='features.strings'
-    parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
+    #parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters
 
