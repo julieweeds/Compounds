@@ -235,6 +235,8 @@ class FeatureVector:
                 sim=1
             else:
                 sim=0
+        elif avector.computelength()==0:
+            sim=0
         else:
             sim = total / (self.computelength() * avector.computelength())
         return sim
