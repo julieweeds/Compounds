@@ -468,21 +468,25 @@ class Composer:
                     phrases=[]
                     done=0
                     for line in phrasalstream:
+                        done+=1
                         phrasefields=line.rstrip().split('\t')
                         rightfields=rightstream.readline().rstrip().split('\t')
                         leftfields=leftstream.readline().rstrip().split('\t')
                         phraseVector=FeatureVector(phrasefields[0],features=phrasefields[1:],functional=self.parameters['funct'])
                         rightVector=FeatureVector(rightfields[0],features=rightfields[1:],functional=self.parameters['funct'])
                         leftVector=FeatureVector(leftfields[0],features=leftfields[1:],functional=self.parameters['funct'])
-                        print "Processing "+phrasefields[0]
+                        print "Processing "+str(done)+":"+phrasefields[0]
                         phraseparts=phrasefields[0].split(':')
-                        if phraseparts[1]==self.parameters['featurematch']:
-                            inverted=False
-                        elif phraseparts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
-                            inverted=True
+                        if len(phraseparts<2):
+                            print "Error with line "+line
                         else:
-                            print "Warning: non-matching featuretype in phrase"+phrasefields[0]
-                            exit(1)
+                            if phraseparts[1]==self.parameters['featurematch']:
+                                inverted=False
+                            elif phraseparts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                                inverted=True
+                            else:
+                                print "Warning: non-matching featuretype in phrase"+phrasefields[0]
+                                exit(1)
 
                         if self.parameters['testing']:
                             print phraseVector.toString()
@@ -522,8 +526,7 @@ class Composer:
 
                         xs.append(self.collocdict.get(phrasefields[0],self.collocdict.get(self.inverse(phrasefields[0]),0)))
                         ys.append(scores)
-                        done+=1
-                        if done % 1000 == 0:
+                        if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
                         if self.parameters['testing'] and done%1==0:
                             print "Processed "+str(done)+" phrasal expressions"
