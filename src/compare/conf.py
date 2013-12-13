@@ -70,7 +70,7 @@ def setfilenames(parameters):
     parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
 
     parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
-    parameters['featurefile']='events.strings_depcol.tagged'
+    parameters['featurefile']='events.strings_depcol'
     parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters
