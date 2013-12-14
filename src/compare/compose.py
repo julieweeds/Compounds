@@ -625,6 +625,10 @@ class Composer:
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
                 outstream.write(self.parameters['usefile']+','+type+',')
+                if self.parameters['funct']:
+                    outstream.write('funct,')
+                else:
+                    outstream.write('non-funct,')
                 if self.parameters['diff']:
                     outstream.write('diff,')
                 else:
