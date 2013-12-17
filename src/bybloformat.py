@@ -21,6 +21,11 @@ if __name__=="__main__":
         filename=sys.argv[1]
     datapath=os.path.join(datadir,filename)
 
+    if len(sys.argv)>2:
+        required_tag=sys.argv[2]
+    else:
+        required_tag='J'
+
     eventpath=datapath+".events.strings"
     entrypath=datapath+".entries.strings"
 
@@ -50,7 +55,7 @@ if __name__=="__main__":
                         else:
                             print "Incorrect format of phrase "+fields[0]
                             exit(1)
-                    if total>0:
+                    if total>0 and tag==required_tag:
                         entrystream.write(fields[0]+'\t'+str(total)+'\n')
                         eventstream.write('\t'.join(fields)+'\n')
                     else:
