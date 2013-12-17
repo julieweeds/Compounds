@@ -281,36 +281,41 @@ class FeatureVector:
             return
 
     def transform(self,featdict,featuretotal,association='pmi'):
-        #transform raw featurecounts into ppmi values
-        self.computelength()
-        self.rawdict=dict(self.featuredict)
-        self.featuredict={}
-        for feature in self.rawdict.keys():
-            aorder=FeatureVector.findorder(feature)
-            fofeat=feature
-            while aorder>1:
-                fofeat=FeatureVector.strip(fofeat)
-                aorder=aorder-1
-            feattot=featdict.get(fofeat,0)
-            if feattot>0:
-                ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
-                pmi = math.log(ratio)
+        #transform raw featurecounts into association values
+        if association=='raw':
+            return
+        else:
+            self.computelength()
+            self.rawdict=dict(self.featuredict)
+            self.featuredict={}
+            for feature in self.rawdict.keys():
+                aorder=FeatureVector.findorder(feature)
+                fofeat=feature
+                while aorder>1:
+                    fofeat=FeatureVector.strip(fofeat)
+                    aorder=aorder-1
+                feattot=featdict.get(fofeat,0)
+                if feattot>0:
+                    ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
+                    pmi = math.log(ratio)
 
-                if pmi>0:
-                    if association=='pmi':
-                        self.featuredict[feature] = pmi
-                    elif association=='lmi':
-                        lmi = pmi * self.rawdict[feature]  #dividing by featuretotal won't make any difference as it is a constant and will just make numbers tiny - really?
-                        self.featuredict[feature]=lmi
-                    elif association=='npmi':
-                        npmi=pmi/(-math.log(self.rawdict[feature]/featuretotal))
-                        self.featuredict[feature]=npmi
-                        
-            else:
-                #print "Warning "+feature+" not in feature dict"
-                pass
-        self.computedlength=False
-        self.computelength()
+                    if pmi>0:
+                        if association=='pmi':
+                            self.featuredict[feature] = pmi
+                        elif association=='lmi':
+                            lmi = pmi * self.rawdict[feature]  #dividing by featuretotal won't make any difference as it is a constant and will just make numbers tiny - really?
+                            self.featuredict[feature]=lmi
+                        elif association=='npmi':
+                            npmi=pmi/(-math.log(self.rawdict[feature]/featuretotal))
+                            self.featuredict[feature]=npmi
+                        else:
+                            print "Warning: unknown association measure"+association
+
+                else:
+                    #print "Warning "+feature+" not in feature dict"
+                    pass
+            self.computedlength=False
+            self.computelength()
 
     def toString(self):
         res=self.signifier+'('+str(len(self.featuredict.keys()))+')'
@@ -340,6 +345,7 @@ class Composer:
         else:
             self.whoami='.nodiff'
         self.statsreq=True
+        self.association=parameters['association']
 
         self.readcomps()
         self.makecaches()
@@ -538,11 +544,11 @@ class Composer:
                         if not self.parameters['composefirst']:
                             #transform to pmi values before composition
                             if inverted:
-                                rightVector.transform(self.featdict['left'],self.featuretotal['left'])
-                                leftVector.transform(self.featdict['right'],self.featuretotal['right'])
+                                rightVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)
+                                leftVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
                             else:
-                                rightVector.transform(self.featdict['right'],self.featuretotal['right'])
-                                leftVector.transform(self.featdict['left'],self.featuretotal['left'])
+                                rightVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                                leftVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)
                             #phraseVector.transform(self.featdict,self.featuretotal)
                         else: #normalise to probabilities before composing
                             rightVector.normalise()
@@ -551,9 +557,9 @@ class Composer:
                         if self.parameters['testing']:
                             print composedVector.toString()
                         if self.parameters['composefirst']:
-                            composedVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
+                            composedVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
 
-                        phraseVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
+                        phraseVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
                         if self.parameters['testing']:
                             print phraseVector.toString()
                             print rightVector.toString()
@@ -632,6 +638,7 @@ class Composer:
         for i,metric in enumerate(self.parameters['metric']):
             total=0
             totalsquared=0
+            variance=0
             zs=[]
             for y in ys:
                 #print y
