@@ -69,7 +69,7 @@ class FeatureVector:
 
 
     def add(self,avector):
-        newvector=FeatureVector(self.signifier+'+'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+'@+@'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -99,7 +99,7 @@ class FeatureVector:
         return newvector
 
     def mult(self,avector):
-        newvector=FeatureVector(self.signifier+'*'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+'@*@'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -327,6 +327,13 @@ class FeatureVector:
         #res+='\n'
         return res
 
+    def writeout(self,outstream):
+
+        outstream.write(self.signifier)
+        for feat in self.featuredict.keys():
+            outstream.write('\t'+feat+'\t'+str(self.featuredict[feat]))
+        outstream.write('\n')
+
 
 class Composer:
 
@@ -387,6 +394,11 @@ class Composer:
         self.parameters['phrasalcache']=os.path.join(self.parameters['datadir'],'phrasal.cache'+self.whoami)
         self.parameters['rightcache']=os.path.join(self.parameters['datadir'],'right.cache'+self.whoami)
         self.parameters['leftcache']=os.path.join(self.parameters['datadir'],'left.cache'+self.whoami)
+        self.parameters['outcache']=os.path.join(self.parameters['datadir'],'comp.cache'+self.whoami+'.'+self.parameters['compop'])
+        if self.parameters['funct']:
+            self.parameters['outcache']=self.parameters['outcache']+'.funct'
+        else:
+            self.parameters['outcache']=self.parameters['outcache']+'.nofunct'
 
         if not self.parameters['cached']:
             #phrasal
@@ -506,6 +518,7 @@ class Composer:
             with open(self.parameters['leftcache'],'r') as leftstream:
                 with open(self.parameters['rightcache'],'r') as rightstream:
 
+                    vectorstream=open(self.parameters['outcache'],'w')
                     allxs=[]
                     allys=[]
                     allphrases=[]
@@ -551,9 +564,12 @@ class Composer:
                                 leftVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)
                             #phraseVector.transform(self.featdict,self.featuretotal)
                         else: #normalise to probabilities before composing
-                            rightVector.normalise()
-                            leftVector.normalise()
+                            #rightVector.normalise()
+                            #leftVector.normalise()
+                            pass
                         composedVector=self.compose(leftVector,rightVector)
+
+                        composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
                         if self.parameters['testing']:
                             print composedVector.toString()
                         if self.parameters['composefirst']:
@@ -592,6 +608,7 @@ class Composer:
                         if self.parameters['testing'] and done%10==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
+                    vectorstream.close()
         self.computestats(allxs,allys,allphrases,'all')
         self.computestats(leftxs,leftys,leftphrases,'left')
         self.computestats(rightxs,rightys,rightphrases,'right')
