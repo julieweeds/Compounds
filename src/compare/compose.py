@@ -280,7 +280,7 @@ class FeatureVector:
             self.computelength() #recomputes length and sums
             return
 
-    def transform(self,featdict,featuretotal):
+    def transform(self,featdict,featuretotal,association='pmi'):
         #transform raw featurecounts into ppmi values
         self.computelength()
         self.rawdict=dict(self.featuredict)
@@ -295,8 +295,17 @@ class FeatureVector:
             if feattot>0:
                 ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
                 pmi = math.log(ratio)
+
                 if pmi>0:
-                    self.featuredict[feature] = math.log(ratio)
+                    if association=='pmi':
+                        self.featuredict[feature] = pmi
+                    elif association=='lmi':
+                        lmi = pmi * self.rawdict[feature]  #dividing by featuretotal won't make any difference as it is a constant and will just make numbers tiny - really?
+                        self.featuredict[feature]=lmi
+                    elif association=='npmi':
+                        npmi=pmi/(-math.log(self.rawdict[feature]/featuretotal))
+                        self.featuredict[feature]=npmi
+                        
             else:
                 #print "Warning "+feature+" not in feature dict"
                 pass
@@ -526,7 +535,7 @@ class Composer:
                             print phraseVector.toString()
                             print rightVector.toString()
                             print leftVector.toString()
-                        if self.parameters['pmi']:
+                        if not self.parameters['composefirst']:
                             #transform to pmi values before composition
                             if inverted:
                                 rightVector.transform(self.featdict['left'],self.featuretotal['left'])
@@ -541,7 +550,7 @@ class Composer:
                         composedVector=self.compose(leftVector,rightVector)
                         if self.parameters['testing']:
                             print composedVector.toString()
-                        if not self.parameters['pmi']:
+                        if self.parameters['composefirst']:
                             composedVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
 
                         phraseVector.transform(self.featdict['left'],self.featuretotal['left'])  #phrases have features of the left most constituent
@@ -659,10 +668,10 @@ class Composer:
                 else:
                     outstream.write('nodiff,')
 
-                if self.parameters['pmi']:
-                    outstream.write('PPMI->compose,')
+                if self.parameters['composefirst']:
+                    outstream.write('compose->'+parameters['association']+',')
                 else:
-                    outstream.write('compose->PPMI,')
+                    outstream.write(parameters['association']+'->compose,')
 
                 outstream.write(self.parameters['compop']+',')
                 outstream.write(metric+','+str(mean)+','+str(sd)+','+str(c1)+','+str(c2)+'\n')
@@ -719,7 +728,8 @@ if __name__=='__main__':
     print "Metrics:",parameters['metric']
     print "FUNCT:",parameters['funct']
     print "DIFF:",parameters['diff']
-    print "PMI (first):",parameters['pmi']
+    print "Compose first:",parameters['composefirst']
+    print "Association:",parameters['association']
     print "Composition Operation:",parameters['compop']
     go(parameters)
 

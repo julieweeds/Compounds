@@ -21,6 +21,8 @@ def configure(args):
     parameters['pmi']=False
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
     parameters['featurematch']='amod-HEAD'
+    parameters['association']='pmi'
+    parameters['composefirst']=True
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -50,7 +52,14 @@ def configure(args):
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
         elif arg=='wins':parameters['ftype']='wins'
-        elif arg=='pmi':parameters['pmi']=True #compute PPMI then compose (alternative: compose then compute PPMI)
+        elif arg=='pmi':
+            parameters['pmi']=True #compute PPMI then compose (alternative: compose then compute PPMI)
+            parameters['composefirst']=False
+            parameters['association']='pmi'
+        elif arg=='composefirst':parameters['composefirst']=True
+        elif arg=='composesecond':parameters['composefirst']=False
+        elif arg=='lmi':parameters['association']='lmi'
+        elif arg=='npmi':parameters['association']='npmi'
     parameters = setfilenames(parameters)
 
     return parameters
