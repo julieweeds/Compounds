@@ -509,7 +509,7 @@ class Composer:
                         phraseVector=FeatureVector(phrasefields[0],features=phrasefields[1:],functional=self.parameters['funct'])
                         rightVector=FeatureVector(rightfields[0],features=rightfields[1:],functional=self.parameters['funct'])
                         leftVector=FeatureVector(leftfields[0],features=leftfields[1:],functional=self.parameters['funct'])
-                        print "Processing "+str(done)+":"+phrasefields[0]
+                        #print "Processing "+str(done)+":"+phrasefields[0]
                         phraseparts=phrasefields[0].split(':')
                         if len(phraseparts)<2:
                             print "Error with line "+line
@@ -650,6 +650,10 @@ class Composer:
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
                 outstream.write(self.parameters['usefile']+','+type+',')
+                if self.parameters['funct']:
+                    outstream.write('funct,')
+                else:
+                    outstream.write('non-funct,')
                 if self.parameters['diff']:
                     outstream.write('diff,')
                 else:
