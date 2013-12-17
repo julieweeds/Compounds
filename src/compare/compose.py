@@ -683,6 +683,9 @@ class Composer:
     def _compose_max(self,left,right):
         return left.max(right)
 
+    def _compose_gm(self,left,right):
+        return left.gm(right)
+
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)
 
