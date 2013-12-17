@@ -122,6 +122,31 @@ class FeatureVector:
             #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
         return newvector
 
+    def gm(self,avector):
+        #geometric mean of feature values i.e., multiply and sqrt to return into same number space
+        newvector=FeatureVector(self.signifier+'@gm@'+avector.signifier,features=[],fdict={})
+        if not self.functional:
+
+            for feature in self.featuredict.keys():
+                if avector.featuredict.get(feature,0)>0:
+                    newvector.featuredict[feature]=math.sqrt(self.featuredict[feature]*avector.featuredict[feature])
+
+        else:
+            #combine my 1st order features with avector's second order features
+            #my 2nd order features would be combined with avector's 3rd order features ... smoothing ... may want different operations
+
+            for feature in avector.featuredict.keys():
+                aorder=FeatureVector.findorder(feature) #actually can do for all orders. order 1 won't match when stripped.
+                if aorder>1:
+                    fofeat=FeatureVector.strip(feature)
+                    if self.featuredict.get(fofeat,0)>0:
+                        newvector.featuredict[fofeat]=math.sqrt(self.featuredict[fofeat]*avector.featuredict[feature])
+                    else:
+                       pass
+
+            #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
+        return newvector
+
     def min(self,avector):
         newvector=FeatureVector(self.signifier+'@MIN@'+avector.signifier,features=[],fdict={})
         if not self.functional:
