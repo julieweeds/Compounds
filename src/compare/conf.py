@@ -23,6 +23,7 @@ def configure(args):
     parameters['featurematch']='amod-HEAD'
     parameters['association']='pmi'
     parameters['composefirst']=True
+    parameters['output']='more_results.csv'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True

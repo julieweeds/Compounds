@@ -349,7 +349,7 @@ class Composer:
 
         self.readcomps()
         self.makecaches()
-        self.resultspath=os.path.join(self.parameters['datadir'],'results.csv')
+        self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
 
     def inverse(self,colloc):
         try:
