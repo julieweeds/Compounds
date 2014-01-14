@@ -33,6 +33,8 @@ def configure(args):
     #parameters['raw']=False
     parameters['phrasetype']='ANs'
     parameters['posdict']={'N':'nouns','J':'adjs','R':'advs','V':'verbs'}
+    parameters['vsource']='giga'
+    parameters['msource']='r8'
     for arg in args:
         if arg=='testing':
             parameters['testing']=True
@@ -122,12 +124,26 @@ def configure(args):
             parameters['phrasetype']='NNs'
             parameters['lefttype']='N'
             parameters['righttype']='N'
-
+        elif arg=='giga':
+            parameters['vsource']='giga'
+        elif arg=='wiki':
+            parameters['vsource']='wiki'
+        elif arg=='movies':
+            parameters['msource']='movies'
+        elif arg=='r8':
+            parameters['msource']='r8'
         elif arg=='miro':
-            parameters['datadir']='data/miro/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
-            parameters['altdatadir']='data/miro/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
-            parameters['depfile']='exp10'
-            parameters['altdepfile']='exp10'
+            parentdir='data/miro/'
+            if parameters['msource']=='movies':
+                parentdir=parentdir+'movies/'
+            parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            if parameters['vsource']=='giga':
+                parameters['depfile']='exp10'
+                parameters['altdepfile']='exp10'
+            elif parameters['vsource']=='wiki':
+                parameters['depfile']='exp11'
+                parameters['altdeptfile']='exp11'
             parameters['featurefile']='features.strings'
             parameters['adjlist']=True
             parameters['allheads']=True
