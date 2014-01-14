@@ -144,7 +144,7 @@ def configure(args):
             elif parameters['vsource']=='wiki':
                 parameters['depfile']='exp11'
                 parameters['altdeptfile']='exp11'
-            parameters['featurefile']='features.strings'
+            parameters['featurefile']=parameters['depfile']+'.features.strings'
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords']
