@@ -143,7 +143,7 @@ def configure(args):
                 parameters['altdepfile']='exp10'
             elif parameters['vsource']=='wiki':
                 parameters['depfile']='wikiPOS'
-                parameters['altdeptfile']='wikiPOS'
+                parameters['altdepfile']='wikiPOS'
             parameters['featurefile']=parameters['depfile']+'.features.strings'
             parameters['adjlist']=True
             parameters['allheads']=True
