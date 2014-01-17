@@ -4,6 +4,7 @@ import conf,sys,os,math
 import scipy.stats as stats
 import numpy as np
 import re
+import matplotlib.pyplot as plt
 
 class TaggingError(Exception):
     pass
@@ -14,6 +15,21 @@ def untag(astring,achar='/'):
         return(parts[0],parts[1])
     else:
         raise TaggingError
+
+def drawscatter(x,y,poly,title,ytitle,pr,xl,yl):
+    xp=np.linspace(0,xl,100)
+    #print poly
+    #print poly(xp)
+    plt.plot(x,y,'.',xp,poly(xp),'-')
+    plt.ylim(0,yl)
+    plt.title(title)
+    plt.xlabel("PPMI")
+    plt.ylabel(ytitle)
+    mytext1="srcc = "+str(pr[0])
+    mytext2="p = "+str(pr[1])
+    plt.text(0.05,yl*0.9,mytext1)
+    plt.text(0.05,yl*0.8,mytext2)
+    plt.show()
 
 class FeatureVector:
     firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
@@ -676,7 +692,12 @@ class Composer:
             print type+" :mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
 
             if variance>0:
-                correlation=stats.spearmanr(np.array(xs),np.array(zs))
+                x=np.array(xs)
+                y=np.array(zs)
+                correlation=stats.spearmanr(x,y)
+                if type=='right':
+                    title="Scatter Graph for "+metric+" Against PPMI"
+                    drawscatter(x,y,np.poly1d(np.polyfit(x,y,1)),title,metric,correlation,10,1)
             else:
                 correlation=(float('nan'),float('nan'))
             print "Correlation with PMI is: ", correlation
