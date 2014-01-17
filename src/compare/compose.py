@@ -621,7 +621,7 @@ class Composer:
 
                         if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%10==0:
+                        if self.parameters['testing'] and done%100==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
                     vectorstream.close()
