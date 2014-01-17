@@ -690,12 +690,15 @@ class Composer:
                 mean=0
                 sd=0
             print type+" :mean "+metric+" score is "+str(mean)+", sd is "+str(sd)
+            zarray=np.array(zs)
+            print "np check "+type+" : mean "+metric+" score is "+ str(np.mean(zarray))+", sd is "+str(np.std(zarray))
 
             if variance>0:
                 x=np.array(xs)
                 y=np.array(zs)
                 correlation=stats.spearmanr(x,y)
-                if type=='right':
+                if type=='right' and self.parameters['graphing']:
+
                     title="Scatter Graph for "+metric+" Against PPMI"
                     drawscatter(x,y,np.poly1d(np.polyfit(x,y,1)),title,metric,correlation,10,1)
             else:

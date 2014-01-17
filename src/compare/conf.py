@@ -24,6 +24,7 @@ def configure(args):
     parameters['association']='pmi'
     parameters['composefirst']=True
     parameters['output']='more_results.csv'
+    parameters['graphing']=False
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -59,6 +60,7 @@ def configure(args):
         elif arg=='lmi':parameters['association']='lmi'
         elif arg=='npmi':parameters['association']='npmi'
         elif arg=='raw':parameters['association']='raw'
+        elif arg=='graphing':parameters['graphing']=True
     parameters = setfilenames(parameters)
 
     return parameters
