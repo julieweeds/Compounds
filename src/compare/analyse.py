@@ -59,6 +59,9 @@ if __name__=='__main__':
         output=output+','+metric
     output+='\n'
     outstream.write(output)
+    rightscores={}
+    for metric in metrics:
+        rightscores[metric]=[]
     for adj in adjectives:
         adjscores={}
         for metric in metrics:
@@ -69,11 +72,13 @@ if __name__=='__main__':
             if parts[2]==adj:
                 for metric in metrics:
                     adjscores[metric].append(float(scores[metric][index]))
+                    rightscores[metric].append(float(scores[metric][index]))
                 totalindex+=index
         means={}
         sds={}
         output=adj
         for metric in metrics:
+            #print str(len(adjscores[metric]))
             scorearray=np.array(adjscores[metric])
             means[metric]=np.mean(scorearray)
             sds[metric]=np.std(scorearray)
@@ -85,3 +90,9 @@ if __name__=='__main__':
         outstream.write(output+'\n')
 
     outstream.close()
+
+    for metric in metrics:
+        rightarray=np.array(rightscores[metric])
+        mean = np.mean(rightarray)
+        sd=np.std(rightarray)
+        print metric,str(len(rightscores[metric])),str(mean),str(sd)

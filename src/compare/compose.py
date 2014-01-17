@@ -665,7 +665,7 @@ class Composer:
 
     def computestats(self,xs,ys,phrases,type='all'):
 
-        if type=='all':
+        if type=='right':
             self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):

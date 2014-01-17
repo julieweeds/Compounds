@@ -73,7 +73,8 @@ def setfilenames(parameters):
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
         parameters['altdatadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
     if parameters['athome']:
-        parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
+        #parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
+        parameters['datadir']='/Users/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
     if parameters['diff']:
         parameters['constituentfile']=basename+'.CONSTITUENTS.DIFF'
