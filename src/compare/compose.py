@@ -605,9 +605,9 @@ class Composer:
 
                         allphrases.append(phrasefields[0])
                         allys.append(scores)
-                        leftpmi=self.collocdict.get(phrasefields[0],0)
-                        rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),0)
-                        if leftpmi>0:
+                        leftpmi=self.collocdict.get(phrasefields[0],-1)
+                        rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),-1)
+                        if leftpmi>-1:
                             allxs.append(leftpmi)
                             leftxs.append(leftpmi)
                             leftphrases.append(phrasefields[0])

@@ -79,6 +79,14 @@ if __name__=='__main__':
         output=adj
         for metric in metrics:
             #print str(len(adjscores[metric]))
+            print adjscores[metric]
+            total=0
+            count=0
+            for sc in adjscores[metric]:
+                total+=sc
+                count+=1
+            mymean = total/count
+            print "Mean value is ",str(total),str(count),str(mymean)
             scorearray=np.array(adjscores[metric])
             means[metric]=np.mean(scorearray)
             sds[metric]=np.std(scorearray)
