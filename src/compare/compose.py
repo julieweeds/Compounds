@@ -547,6 +547,7 @@ class Composer:
                     done=0
                     for line in phrasalstream:
                         done+=1
+
                         phrasefields=line.rstrip().split('\t')
                         rightfields=rightstream.readline().rstrip().split('\t')
                         leftfields=leftstream.readline().rstrip().split('\t')
@@ -589,9 +590,16 @@ class Composer:
                         if self.parameters['testing']:
                             print composedVector.toString()
                         if self.parameters['composefirst']:
-                            composedVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
+                            if inverted:
+                                composedVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                            else:
+                                composedVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
 
-                        phraseVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
+                        if inverted:
+                            phraseVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                        else:
+                            phraseVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
+
                         if self.parameters['testing']:
                             print phraseVector.toString()
                             print rightVector.toString()
@@ -621,7 +629,7 @@ class Composer:
 
                         if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%100==0:
+                        if self.parameters['testing'] and done%2==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
                     vectorstream.close()
