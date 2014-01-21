@@ -367,6 +367,11 @@ class Composer:
             self.whoami='.diff'
         else:
             self.whoami='.nodiff'
+        self.completewhoami=self.whoami+'.'+self.parameters['compop']
+        if self.parameters['funct']:
+            self.completewhoami=self.completewhoami+'.funct'
+        else:
+            self.completewhoami=self.completewhoami+'.nofunct'
         self.statsreq=True
         self.association=parameters['association']
 
@@ -410,11 +415,7 @@ class Composer:
         self.parameters['phrasalcache']=os.path.join(self.parameters['datadir'],'phrasal.cache'+self.whoami)
         self.parameters['rightcache']=os.path.join(self.parameters['datadir'],'right.cache'+self.whoami)
         self.parameters['leftcache']=os.path.join(self.parameters['datadir'],'left.cache'+self.whoami)
-        self.parameters['outcache']=os.path.join(self.parameters['datadir'],'comp.cache'+self.whoami+'.'+self.parameters['compop'])
-        if self.parameters['funct']:
-            self.parameters['outcache']=self.parameters['outcache']+'.funct'
-        else:
-            self.parameters['outcache']=self.parameters['outcache']+'.nofunct'
+        self.parameters['outcache']=os.path.join(self.parameters['datadir'],'comp.cache'+self.completewhoami)
 
         if not self.parameters['cached']:
             #phrasal
@@ -653,7 +654,11 @@ class Composer:
 
     def writestats(self,xs,ys,phrases):
         if self.statsreq:
-            statspath=os.path.join(self.parameters['datadir'],'stats'+self.whoami+'.csv')
+            if self.parameters['composefirst']:
+                detail='.compfirst.'+self.parameters['association']
+            else:
+                detail='.compsecond.'+self.parameters['association']
+            statspath=os.path.join(self.parameters['datadir'],'stats'+self.completewhoami+detail+'.csv')
             with open(statspath,'w') as outstream:
                 for metric in self.parameters['metric']:
                     outstream.write(metric+',')
@@ -673,7 +678,7 @@ class Composer:
 
     def computestats(self,xs,ys,phrases,type='all'):
 
-        if type=='right':
+        if type=='all':
             self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):
