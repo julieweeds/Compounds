@@ -296,7 +296,7 @@ class FeatureVector:
             self.computelength() #recomputes length and sums
             return
 
-    def transform(self,featdict,featuretotal,association='pmi'):
+    def transform(self,featdictlist,featuretotallist,association='pmi'):
         #transform raw featurecounts into association values
         if association=='raw':
             return
@@ -306,13 +306,14 @@ class FeatureVector:
             self.featuredict={}
             for feature in self.rawdict.keys():
                 aorder=FeatureVector.findorder(feature)
+                storedorder=aorder-1
                 fofeat=feature
                 while aorder>1:
                     fofeat=FeatureVector.strip(fofeat)
                     aorder=aorder-1
-                feattot=featdict.get(fofeat,0)
+                feattot=featdictlist[storedorder].get(fofeat,0)
                 if feattot>0:
-                    ratio = (self.rawdict[feature]*featuretotal)/(self.sum[aorder]*feattot)
+                    ratio = (self.rawdict[feature]*featuretotallist[storedorder])/(self.sum[storedorder+1]*feattot)
                     pmi = math.log(ratio)
 
                     if pmi>0:
@@ -322,7 +323,7 @@ class FeatureVector:
                             lmi = pmi * self.rawdict[feature]  #dividing by featuretotal won't make any difference as it is a constant and will just make numbers tiny - really?
                             self.featuredict[feature]=lmi
                         elif association=='npmi':
-                            npmi=pmi/(-math.log(self.rawdict[feature]/featuretotal))
+                            npmi=pmi/(-math.log(self.rawdict[feature]/featuretotallist[storedorder]))
                             self.featuredict[feature]=npmi
                         else:
                             print "Warning: unknown association measure"+association
@@ -575,11 +576,11 @@ class Composer:
                         if not self.parameters['composefirst']:
                             #transform to pmi values before composition
                             if inverted:
-                                rightVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)
-                                leftVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                                rightVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
+                                leftVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['right']],association=self.association)
                             else:
-                                rightVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
-                                leftVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)
+                                rightVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['left']],association=self.association)
+                                leftVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
                             #phraseVector.transform(self.featdict,self.featuretotal)
                         else: #normalise to probabilities before composing
                             #rightVector.normalise()
@@ -592,14 +593,14 @@ class Composer:
                             print composedVector.toString()
                         if self.parameters['composefirst']:
                             if inverted:
-                                composedVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                                composedVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
                             else:
-                                composedVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
+                                composedVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
 
                         if inverted:
-                            phraseVector.transform(self.featdict['right'],self.featuretotal['right'],association=self.association)
+                            phraseVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
                         else:
-                            phraseVector.transform(self.featdict['left'],self.featuretotal['left'],association=self.association)  #phrases have features of the left most constituent
+                            phraseVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
 
                         if self.parameters['testing']:
                             print phraseVector.toString()

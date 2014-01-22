@@ -1,6 +1,6 @@
 __author__ = 'juliewe'
 
-import sys,conf,os
+import sys,conf,os,math
 import numpy as np
 
 class scoretable:
@@ -50,8 +50,13 @@ class scoretable:
             if ptag==tag:
                 scorelist.append(float(self.scores[metric][i]))
         scorearray=np.array(scorelist)
+        length=len(scorelist)
+        print "Length is "+str(length)
         print "Mean is "+str(np.mean(scorearray))
-        print "SD is "+str(np.std(scorearray))
+        sd=np.std(scorearray)
+        print "SD is "+str(sd)
+        print "SE is "+str(sd/math.pow(length,0.5))
+
 class analyser:
 
     def __init__(self,parameters):
@@ -72,9 +77,19 @@ class analyser:
 if __name__=="__main__":
     parameters=conf.configure(sys.argv)
     myAnalyser=analyser(parameters)
-    basefilename='stats.diff.csv'
-    otherfiles=['stats.diff.csv']
-    tags=['N']
+    ass='.lmi'
+    order='.compfirst'
+    ext='.csv'
+    prefix='stats.diff'
+    baseline='.selectself'
+    type='.funct'
+    basefilename=prefix+baseline+type+order+ass+ext
+    operations=['.add','.max','.mult','.min','.gm','.selectother']
+    #operations=['.add']
+    otherfiles=[]
+    for operation in operations:
+        otherfiles.append(prefix+operation+type+order+ass+ext)
+    tags=['N','J']
     metric='cosine'
     myAnalyser.loadfile(basefilename)
     for filename in otherfiles:
