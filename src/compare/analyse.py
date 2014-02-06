@@ -7,7 +7,7 @@ import numpy as np
 if __name__=='__main__':
 
     parameters=conf.configure(sys.argv)
-    filename='stats.diff.csv'
+    filename='stats.diff.gm.funct.compsecond.pmi.csv'
 
     filepath=os.path.join(parameters['datadir'],filename)
     print "Processing "+filepath

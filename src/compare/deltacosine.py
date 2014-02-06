@@ -52,10 +52,14 @@ class scoretable:
         scorearray=np.array(scorelist)
         length=len(scorelist)
         print "Length is "+str(length)
-        print "Mean is "+str(np.mean(scorearray))
+        amean = np.mean(scorearray)
+        print "Mean is "+str(amean)
         sd=np.std(scorearray)
         print "SD is "+str(sd)
-        print "SE is "+str(sd/math.pow(length,0.5))
+        se = sd/math.pow(length,0.5)
+        print "SE is "+str(se)
+        z = amean/se
+        print "z = "+str(z)
 
 class analyser:
 
@@ -78,7 +82,7 @@ if __name__=="__main__":
     parameters=conf.configure(sys.argv)
     myAnalyser=analyser(parameters)
     ass='.lmi'
-    order='.compfirst'
+    order='.compsecond'
     ext='.csv'
     prefix='stats.diff'
     baseline='.selectself'
@@ -89,7 +93,7 @@ if __name__=="__main__":
     otherfiles=[]
     for operation in operations:
         otherfiles.append(prefix+operation+type+order+ass+ext)
-    tags=['N','J']
+    tags=['N']
     metric='cosine'
     myAnalyser.loadfile(basefilename)
     for filename in otherfiles:
