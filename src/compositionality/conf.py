@@ -21,5 +21,7 @@ def configure(args):
 
     if parameters['local']:
         parameters['parentdir']='/Volumes/LocalScratchHD/'
+    elif parameters['athome']:
+        parameters['parentdir']='/Users/'
 
     return parameters
