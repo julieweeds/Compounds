@@ -41,6 +41,7 @@ class VectorExtractor:
         self.positions=['left','right']# #for adjectives and nouns - have corresponding dependency files in self.deppaths
         self.fmatch=[self.parameters['featurematch'],self.parameters['inversefeatures'][self.parameters['featurematch']]] #for corresponding features to match in these files
         self.tags=['J','N']
+        self.miroflag=self.parameters['miroflag']
 
     def loadphrases(self):
         if self.parameters['adjlist']:
@@ -54,17 +55,29 @@ class VectorExtractor:
             for line in instream:
                 fields=line.rstrip().split('\t')
                 collocate=fields[0] #black/J:amod-HEAD:swan
-                if len(fields)>1:
-                    self.collocdict[collocate]=fields[2]#store PMI
-                else:
+                if self.miroflag:
+                    #AN:black/J_swan/N
+                    parts=collocate.split(':')
+                    words=parts[1].split('_')
+                    left=words[0]
+                    right=words[1]
+                    dep=self.parameters['featurematch']
+                    collocate=left+':'+dep+':'+right
                     self.collocdict[collocate]=1
-                parts=collocate.split(':')
-                left=parts[0] #black/J
-                right=parts[2] #swan/N
+                else:
+                    if len(fields)>1:
+                        self.collocdict[collocate]=fields[2]#store PMI
+                    else:
+                        self.collocdict[collocate]=1
+                    parts=collocate.split(':')
+                    left=parts[0] #black/J
+                    right=parts[2] #swan/N
                 self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
                 self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
                 linesread+=1
             print "Read "+str(linesread)+" lines"
+
+
 
 
     def loadfeaturecounts(self):

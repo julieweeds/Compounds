@@ -35,6 +35,8 @@ def configure(args):
     parameters['posdict']={'N':'nouns','J':'adjs','R':'advs','V':'verbs'}
     parameters['vsource']='giga'
     parameters['msource']='r8'
+    parameters['miroflag']=False
+
     for arg in args:
         if arg=='testing':
             parameters['testing']=True
@@ -154,4 +156,27 @@ def configure(args):
             elif parameters['phrasetype']=='NNs':
                 parameters['featurematch']='nn-DEP'
             parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
+        elif arg=='miro_feb':
+            parentdir='data/miro0214/giga_wiki_NPs_in_MR_R2_frequent.uniq.50/'
+            parameters['datadir']=parentdir+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            if parameters['vsource']=='giga':
+                parameters['depfile']='exp10'
+                parameters['altdepfile']='exp10'
+            elif parameters['vsource']=='wiki':
+                parameters['depfile']='wikiPOS'
+                parameters['altdepfile']='wikiPOS'
+            parameters['featurefile']=parameters['depfile']+'.features.strings'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords']
+            parameters['miroflag']=True
+            parameters['usefile']='all'
+            if parameters['phrasetype']=='ANs':
+                parameters['featurematch']='amod-HEAD'
+            elif parameters['phrasetype']=='NNs':
+                parameters['featurematch']='nn-HEAD'
+            parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
+
+
     return parameters
