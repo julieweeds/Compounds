@@ -70,6 +70,7 @@ def configure(args):
             parameters['compop']='mult'
             parameters['diff']=False
             parameters['composefirst']=True
+            parameters['usefile']='all'
         elif arg=="NNs":
             parameters['featurematch']='nn-HEAD'
             parameters['phrasetype']='NNs'
