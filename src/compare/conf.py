@@ -25,6 +25,7 @@ def configure(args):
     parameters['composefirst']=True
     parameters['output']='more_results.csv'
     parameters['graphing']=False
+    parameters['miroflag']=False
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -61,6 +62,28 @@ def configure(args):
         elif arg=='npmi':parameters['association']='npmi'
         elif arg=='raw':parameters['association']='raw'
         elif arg=='graphing':parameters['graphing']=True
+        elif arg=='miro':
+            parameters['miroflag']=True
+            parameters['association']='raw'
+            parameters['funct']=True
+            parameters['mod']=True #obsolete
+            parameters['compop']='mult'
+            parameters['diff']=False
+            parameters['composefirst']=True
+        elif arg=="NNs":
+            parameters['featurematch']='nn-HEAD'
+            parameters['phrasetype']='NNs'
+            parameters['postype']='nouns'
+            parameters['altpostype']='nouns'
+        elif arg=="ANs":
+            parameters['featurematch']='amod-HEAD'
+            parameters['phrasetype']='ANs'
+            parameters['postype']='adjs'
+            parameters['altpostype']='nouns'
+        elif arg=="wiki":
+            parameters['vsoure']='wikiPOS'
+        elif arg=='giga':
+            parameters['vsource']='exp10'
     parameters = setfilenames(parameters)
 
     return parameters
@@ -75,6 +98,10 @@ def setfilenames(parameters):
     if parameters['athome']:
         #parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
         parameters['datadir']='/Users/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
+    if parameters['miroflag']:
+        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/miro/'+parameters['phrasetype']+'/'+parameters['postype']
+        parameters['altdatadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/miro/'+parameters['phrasetype']+'/'+parameters['postype']
+        basename=basename+'.'+parameters['vsource']
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
     if parameters['diff']:
         parameters['constituentfile']=basename+'.CONSTITUENTS.DIFF'
