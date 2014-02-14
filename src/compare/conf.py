@@ -82,7 +82,7 @@ def configure(args):
             parameters['postype']='adjs'
             parameters['altpostype']='nouns'
         elif arg=="wiki":
-            parameters['vsoure']='wikiPOS'
+            parameters['vsource']='wikiPOS'
         elif arg=='giga':
             parameters['vsource']='exp10'
     parameters = setfilenames(parameters)
