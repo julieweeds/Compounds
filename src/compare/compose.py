@@ -509,25 +509,25 @@ class Composer:
                     print "Writing "+self.parameters['leftcache']+" and "+self.parameters['rightcache']
                     for colloc in self.collocorder:
                         if self.parameters['diff']:
-                            leftstream.write(leftvectordict[colloc])
-                            rightstream.write(rightvectordict[colloc])
+                            leftstream.write(leftvectordict.get(colloc,colloc+'\n'))
+                            rightstream.write(rightvectordict.get(colloc,colloc+'\n'))
                         else:
                             parts=colloc.split(':')
                             left=parts[0]
                             right=parts[2]
-                            leftstream.write(leftvectordict[left])
-                            rightstream.write(rightvectordict[right])
+                            leftstream.write(leftvectordict.get(left,left+'\t\n'))
+                            rightstream.write(rightvectordict.get(right,right+'\t\n'))
                         #inverse collocation
                         inverted=self.inverse(colloc)
                         if self.parameters['diff']:
-                            leftstream.write(leftvectordict[inverted])
-                            rightstream.write(rightvectordict[inverted])
+                            leftstream.write(leftvectordict.get(inverted,inverted+'\n'))
+                            rightstream.write(rightvectordict.get(inverted,inverted+'\n'))
                         else:
                             parts=inverted.split(':')
                             left=parts[0]
                             right=parts[2]
-                            leftstream.write(rightvectordict[left])
-                            rightstream.write(leftvectordict[right])
+                            leftstream.write(rightvectordict.get(left,left+'\t\n'))
+                            rightstream.write(leftvectordict.get(right,right+'\t\n'))
 
 
     def loadfeaturefile(self):
