@@ -114,7 +114,7 @@ def setfilenames(parameters):
 
     parameters['featurefile']='features.strings'
     if parameters['miroflag']:
-        parameters['featurefile']=parameters['vsource']+'.'+parameters['features.strings']
+        parameters['featurefile']=parameters['vsource']+'.'+parameters['featuresfile']
     #parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters
