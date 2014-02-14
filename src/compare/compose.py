@@ -375,7 +375,7 @@ class Composer:
             self.completewhoami=self.completewhoami+'.nofunct'
         self.statsreq=True
         self.association=parameters['association']
-        self.miroflag=parameters['miroflag']
+        self.miroflag=False
 
         self.readcomps()
         self.makecaches()
