@@ -379,6 +379,7 @@ class Composer:
         self.readcomps()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
+        self.miroflag=parameters['miroflag']
 
     def inverse(self,colloc):
         try:
@@ -396,10 +397,24 @@ class Composer:
             print "Reading "+self.parameters['mwpath']
             for line in instream:
                 fields=line.rstrip().split('\t')
-                self.collocdict[fields[0]]=float(fields[2])
-                parts=fields[0].split(':')
-                left = parts[0]
-                right=parts[2]
+                collocate=fields[0]
+                if self.miroflag:
+                    #AN:black/J_swan/N
+                    parts=collocate.split(':')
+                    words=parts[1].split('_')
+                    left=words[0]
+                    right=words[1]
+                    dep=self.parameters['featurematch']
+                    collocate=left+':'+dep+':'+right
+                    self.collocdict[collocate]=float(hash(collocate))
+                else:
+                    if len(fields)>1:
+                        self.collocdict[collocate]=fields[2]#store PMI
+                    else:
+                        self.collocdict[collocate]=float(hash(collocate))
+                    parts=collocate.split(':')
+                    left=parts[0] #black/J
+                    right=parts[2] #swan/N
                 #print "mod: ",mod,"head: ",head
                 self.leftdict[left]=self.leftdict.get(left,0)+1
                 self.rightdict[right]=self.rightdict.get(right,0)+1
