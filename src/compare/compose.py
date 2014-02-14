@@ -375,11 +375,12 @@ class Composer:
             self.completewhoami=self.completewhoami+'.nofunct'
         self.statsreq=True
         self.association=parameters['association']
+        self.miroflag=parameters['miroflag']
 
         self.readcomps()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
-        self.miroflag=parameters['miroflag']
+
 
     def inverse(self,colloc):
         try:
