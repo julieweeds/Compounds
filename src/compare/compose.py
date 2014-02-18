@@ -368,6 +368,7 @@ class Composer:
             self.whoami='.diff'
         else:
             self.whoami='.nodiff'
+        self.whoami+='.'+parameters['vsource']
         self.completewhoami=self.whoami+'.'+self.parameters['compop']
         if self.parameters['funct']:
             self.completewhoami=self.completewhoami+'.funct'
@@ -736,7 +737,7 @@ class Composer:
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
-                outstream.write(self.parameters['usefile']+','+type+',')
+                outstream.write(self.parameters['usefile']+','+type+','+self.parameters['vsource']+',')
                 if self.parameters['funct']:
                     outstream.write('funct,')
                 else:
