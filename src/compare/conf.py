@@ -82,7 +82,7 @@ def configure(args):
             parameters['postype']='adjs'
             parameters['altpostype']='nouns'
         elif arg=="wiki":
-            parameters['vsoure']='wikiPOS'
+            parameters['vsource']='wikiPOS'
         elif arg=='giga':
             parameters['vsource']='exp10'
     parameters = setfilenames(parameters)
@@ -113,6 +113,8 @@ def setfilenames(parameters):
 
 
     parameters['featurefile']='features.strings'
+    if parameters['miroflag']:
+        parameters['featurefile']=parameters['vsource']+'.'+parameters['featurefile']
     #parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters

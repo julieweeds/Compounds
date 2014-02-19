@@ -368,6 +368,7 @@ class Composer:
             self.whoami='.diff'
         else:
             self.whoami='.nodiff'
+        self.whoami+='.'+parameters['vsource']
         self.completewhoami=self.whoami+'.'+self.parameters['compop']
         if self.parameters['funct']:
             self.completewhoami=self.completewhoami+'.funct'
@@ -375,10 +376,12 @@ class Composer:
             self.completewhoami=self.completewhoami+'.nofunct'
         self.statsreq=True
         self.association=parameters['association']
+        self.miroflag=False
 
         self.readcomps()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
+
 
     def inverse(self,colloc):
         try:
@@ -396,10 +399,24 @@ class Composer:
             print "Reading "+self.parameters['mwpath']
             for line in instream:
                 fields=line.rstrip().split('\t')
-                self.collocdict[fields[0]]=float(fields[2])
-                parts=fields[0].split(':')
-                left = parts[0]
-                right=parts[2]
+                collocate=fields[0]
+                if self.miroflag:
+                    #AN:black/J_swan/N
+                    parts=collocate.split(':')
+                    words=parts[1].split('_')
+                    left=words[0]
+                    right=words[1]
+                    dep=self.parameters['featurematch']
+                    collocate=left+':'+dep+':'+right
+                    self.collocdict[collocate]=float(hash(collocate))
+                else:
+                    if len(fields)>1:
+                        self.collocdict[collocate]=fields[2]#store PMI
+                    else:
+                        self.collocdict[collocate]=float(hash(collocate))
+                    parts=collocate.split(':')
+                    left=parts[0] #black/J
+                    right=parts[2] #swan/N
                 #print "mod: ",mod,"head: ",head
                 self.leftdict[left]=self.leftdict.get(left,0)+1
                 self.rightdict[right]=self.rightdict.get(right,0)+1
@@ -493,25 +510,25 @@ class Composer:
                     print "Writing "+self.parameters['leftcache']+" and "+self.parameters['rightcache']
                     for colloc in self.collocorder:
                         if self.parameters['diff']:
-                            leftstream.write(leftvectordict[colloc])
-                            rightstream.write(rightvectordict[colloc])
+                            leftstream.write(leftvectordict.get(colloc,colloc+'\n'))
+                            rightstream.write(rightvectordict.get(colloc,colloc+'\n'))
                         else:
                             parts=colloc.split(':')
                             left=parts[0]
                             right=parts[2]
-                            leftstream.write(leftvectordict[left])
-                            rightstream.write(rightvectordict[right])
+                            leftstream.write(leftvectordict.get(left,left+'\t\n'))
+                            rightstream.write(rightvectordict.get(right,right+'\t\n'))
                         #inverse collocation
                         inverted=self.inverse(colloc)
                         if self.parameters['diff']:
-                            leftstream.write(leftvectordict[inverted])
-                            rightstream.write(rightvectordict[inverted])
+                            leftstream.write(leftvectordict.get(inverted,inverted+'\n'))
+                            rightstream.write(rightvectordict.get(inverted,inverted+'\n'))
                         else:
                             parts=inverted.split(':')
                             left=parts[0]
                             right=parts[2]
-                            leftstream.write(rightvectordict[left])
-                            rightstream.write(leftvectordict[right])
+                            leftstream.write(rightvectordict.get(left,left+'\t\n'))
+                            rightstream.write(leftvectordict.get(right,right+'\t\n'))
 
 
     def loadfeaturefile(self):
@@ -720,7 +737,7 @@ class Composer:
             print "Correlation with PMI is: ", correlation
             (c1,c2)=correlation
             with open(self.resultspath,'a') as outstream:
-                outstream.write(self.parameters['usefile']+','+type+',')
+                outstream.write(self.parameters['usefile']+','+type+','+self.parameters['vsource']+',')
                 if self.parameters['funct']:
                     outstream.write('funct,')
                 else:
