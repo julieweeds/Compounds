@@ -84,8 +84,8 @@ class FeatureVector:
 
 
 
-    def add(self,avector):
-        newvector=FeatureVector(self.signifier+'@+@'+avector.signifier,features=[],fdict=self.featuredict)
+    def add(self,avector,ftag=''):
+        newvector=FeatureVector(self.signifier+':'+ftag+':@+@'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -99,8 +99,8 @@ class FeatureVector:
 
         return newvector
 
-    def max(self,avector):
-        newvector=FeatureVector(self.signifier+'@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
+    def max(self,avector,ftag=''):
+        newvector=FeatureVector(self.signifier+':'+ftag+':@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -114,8 +114,8 @@ class FeatureVector:
                     newvector.featuredict[fofeat]=max(newvector.featuredict.get(fofeat,0),avector.featuredict[feature])
         return newvector
 
-    def mult(self,avector):
-        newvector=FeatureVector(self.signifier+'@*@'+avector.signifier,features=[],fdict={})
+    def mult(self,avector,ftag=''):
+        newvector=FeatureVector(self.signifier+':'+ftag+':@*@'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -138,9 +138,9 @@ class FeatureVector:
             #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
         return newvector
 
-    def gm(self,avector):
+    def gm(self,avector,ftag=''):
         #geometric mean of feature values i.e., multiply and sqrt to return into same number space
-        newvector=FeatureVector(self.signifier+'@gm@'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':'+ftag+':@gm@'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -163,8 +163,8 @@ class FeatureVector:
             #would need to generate 2nd order features if going to recurse. Not for comparison with observed first order features
         return newvector
 
-    def min(self,avector):
-        newvector=FeatureVector(self.signifier+'@MIN@'+avector.signifier,features=[],fdict={})
+    def min(self,avector,ftag=''):
+        newvector=FeatureVector(self.signifier+':'+ftag+':@MIN@'+avector.signifier,features=[],fdict={})
         if not self.functional:
             for feature in self.featuredict.keys():
                 if avector.featuredict.get(feature,0)>0:
@@ -181,16 +181,16 @@ class FeatureVector:
 
         return newvector
 
-    def selectself(self,avector):
+    def selectself(self,avector,ftag=''):
 
-        newvector=FeatureVector(self.signifier+'@ss@'+avector.signifier,fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':'+ftag+':@ss@'+avector.signifier,fdict=self.featuredict)
         return newvector
 
-    def selectother(self,avector):
+    def selectother(self,avector,ftag=''):
         if not self.functional:
-            newvector=FeatureVector(self.signifier+'@so@'+avector.signifier,fdict=avector.featuredict)
+            newvector=FeatureVector(self.signifier+':'+ftag+':@so@'+avector.signifier,fdict=avector.featuredict)
         else:
-            newvector=FeatureVector(self.signifier+'@so@'+avector.signifier,features=[],fdict={})
+            newvector=FeatureVector(self.signifier+':'+ftag+':@so@'+avector.signifier,features=[],fdict={})
 
             for feature in avector.featuredict.keys():
                 aorder=FeatureVector.findorder(feature)
@@ -586,7 +586,7 @@ class Composer:
                             #rightVector.normalise()
                             #leftVector.normalise()
                             pass
-                        composedVector=self.compose(leftVector,rightVector)
+                        composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
 
                         composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
                         if self.parameters['testing']:
@@ -639,11 +639,11 @@ class Composer:
         self.computestats(leftxs,leftys,leftphrases,'left')
         self.computestats(rightxs,rightys,rightphrases,'right')
 
-    def compose(self,left,right):
+    def compose(self,left,right,ftag=''):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
         #right.normalise()  #makes no difference to normalise vectors before composition
         #left.normalise()
-        return compfunct(left,right)
+        return compfunct(left,right,ftag=ftag)
     def compare(self,composed,phrasal):
         res=[]
 
@@ -740,26 +740,26 @@ class Composer:
 
         return
 
-    def _compose_add(self,left,right):
-        return left.add(right)
+    def _compose_add(self,left,right,ftag=''):
+        return left.add(right,ftag=ftag)
 
-    def _compose_mult(self,left,right):
-        return left.mult(right)
+    def _compose_mult(self,left,right,ftag=''):
+        return left.mult(right,ftag=ftag)
 
-    def _compose_selectself(self,left,right):
-        return left.selectself(right)
+    def _compose_selectself(self,left,right,ftag=''):
+        return left.selectself(right,ftag=ftag)
 
-    def _compose_selectother(self,left,right):
-        return left.selectother(right)
+    def _compose_selectother(self,left,right,ftag=''):
+        return left.selectother(right,ftag=ftag)
 
-    def _compose_min(self,left,right):
-        return left.min(right)
+    def _compose_min(self,left,right,ftag=''):
+        return left.min(right,ftag=ftag)
 
-    def _compose_max(self,left,right):
-        return left.max(right)
+    def _compose_max(self,left,right,ftag=''):
+        return left.max(right,ftag=ftag)
 
-    def _compose_gm(self,left,right):
-        return left.gm(right)
+    def _compose_gm(self,left,right,ftag=''):
+        return left.gm(right,ftag=ftag)
 
     def _compare_recall(self,hypothesis,target):
         return hypothesis.recall(target)
