@@ -85,7 +85,7 @@ class FeatureVector:
 
 
     def add(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':@+@'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -100,7 +100,7 @@ class FeatureVector:
         return newvector
 
     def max(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':@MAX@'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -115,7 +115,7 @@ class FeatureVector:
         return newvector
 
     def mult(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':@*@'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -140,7 +140,7 @@ class FeatureVector:
 
     def gm(self,avector,ftag=''):
         #geometric mean of feature values i.e., multiply and sqrt to return into same number space
-        newvector=FeatureVector(self.signifier+':'+ftag+':@gm@'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -164,7 +164,7 @@ class FeatureVector:
         return newvector
 
     def min(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':@MIN@'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
             for feature in self.featuredict.keys():
                 if avector.featuredict.get(feature,0)>0:
@@ -183,14 +183,14 @@ class FeatureVector:
 
     def selectself(self,avector,ftag=''):
 
-        newvector=FeatureVector(self.signifier+':'+ftag+':@ss@'+avector.signifier,fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,fdict=self.featuredict)
         return newvector
 
     def selectother(self,avector,ftag=''):
         if not self.functional:
-            newvector=FeatureVector(self.signifier+':'+ftag+':@so@'+avector.signifier,fdict=avector.featuredict)
+            newvector=FeatureVector(self.signifier+':'+ftag+avector.signifier,fdict=avector.featuredict)
         else:
-            newvector=FeatureVector(self.signifier+':'+ftag+':@so@'+avector.signifier,features=[],fdict={})
+            newvector=FeatureVector(self.signifier+':'+ftag+avector.signifier,features=[],fdict={})
 
             for feature in avector.featuredict.keys():
                 aorder=FeatureVector.findorder(feature)
