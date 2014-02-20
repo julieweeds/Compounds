@@ -19,13 +19,17 @@ def configure(args):
     parameters['usefile']='train'
     parameters['ftype']='deps'
     parameters['pmi']=False
-    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
+    parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
     parameters['featurematch']='amod-HEAD'
     parameters['association']='pmi'
     parameters['composefirst']=True
     parameters['output']='more_results.csv'
     parameters['graphing']=False
     parameters['miroflag']=False
+    parameters['NNcompflag']=False
+    parameters['switch']=False
+    parameters['literalityscore']='compound'
+    parameters['msource']='r8'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -36,12 +40,48 @@ def configure(args):
         elif arg=='nonfunct':
             parameters['funct']=False
             parameters['mod']=False
+        elif arg=='nodiff':parameters['diff']=False
         elif arg=='mod':
             parameters['mod']=True
             parameters['funct']=True
+        elif arg=='switch':
+            parameters['switch']=True
+        elif arg=='leftliteral':
+            parameters['literalityscore']='left'
+        elif arg=='rightliteral':
+            parameters['literalityscore']='right'
+        elif arg=='compliteral':
+            parameters['literalityscore']='compound'
+        elif arg=='NNcomp':
+            parameters['NNcompflag']=True
+            parameters['usefile']='all'
+            parameters['compop']='mult'
+            parameters['funct']=True
+            parameters['mod']=True #obsolete
+            parameters['association']='pmi'
+            parameters['composefirst']=False
+            parameters['composesecond']=True
+            parameters['diff']=False
+            parameters['featurematch']='nn-HEAD'
+            parameters['phrasetype']='NNs'
+            parameters['postype']='nouns'
+            parameters['altpostype']='nouns'
+        elif arg=='train':
+            parameters['vsource']='train'
+            if parameters['switch']:
+                parameters['vsource2']='test'
+            else:
+                parameters['vsource2']='train'
+        elif arg=='test':
+            parameters['vsource']='test'
+            if parameters['switch']:
+                parameters['vsource2']='train'
+            else:
+                parameters['vsource2']='test'
         elif arg=='mult':parameters['compop']='mult'
         elif arg=="selectself":parameters['compop']='selectself'
         elif arg=="selectother":parameters['compop']='selectother'
+        elif arg=='add':parameters['compop']='add'
         elif arg=='gm':parameters['compop']='gm'
         elif arg=="min":parameters['compop']='min'
         elif arg=='max':parameters['compop']='max'
@@ -85,25 +125,41 @@ def configure(args):
             parameters['vsource']='wikiPOS'
         elif arg=='giga':
             parameters['vsource']='exp10'
-    parameters = setfilenames(parameters)
+        elif arg=='movies':
+            parameters['msource']='movies'
+        elif arg=='r8':
+            parameters['msource']=='r8'
+
+        parameters = setfilenames(parameters)
 
     return parameters
 
 def setfilenames(parameters):
     basename='vectors.'+parameters['usefile']
-    parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
-    parameters['altdatadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
-    if parameters['apollo']:
-        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
-        parameters['altdatadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/ANcompounds/'+parameters['ftype']+'/nouns'
+    basename2=basename
+    parentdir='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/'
     if parameters['athome']:
-        #parameters['datadir']='C:/Users/Julie/Documents/Github/Compounds/data/wiki_nounsdeps/'
-        parameters['datadir']='/Users/juliewe/Documents/workspace/Compounds/data/ANcompounds/'+parameters['ftype']+'/adjs'
+        parentdir='/Users/juliewe/Documents/workspace/Compounds/data/'
+    if parameters['apollo']:
+        parentdir='/mnt/lustre/scratch/inf/juliewe/Compounds/data'
+
+    parameters['datadir']=parentdir+'ANcompounds/'+parameters['ftype']+'/adjs'
+    parameters['altdatadir']=parentdir+'ANcompounds/'+parameters['ftype']+'/nouns'
+    if parameters['NNcompflag']:
+        parameters['datadir']=parentdir+'ijcnlp_compositionality_data/NNs/nouns'
+        parameters['altdatadir']=parameters['datadir']
+        basename='vectors.'+parameters['vsource']
+        basename2='vectors.'+parameters['vsource2']
     if parameters['miroflag']:
-        parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/miro/'+parameters['phrasetype']+'/'+parameters['postype']
-        parameters['altdatadir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/miro/'+parameters['phrasetype']+'/'+parameters['postype']
+        parentdir+='miro/'
+        if parameters['msource']=='movies':
+            parentdir+='movies/'
+        parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['postype']
+        parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['postype']
         basename=basename+'.'+parameters['vsource']
-    parameters['phrasalpath']=os.path.join(parameters['datadir'],basename+'.PHRASES')
+        basename2=basename
+
+    parameters['phrasalpath']=os.path.join(parameters['datadir'],basename2+'.PHRASES')
     if parameters['diff']:
         parameters['constituentfile']=basename+'.CONSTITUENTS.DIFF'
     else:
@@ -115,6 +171,9 @@ def setfilenames(parameters):
     parameters['featurefile']='features.strings'
     if parameters['miroflag']:
         parameters['featurefile']=parameters['vsource']+'.'+parameters['featurefile']
+    if parameters['NNcompflag']:
+        parameters['featurefile']='wikiPOS.'+parameters['vsource']+'.'+parameters['featurefile']
+
     #parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 
     return parameters
