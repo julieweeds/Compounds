@@ -130,7 +130,7 @@ def configure(args):
         elif arg=='r8':
             parameters['msource']=='r8'
 
-        parameters = setfilenames(parameters)
+    parameters = setfilenames(parameters)
 
     return parameters
 
