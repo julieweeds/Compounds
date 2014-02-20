@@ -141,7 +141,7 @@ def setfilenames(parameters):
     if parameters['athome']:
         parentdir='/Users/juliewe/Documents/workspace/Compounds/data/'
     if parameters['apollo']:
-        parentdir='/mnt/lustre/scratch/inf/juliewe/Compounds/data'
+        parentdir='/mnt/lustre/scratch/inf/juliewe/Compounds/data/'
 
     parameters['datadir']=parentdir+'ANcompounds/'+parameters['ftype']+'/adjs'
     parameters['altdatadir']=parentdir+'ANcompounds/'+parameters['ftype']+'/nouns'
