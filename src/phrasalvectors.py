@@ -65,7 +65,7 @@ class VectorExtractor:
                     collocate=left+':'+dep+':'+right
                     self.collocdict[collocate]=1
                 else:
-                    if len(fields)>1:
+                    if len(fields)>2:
                         self.collocdict[collocate]=fields[2]#store PMI
                     else:
                         self.collocdict[collocate]=1

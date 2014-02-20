@@ -36,6 +36,7 @@ def configure(args):
     parameters['vsource']='giga'
     parameters['msource']='r8'
     parameters['miroflag']=False
+    parameters['NNcompflag']=False
 
     for arg in args:
         if arg=='testing':
@@ -48,11 +49,34 @@ def configure(args):
             parameters['build']=True
         elif arg=='raw':
             parameters['raw']=True  #leave vectors in raw frequency form rather than converting to PPMI
+
+        elif arg=='train':
+            parameters['vsource']='train'
+        elif arg=='test':
+            parameters['vsource']='test'
+        elif arg == 'NNcomp':
+            parameters['NNcompflag']=True
+            parameters['phrasetype']='NNs'
+            parameters['lefttype']='N'
+            parameters['righttype']='N'
+
+            parentdir='data/ijcnlp_compositionality_data/'
+            parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            parameters['depfile']='wikiPOS.'+parameters['vsource']
+            parameters['altdepfile']=parameters['depfile']
+            parameters['featurefile']=parameters['depfile']+'.features.strings'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords']
+            parameters['usefile']='all'
+            parameters['featurematch']='nn-HEAD'
+            parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
         elif arg =='boleda':
             parameters['usesource']=True
             parameters['source']='boleda.txt'
             parameters['datadir']='data/ANcompounds'
-            parameters['featurematch']='amod-DEP'
+            parameters['featurematch']='amod-HEAD'
             parameters['freqthresh']=0
             parameters['mergefile']='multiwords_boleda'
             parameters['collocatefile']='multiwords_amod-DEP_boleda'
