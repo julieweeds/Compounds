@@ -2,31 +2,19 @@ __author__ = 'juliewe'
 import sys,os
 from conf import configure
 import xml.etree.ElementTree as ET
-#import nltk.parse.malt as malt
 
 if __name__=='__main__':
-    parameters=configure(sys.argv)
-    sentencefile=parameters['basename']+'.parsed'
-    sentencepath=os.path.join(parameters['datadir'],sentencefile)
+    #parameters=configure(sys.argv)
+    #sentencefile=parameters['basename']+'.parsed.xml'
+    #sentencepath=os.path.join(parameters['datadir'],sentencefile)
+    sentencepath='/Users/juliewe/Documents/workspace/Compounds/data/lexsub/trial/lexsub_trial.parsed.xml'
     print sentencepath
-
-    #with open(sentencepath,'r') as sentencestream:
-     #   lineno=0
-      #  for line in sentencestream:
-       #     lineno+=1
-        #    print lineno, line.rstrip()
-
-            #myparser=malt.MaltParser()
-            #myparser.config_malt(bin='/Volumes/LocalScratchHD/juliewe/maltparser-1.7.2/maltparser-1.7.2.jar')
-            #myparser.train([])
-            #myparser.parse(line)
-         #   exit()
 
     xmltree=ET.parse(sentencepath)
     root = xmltree.getroot()
 
     for doc in root:
-        print doc.tag
+        #print doc.tag
         for item in doc:
             if item.tag == "sentences":
                 for sentence in item:

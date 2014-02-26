@@ -2,13 +2,13 @@ __author__ = 'juliewe'
 
 from ijcnlpReader import IjcnlpReader
 from nltk.corpus import wordnet as wn
-import sys,os
+import sys,os,numpy as np, math
 from conf import configure
 
 class Analyser:
 
     wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
-
+    labels=['Word1_mean','Word2_mean','Cpd_mean']
     def __init__(self,filepath):
         self.myReader=IjcnlpReader(filepath)
 
@@ -110,12 +110,27 @@ class Analyser:
 
         print "Total score is: "+str(count)
         print "BOTH:",len(bothcomps),bothcomps
+        self.domeans(bothcomps)
         print "WORD1:",len(word1comps),word1comps
+        self.domeans(word1comps)
         print "WORD2:",len(word2comps),word2comps
+        self.domeans(word2comps)
         print "NEITHER:",len(neithercomps),neithercomps
+        self.domeans(neithercomps)
         print "NOT_IN_WN:",len(not_in_wordnet),not_in_wordnet
+        self.domeans(not_in_wordnet)
 
-
+    def domeans(self,complist):
+        for label in Analyser.labels:
+            scores=self.myReader.getScores(complist,label)
+            #print label,len(scores),scores
+            array1=np.array([score for (word,score) in scores])
+            m=np.mean(array1)
+            s=np.std(array1)
+            e=s/math.pow(len(scores),0.5)
+            k1=m-e*1.96
+            k2=m+e*1.96  #95% confidence intervals
+            print label, m, s, e, '['+str(k1)+','+str(k2)+']'
 if __name__=='__main__':
     parameters=configure(sys.argv)
     filepath=os.path.join(parameters['parentdir'],parameters['datadir'],parameters['datafile'])
