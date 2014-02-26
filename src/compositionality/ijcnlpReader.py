@@ -73,6 +73,14 @@ class IjcnlpReader:
             text+='\t'+str(self.scores[key][label])
             print text
 
+    def getScores(self,inlist,label='Cpd_mean'):
+        scores=[]
+        for key in self.scores.keys():
+            text=Compound(key).getWNcomp()
+            if text in inlist:
+                scores.append((text,self.scores[key][label]))
+        return scores
+
     def getWNComps(self):
 
         comps=[]
