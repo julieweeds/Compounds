@@ -37,7 +37,12 @@ class Compound:
         tag=Compound.tagmatching[self.constituents[-1][1]]
         return comp+'/'+tag
 
+    def getBYBLOcomp(self):
+        comp = self.constituents[0][0]+'/'+Compound.tagmatching[self.constituents[0][1]]
+        for constituent in self.constituents[1:]:
+            comp+=":nn-HEAD:"+constituent[0]+'/'+Compound.tagmatching[constituent[1]]
 
+        return comp
 
 
 class IjcnlpReader:
@@ -66,11 +71,15 @@ class IjcnlpReader:
                     self.labels=fields[1].split(' ')
 
 
-    def display(self,label='Cpd_mean'):
+    def display(self,labels=['Cpd_mean'],dformat='wn'):
         for key in self.scores.keys():
 
-            text=Compound(key).getWNcomp()
-            text+='\t'+str(self.scores[key][label])
+            if dformat =='byblo':
+                text=Compound(key).getBYBLOcomp()
+            else:
+                text=Compound(key).getWNcomp()
+            for label in labels:
+                text+='\t'+str(self.scores[key][label])
             print text
 
     def getWNComps(self):
@@ -94,4 +103,4 @@ if __name__=='__main__':
 
     filepath=os.path.join(parameters['parentdir'],parameters['datadir'],parameters['datafile'])
     myReader=IjcnlpReader(filepath)
-    myReader.display()
+    myReader.display(labels=['Cpd_mean','Word1_mean','Word2_mean'],dformat='byblo')
