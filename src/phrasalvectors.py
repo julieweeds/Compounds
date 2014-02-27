@@ -393,6 +393,31 @@ def gobuild(parameters):
     myBuilder.build(myBuilder.phrasal_path+'.sorted','phrase') #do phrases first so both can be taken away from a single constituent
     myBuilder.build(myBuilder.constituent_path+'.sorted','constituents') #constituents formally mod
 
+def gomake(parameters):
+    filepath=os.path.join(parameters['parentdir'],parameters['datadir'])
+    observedvectors='vectors.'+parameters['vsource']+'.PHRASES'
+    composedvectors='comp.cache.nodiff.'+parameters['vsource']+'.mult.funct.raw'
+
+    mypaths=[os.path.join(filepath,observedvectors)]
+    mypaths.append(os.path.join(filepath,composedvectors))
+    print mypaths
+
+    for mypath in mypaths:
+        outpath=mypath+'.entries.strings'
+        with open(mypath,'r') as instream:
+            with open(outpath,'w') as outstream:
+
+                for line in instream:
+                    fields=line.rstrip().split()
+                    entry=fields[0]
+                    total=0
+                    while(len(fields[1:])>0):
+                        total+=float(fields.pop())
+                        fields.pop()
+                    outstream.write(entry+'\t'+str(total)+'\n')
+
+
+
 
 if __name__ == '__main__':
     parameters = configure(sys.argv)
@@ -401,3 +426,5 @@ if __name__ == '__main__':
         extract(parameters)
     if parameters['build']:
         gobuild(parameters)
+    if parameters['make_entries']:
+        gomake(parameters)

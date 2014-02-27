@@ -24,6 +24,7 @@ def configure(args):
     parameters['depfile']='wikipedia_nounsdeps_t100.pbfiltered'
     parameters['extract']=False
     parameters['build']=False
+    parameters['make_entries']=False
     parameters['usesource']=False
     parameters['source']='none'
     parameters['allheads']=False
@@ -47,6 +48,8 @@ def configure(args):
             parameters['extract']=True
         elif arg =='build':
             parameters['build']=True
+        elif arg=='make_entries':
+            parameters['make_entries']=True
         elif arg=='raw':
             parameters['raw']=True  #leave vectors in raw frequency form rather than converting to PPMI
 

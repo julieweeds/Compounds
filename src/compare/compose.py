@@ -89,7 +89,7 @@ class FeatureVector:
 
 
     def add(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':+:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -105,7 +105,7 @@ class FeatureVector:
         return newvector
 
     def max(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':max:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -121,7 +121,7 @@ class FeatureVector:
         return newvector
 
     def mult(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':*:'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -154,7 +154,7 @@ class FeatureVector:
 
     def gm(self,avector,ftag=''):
         #geometric mean of feature values i.e., multiply and sqrt to return into same number space
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':gm:'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -180,7 +180,7 @@ class FeatureVector:
         return newvector
 
     def min(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict={})
+        newvector=FeatureVector(self.signifier+':min:'+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
             for feature in self.featuredict.keys():
                 if avector.featuredict.get(feature,0)>0:
@@ -200,7 +200,7 @@ class FeatureVector:
 
     def selectself(self,avector,ftag=''):
         #return first order features of self - doesn't matter because cosine only compares upto and order anyway
-        newvector=FeatureVector(self.signifier+':'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+':ss:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         #for feature in self.featuredict.keys():
         #    aorder=FeatureVector.findorder(feature)
         #    if aorder==1:
@@ -210,9 +210,9 @@ class FeatureVector:
 
     def selectother(self,avector,ftag=''):
         if not self.functional:
-            newvector=FeatureVector(self.signifier+':'+ftag+avector.signifier,fdict=avector.featuredict)
+            newvector=FeatureVector(self.signifier+':so:'+ftag+avector.signifier,fdict=avector.featuredict)
         else:
-            newvector=FeatureVector(self.signifier+':'+ftag+avector.signifier,features=[],fdict={})
+            newvector=FeatureVector(self.signifier+':so:'+ftag+avector.signifier,features=[],fdict={})
 
             for feature in avector.featuredict.keys():
                 aorder=FeatureVector.findorder(feature)
@@ -400,6 +400,7 @@ class Composer:
             self.completewhoami=self.completewhoami+'.nofunct'
         self.statsreq=True
         self.association=parameters['association']
+        self.completewhoami+='.'+self.association
         self.miroflag=False
         FeatureVector.inversefeatures=self.parameters['inversefeatures']
 
@@ -625,6 +626,46 @@ class Composer:
                                 print "Warning: non-matching featuretype in phrase "+phrasefields[0]
                                 print phraseparts[1],self.parameters['featurematch'],self.parameters['inversefeatures'][self.parameters['featurematch']]
                                 exit(1)
+
+                        if self.parameters['testing']:
+                            print phraseVector.toString()
+                            print rightVector.toString()
+                            print leftVector.toString()
+                        if not self.parameters['composefirst']:
+                            #transform to pmi values before composition
+                            if inverted:
+                                rightVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
+                                leftVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['right']],association=self.association)
+                            else:
+                                rightVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['left']],association=self.association)
+                                leftVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
+                            #phraseVector.transform(self.featdict,self.featuretotal)
+                        else: #normalise to probabilities before composing
+                            #rightVector.normalise()
+                            #leftVector.normalise()
+                            pass
+                        composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
+                        if composedVector.computelength()>0:
+                            composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
+                        if self.parameters['testing']:
+                            print composedVector.toString()
+                        if self.parameters['composefirst']:
+                            if inverted:
+                                composedVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
+                            else:
+                                composedVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
+
+                        if inverted:
+                            phraseVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
+                        else:
+                            phraseVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
+
+                        if self.parameters['testing']:
+                            print phraseVector.toString()
+                            print rightVector.toString()
+                            print leftVector.toString()
+                            #print leftVector.featuredict
+                            print composedVector.toString()
                         if phraseVector.computelength()==0:
                             print "Ignore phrase with empty observed vector: "+phraseVector.signifier
                             if inverted:
@@ -632,46 +673,6 @@ class Composer:
                             else:
                                 left_ignored+=1
                         else:
-                            if self.parameters['testing']:
-                                print phraseVector.toString()
-                                print rightVector.toString()
-                                print leftVector.toString()
-                            if not self.parameters['composefirst']:
-                                #transform to pmi values before composition
-                                if inverted:
-                                    rightVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
-                                    leftVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['right']],association=self.association)
-                                else:
-                                    rightVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['left']],association=self.association)
-                                    leftVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
-                                #phraseVector.transform(self.featdict,self.featuretotal)
-                            else: #normalise to probabilities before composing
-                                #rightVector.normalise()
-                                #leftVector.normalise()
-                                pass
-                            composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
-
-                            composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
-                            if self.parameters['testing']:
-                                print composedVector.toString()
-                            if self.parameters['composefirst']:
-                                if inverted:
-                                    composedVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
-                                else:
-                                    composedVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
-
-                            if inverted:
-                                phraseVector.transform([self.featdict['right']],[self.featuretotal['right']],association=self.association)
-                            else:
-                                phraseVector.transform([self.featdict['left']],[self.featuretotal['left']],association=self.association)  #phrases have features of the left most constituent
-
-                            if self.parameters['testing']:
-                                print phraseVector.toString()
-                                print rightVector.toString()
-                                print leftVector.toString()
-                                #print leftVector.featuredict
-                                print composedVector.toString()
-
                             scores =self.compare(composedVector,phraseVector)
                             if self.parameters['testing']:
                                 print scores
@@ -691,11 +692,11 @@ class Composer:
                                 leftphrases.append(phrasefields[0])
                                 leftys.append(scores)
 
-                            if done % 100 == 0:
-                                print "Processed "+str(done)+" phrasal expressions"
-                            if self.parameters['testing'] and done%2==0:
-                                print "Processed "+str(done)+" phrasal expressions"
-                                break
+                        if done % 100 == 0:
+                            print "Processed "+str(done)+" phrasal expressions"
+                        if self.parameters['testing'] and done%2==0:
+                            print "Processed "+str(done)+" phrasal expressions"
+                            break
                     vectorstream.close()
         print "Ignored "+str(right_ignored)+" phrases of type right"
         print "Ignored "+str(left_ignored)+" phrases of type left"

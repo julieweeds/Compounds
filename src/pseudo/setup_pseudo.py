@@ -168,7 +168,7 @@ class PseudoBuilder:
 
     def setup(self):
 
-        outfile=os.path.join(self.parameters['compdatadir'],'pseudopairs')
+        outfile=os.path.join(self.parameters['compdatadir'],parameters['pseudofile'])
         with open(outfile,'w') as outstream:
             self.testvectors=self.loadvectors('filtered')
             self.constituentvectors=self.loadvectors('constituents')
