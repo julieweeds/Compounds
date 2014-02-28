@@ -60,8 +60,11 @@ class ThesEntry:
         print self.pseudopairs
         print self.neighbours
 
-    def makeselfneigh(self):
-        self.neighbours.append(self.name)
+    def makeselfneigh(self,atype):
+        if atype=='phrase':
+            self.neighbours.append(self.name)
+        elif atype=='head':
+            self.neighbours.append(self.name.split(':')[0])
         return self.neighbours
 
 class VectorEntry:
@@ -178,7 +181,7 @@ class PseudoDisambiguator:
 
         for atype in self.pseudodict.keys():
             for athesentry in self.pseudodict[atype].values():
-                neighs=athesentry.makeselfneigh()
+                neighs=athesentry.makeselfneigh(atype)
                 print athesentry.name,neighs
                 for neigh in neighs:
                     if self.vectordict.get(neigh,None)==None:
