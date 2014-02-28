@@ -60,6 +60,10 @@ class ThesEntry:
         print self.pseudopairs
         print self.neighbours
 
+    def makeselfneigh(self):
+        self.neighbours.append(self.name)
+        return self.neighbours
+
 class VectorEntry:
 
     def __init__(self,name):
@@ -170,6 +174,20 @@ class PseudoDisambiguator:
                     if self.parameters['testing']:
                         break
 
+    def makeselfneigh(self):
+
+        for atype in self.pseudodict.keys():
+            for athesentry in self.pseudodict[atype].values():
+                neighs=athesentry.makeselfneigh()
+                for neigh in neighs:
+                    if self.vectordict.get(neigh,None)==None:
+                        self.vectordict[neigh]=VectorEntry(neigh)
+                    self.vectordict[neigh].addneighbourof(neigh)
+                    for index in athesentry.pseudopairs:
+                        self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice1]=0
+                        self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice2]=0
+
+
     def processconstituents(self):
 
         vectorpaths=[self.constitpath,self.phrasepath]
@@ -253,7 +271,11 @@ def go_neighs(parameters):
     mypseudo.evaltask()
 
 def go_vectors(parameters):
-    print "Vector run not implemented yet"
+    mypseudo=PseudoDisambiguator(parameters)
+    mypseudo.k=1
+    mypseudo.makeselfneigh()
+    mypseudo.processconstituents()
+    mypseudo.evaltask()
 
 if __name__=='__main__':
 
