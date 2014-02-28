@@ -230,7 +230,7 @@ class PseudoDisambiguator:
                         #print "Minus"
                 if pseudopair.votes[atype]>0:
                     totals[atype]+=1.0
-                elif pseudopair.vote[atype]==0:
+                elif pseudopair.votes[atype]==0:
                     totals[atype]+=0.5  #random guess
 
             processed+=1
