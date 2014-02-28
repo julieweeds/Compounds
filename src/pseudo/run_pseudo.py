@@ -206,7 +206,7 @@ class PseudoDisambiguator:
                     name=stripcompop(fields[0])
                     thisvector=self.vectordict.get(name,None)
                     if thisvector!=None:
-                        print "Processing vector for "+name
+                        #print "Processing vector for "+name
                         #print fields[1:]
 
                         while len(fields)>1:
