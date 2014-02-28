@@ -186,6 +186,7 @@ class PseudoDisambiguator:
                     for index in athesentry.pseudopairs:
                         self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice1]=0
                         self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice2]=0
+            print self.pseudodict[atype].keys()
 
 
     def processconstituents(self):
@@ -201,7 +202,7 @@ class PseudoDisambiguator:
                     name=stripcompop(fields[0])
                     thisvector=self.vectordict.get(name,None)
                     if thisvector!=None:
-                        #print "Processing vector for "+name
+                         print "Processing vector for "+name
                         #print fields[1:]
 
                         while len(fields)>1:
