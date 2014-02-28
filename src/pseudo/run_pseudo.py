@@ -214,7 +214,7 @@ class PseudoDisambiguator:
             thisitem={}
             for atype in self.pseudodict.keys():
 
-                pseudopair.votes[atype]=0
+                pseudopair.votes[atype]=0.0
                 thisitem[atype]=pseudopair.get(atype)
                 thesentry[atype]=self.pseudodict[atype][thisitem[atype]]
                 #print thesentry[atype].neighbours
@@ -229,7 +229,9 @@ class PseudoDisambiguator:
                         pseudopair.votes[atype]-=1
                         #print "Minus"
                 if pseudopair.votes[atype]>0:
-                    totals[atype]+=1
+                    totals[atype]+=1.0
+                elif pseudopair.vote[atype]==0:
+                    totals[atype]+=0.5  #random guess
 
             processed+=1
             if self.parameters['testing']:
