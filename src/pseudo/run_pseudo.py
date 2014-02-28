@@ -179,6 +179,7 @@ class PseudoDisambiguator:
         for atype in self.pseudodict.keys():
             for athesentry in self.pseudodict[atype].values():
                 neighs=athesentry.makeselfneigh()
+                print athesentry.name,neighs
                 for neigh in neighs:
                     if self.vectordict.get(neigh,None)==None:
                         self.vectordict[neigh]=VectorEntry(neigh)
