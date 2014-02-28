@@ -22,7 +22,7 @@ def configure(args):
     parameters['typelist']=['phrase','head']
     #parameters['typelist']=['phrase']
 
-    for arg in args:
+    for i,arg in enumerate(args):
         if arg=='nouns' or arg=='N':
             parameters['pos']='N'
         elif arg=='adjs' or arg=='J':
@@ -56,6 +56,8 @@ def configure(args):
             parameters['neighsource']='comp_mult'
         elif arg=='comp_gm':
             parameters['neighsource']='comp_gm'
+        elif arg=='setk':
+            parameters['k']=int(args[i+1])
 
     parameters=setfilenames(parameters)
     return parameters
