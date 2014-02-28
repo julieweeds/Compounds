@@ -279,6 +279,7 @@ def go_vectors(parameters):
     mypseudo=PseudoDisambiguator(parameters)
     #mypseudo.k=1
     mypseudo.makeselfneigh()
+    mypseudo.processneighbours()
     mypseudo.processconstituents()
     mypseudo.evaltask()
 
