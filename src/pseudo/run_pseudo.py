@@ -182,7 +182,7 @@ class PseudoDisambiguator:
         for atype in self.pseudodict.keys():
             for athesentry in self.pseudodict[atype].values():
                 neighs=athesentry.makeselfneigh(atype)
-                print athesentry.name,neighs
+                #print athesentry.name,neighs
                 for neigh in neighs:
                     if self.vectordict.get(neigh,None)==None:
                         self.vectordict[neigh]=VectorEntry(neigh)
@@ -190,7 +190,7 @@ class PseudoDisambiguator:
                     for index in athesentry.pseudopairs:
                         self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice1]=0
                         self.vectordict[neigh].relfeatdict[self.pseudopairs[index].choice2]=0
-            print self.pseudodict[atype].keys()
+            #print self.pseudodict[atype].keys()
 
 
     def processconstituents(self):
