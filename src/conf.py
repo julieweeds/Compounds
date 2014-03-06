@@ -218,7 +218,7 @@ def configure(args):
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords']
-            parameters['miroflag']=True
+            parameters['miroflag']=False
             parameters['usefile']='all'
             if parameters['phrasetype']=='ANs':
                 parameters['featurematch']='amod-HEAD'
