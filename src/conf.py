@@ -204,6 +204,26 @@ def configure(args):
             elif parameters['phrasetype']=='NNs':
                 parameters['featurematch']='nn-HEAD'
             parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
-
+        elif arg=='miro_mar':
+            parentdir='data/miro0314/'
+            parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            if parameters['vsource']=='giga':
+                parameters['depfile']='exp10'
+                parameters['altdepfile']='exp10'
+            elif parameters['vsource']=='wiki':
+                parameters['depfile']='wikiPOS'
+                parameters['altdepfile']='wikiPOS'
+            parameters['featurefile']=parameters['depfile']+'.features.filtered.strings'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords']
+            parameters['miroflag']=True
+            parameters['usefile']='all'
+            if parameters['phrasetype']=='ANs':
+                parameters['featurematch']='amod-HEAD'
+            elif parameters['phrasetype']=='NNs':
+                parameters['featurematch']='nn-HEAD'
+            parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
 
     return parameters
