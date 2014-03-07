@@ -111,6 +111,7 @@ def configure(args):
             parameters['diff']=False
             parameters['composesecond']=True
             parameters['usefile']='all'
+            parameters['vsource']='giga'
         elif arg=="NNs":
             parameters['featurematch']='nn-HEAD'
             parameters['phrasetype']='NNs'
