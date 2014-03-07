@@ -35,6 +35,7 @@ class FeatureVector:
     firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
     compareUptoOrder = 1
+    miroflag=False
 
     @staticmethod
     def strip(feat):
@@ -89,7 +90,12 @@ class FeatureVector:
 
 
     def add(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':+:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':+:'
+
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -105,7 +111,11 @@ class FeatureVector:
         return newvector
 
     def max(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':max:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':max:'
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -121,7 +131,11 @@ class FeatureVector:
         return newvector
 
     def mult(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':*:'+ftag+':'+avector.signifier,features=[],fdict={})
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':*:'
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -154,7 +168,11 @@ class FeatureVector:
 
     def gm(self,avector,ftag=''):
         #geometric mean of feature values i.e., multiply and sqrt to return into same number space
-        newvector=FeatureVector(self.signifier+':gm:'+ftag+':'+avector.signifier,features=[],fdict={})
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':gm:'
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
 
             for feature in self.featuredict.keys():
@@ -180,7 +198,11 @@ class FeatureVector:
         return newvector
 
     def min(self,avector,ftag=''):
-        newvector=FeatureVector(self.signifier+':min:'+ftag+':'+avector.signifier,features=[],fdict={})
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':min:'
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
         if not self.functional:
             for feature in self.featuredict.keys():
                 if avector.featuredict.get(feature,0)>0:
@@ -200,7 +222,11 @@ class FeatureVector:
 
     def selectself(self,avector,ftag=''):
         #return first order features of self - doesn't matter because cosine only compares upto and order anyway
-        newvector=FeatureVector(self.signifier+':ss:'+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        if FeatureVector.miroflag:
+            ctag=''
+        else:
+            ctag=':ss:'
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
         #for feature in self.featuredict.keys():
         #    aorder=FeatureVector.findorder(feature)
         #    if aorder==1:
@@ -209,10 +235,15 @@ class FeatureVector:
         return newvector
 
     def selectother(self,avector,ftag=''):
-        if not self.functional:
-            newvector=FeatureVector(self.signifier+':so:'+ftag+avector.signifier,fdict=avector.featuredict)
+        if FeatureVector.miroflag:
+            ctag=''
         else:
-            newvector=FeatureVector(self.signifier+':so:'+ftag+avector.signifier,features=[],fdict={})
+            ctag=':so:'
+
+        if not self.functional:
+            newvector=FeatureVector(self.signifier+ctag+ftag+avector.signifier,fdict=avector.featuredict)
+        else:
+            newvector=FeatureVector(self.signifier+ctag+ftag+avector.signifier,features=[],fdict={})
 
             for feature in avector.featuredict.keys():
                 aorder=FeatureVector.findorder(feature)
@@ -401,7 +432,8 @@ class Composer:
         self.statsreq=True
         self.association=parameters['association']
         self.completewhoami+='.'+self.association
-        self.miroflag=False
+        self.miroflag=self.parameters['miroflag']
+        FeatureVector.miroflag=self.miroflag
         FeatureVector.inversefeatures=self.parameters['inversefeatures']
 
         self.readcomps()
@@ -426,7 +458,7 @@ class Composer:
             for line in instream:
                 fields=line.rstrip().split('\t')
                 collocate=fields[0]
-                if self.miroflag:
+                if self.miroflag and False:  #obsolete miro format
                     #AN:black/J_swan/N
                     parts=collocate.split(':')
                     words=parts[1].split('_')
