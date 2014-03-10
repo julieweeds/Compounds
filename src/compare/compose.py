@@ -91,7 +91,7 @@ class FeatureVector:
 
     def add(self,avector,ftag=''):
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':+:'
 
@@ -112,7 +112,7 @@ class FeatureVector:
 
     def max(self,avector,ftag=''):
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':max:'
         newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
@@ -132,7 +132,7 @@ class FeatureVector:
 
     def mult(self,avector,ftag=''):
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':*:'
         newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
@@ -169,7 +169,7 @@ class FeatureVector:
     def gm(self,avector,ftag=''):
         #geometric mean of feature values i.e., multiply and sqrt to return into same number space
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':gm:'
         newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
@@ -199,7 +199,7 @@ class FeatureVector:
 
     def min(self,avector,ftag=''):
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':min:'
         newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
@@ -223,7 +223,7 @@ class FeatureVector:
     def selectself(self,avector,ftag=''):
         #return first order features of self - doesn't matter because cosine only compares upto and order anyway
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':ss:'
         newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
@@ -236,7 +236,7 @@ class FeatureVector:
 
     def selectother(self,avector,ftag=''):
         if FeatureVector.miroflag:
-            ctag=''
+            ctag=':'
         else:
             ctag=':so:'
 
