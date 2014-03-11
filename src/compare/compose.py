@@ -213,7 +213,7 @@ class FeatureVector:
                 aorder=FeatureVector.findorder(feature)
                 if aorder>1:
                     fofeat=FeatureVector.strip(feature)
-                    if FeatureVector.featttype(feature) == FeatureVector.inversefeatures[ftag]:
+                    if FeatureVector.feattype(feature) == FeatureVector.inversefeatures[ftag]:
                         if self.featuredict.get(fofeat,0)>0:
                             newvector.featuredict[fofeat]=min(self.featuredict[fofeat],avector.featuredict.get(feature,0))
 
