@@ -109,8 +109,9 @@ def configure(args):
             parameters['mod']=True #obsolete
             parameters['compop']='mult'
             parameters['diff']=False
-            parameters['composefirst']=True
+            parameters['composesecond']=True
             parameters['usefile']='all'
+            parameters['vsource']='giga'
         elif arg=="NNs":
             parameters['featurematch']='nn-HEAD'
             parameters['phrasetype']='NNs'
@@ -151,7 +152,7 @@ def setfilenames(parameters):
         basename='vectors.'+parameters['vsource']
         basename2='vectors.'+parameters['vsource2']
     if parameters['miroflag']:
-        parentdir+='miro/'
+        parentdir+='miro0314/'
         if parameters['msource']=='movies':
             parentdir+='movies/'
         parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['postype']
