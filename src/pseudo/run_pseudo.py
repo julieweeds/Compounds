@@ -12,6 +12,36 @@ def stripcompop(phrase):
         result=phrase
     return result
 
+def stripdiffc(constit):
+    parts=constit.split('!')
+    if len(parts)>1:
+        return parts[0]
+    else:
+        return constit
+
+
+def stripdiffp(phrase):
+    parts=stripcompop(phrase).split('!')
+    if len(parts)==5:
+        np1=parts[0]
+        middleparts=parts[2].split(':')
+        if len(middleparts)==6:
+            np2=middleparts[4]
+            np3=middleparts[5]
+        elif len(middleparts)==5:
+            np2=middleparts[3]
+            np3=middleparts[4]
+
+        else:
+            print "Warning error with name stripping "+phrase
+            return(phrase)
+        return np1+':'+np2+':'+np3
+
+    elif len(parts)==1:
+        return stripcompop(phrase)
+    else:
+        print "Warning error with name stripping "+phrase
+        return phrase
 class PseudoPair:
 
     def __init__(self,fields):
@@ -52,7 +82,7 @@ class ThesEntry:
     def addneighs(self,scoredlist):
 
         for i in range(0,len(scoredlist),2):
-            self.neighbours.append(stripcompop(scoredlist[i]))
+            self.neighbours.append(stripdiffp(scoredlist[i]))
         return self.neighbours
 
     def display(self):
@@ -86,6 +116,7 @@ class PseudoDisambiguator:
         self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
         self.phrasepath=os.path.join(parameters['compdatadir'],parameters['phrasefile'])
         self.constitpath=os.path.join(parameters['compdatadir'],parameters['constitfile'])
+
         self.k=parameters['k']
         self.pseudodict={}  #dict from phrase/head to thesentry
         for type in self.parameters['typelist']:
@@ -139,7 +170,7 @@ class PseudoDisambiguator:
                 if self.parameters['neighsource']=='observed':
                     name=fields[0]
                 else:
-                    name=stripcompop(fields[0])
+                    name=stripdiffp(fields[0])
                 if self.dophrase:
                     mythes=self.pseudodict['phrase'].get(name,None)
 
@@ -170,7 +201,7 @@ class PseudoDisambiguator:
 
 
                 linesread+=1
-                if linesread%1000==0:
+                if linesread%10000==0:
                     print "Processed "+str(linesread)+" lines"
                     #for key in self.pseudophrasedict.keys():
                     #    self.pseudophrasedict[key].display()
@@ -203,7 +234,7 @@ class PseudoDisambiguator:
                 linesread=0
                 for line in instream:
                     fields=line.rstrip().split('\t')
-                    name=stripcompop(fields[0])
+                    name=stripdiffp(fields[0])
                     thisvector=self.vectordict.get(name,None)
                     if thisvector!=None:
                         #print "Processing vector for "+name
@@ -220,7 +251,7 @@ class PseudoDisambiguator:
                         #ignore line
                         pass
                     linesread+=1
-                    if linesread%1000==0:
+                    if linesread%10000==0:
                         print "Processed "+str(linesread)+" lines"
                         if self.parameters['testing']:
                             break
@@ -261,8 +292,12 @@ class PseudoDisambiguator:
                 pseudopair.display()
             if processed%100==0 and self.parameters['testing']:
                 break
-        print "Total processed = "+str(processed)
+        print "Total processed = "+str(processed)+" with k = "+str(self.k)+" in neighbour file "+self.parameters['neighsource']
         print "Correct",totals
+        mystream=parameters['outputstream']
+        phraseacc=float(totals['phrase'])/float(processed)
+        headacc=float(totals['head'])/float(processed)
+        mystream.write(self.parameters['neighsource']+','+str(self.k)+','+str(phraseacc)+','+str(headacc)+'\n')
 
 
 
@@ -276,18 +311,23 @@ def go_neighs(parameters):
     mypseudo.evaltask()
 
 def go_vectors(parameters):
-    mypseudo=PseudoDisambiguator(parameters)
-    #mypseudo.k=1
-    mypseudo.makeselfneigh()
-    mypseudo.processneighbours()
-    mypseudo.processconstituents()
-    mypseudo.evaltask()
+    while len(parameters['ks'])>0:
+        parameters['k']=parameters['ks'].pop()
+        #print parameters['ks'], parameters['k']
+        mypseudo=PseudoDisambiguator(parameters)
+        #mypseudo.k=1
+        mypseudo.makeselfneigh()
+        mypseudo.processneighbours()
+        mypseudo.processconstituents()
+        mypseudo.evaltask()
 
 if __name__=='__main__':
 
     parameters = configure(sys.argv)
-
-    if parameters['run_neighs']:
-        go_neighs(parameters)
-    elif parameters['run_vectors']:
-        go_vectors(parameters)
+    outfile=os.path.join(parameters['compdatadir'],'results.csv')
+    with open(outfile,'a') as outstream:
+        parameters['outputstream']=outstream
+        if parameters['run_neighs']:
+            go_neighs(parameters)
+        elif parameters['run_vectors']:
+            go_vectors(parameters)

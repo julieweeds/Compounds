@@ -18,7 +18,9 @@ def configure(args):
     parameters['setup']=False
     parameters['run_neighs']=False
     parameters['run_vectors']=False
-    parameters['k']=30
+    parameters['ks']=[0,1,2,5,10,20,30,50,75,100]
+    parameters['k']=5
+
     parameters['typelist']=['phrase','head']
     #parameters['typelist']=['phrase']
 
@@ -56,6 +58,12 @@ def configure(args):
             parameters['neighsource']='comp_mult'
         elif arg=='comp_gm':
             parameters['neighsource']='comp_gm'
+        elif arg=='comp_min':
+            parameters['neighsource']='comp_min'
+        elif arg=='comp_nfmult':
+            parameters['neighsource']='comp_nfmult'
+        elif arg=='diffcomp_min':
+            parameters['neighsource']='diffcomp_min'
         elif arg=='setk':
             parameters['k']=int(args[i+1])
 
