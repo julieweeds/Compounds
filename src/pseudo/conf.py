@@ -19,10 +19,15 @@ def configure(args):
     parameters['run_neighs']=False
     parameters['run_vectors']=False
     parameters['ks']=[0,1,2,5,10,20,30,50,75,100]
+    #parameters['ks']=[0,1,5]
     parameters['k']=5
+    parameters['freqdiff']=False
+    parameters['usefreqthresh']='none'
+    parameters['freqthresh']=0
 
-    parameters['typelist']=['phrase','head']
+    parameters['typelist']=['phrase','head','mod']
     #parameters['typelist']=['phrase']
+
 
     for i,arg in enumerate(args):
         if arg=='nouns' or arg=='N':
@@ -64,8 +69,28 @@ def configure(args):
             parameters['neighsource']='comp_nfmult'
         elif arg=='diffcomp_min':
             parameters['neighsource']='diffcomp_min'
+        elif arg=='diffcomp_mult':
+            parameters['neighsource']='diffcomp_mult'
+        elif arg=='diffcomp_gm':
+            parameters['neighsource']='diffcomp_gm'
+        elif arg=='diffcomp_nfgm':
+            parameters['neighsource']='diffcomp_nfgm'
+        elif arg=='diffcomp_nfmult':
+            parameters['neighsource']='diffcomp_nfmult'
+        elif arg=='unigram':
+            parameters['neighsource']='unigram'
+            parameters['typelist']=['head','mod']
         elif arg=='setk':
-            parameters['k']=int(args[i+1])
+            parameters['ks']=[int(args[i+1])]
+        elif arg=='freqdiff':
+            parameters['freqdiff']=True
+        elif arg=='abovefreqthresh':
+            parameters['usefreqthresh']='above'
+            parameters['freqthresh']=500
+
+        elif arg=='belowfreqthresh':
+            parameters['usefreqthresh']='below'
+            parameters['freqthresh']=500
 
     parameters=setfilenames(parameters)
     return parameters
@@ -86,6 +111,7 @@ def setfilenames(parameters):
     parameters['neighfile']=parameters['neighsource']+'.neighbours.strings'
     parameters['phrasefile']=parameters['neighsource']+'.vectors.train.PHRASES'
     parameters['constitfile']=parameters['vectorfiles']['nouns']
+    parameters['freqfile']='vectors.train.PHRASES.entries.strings'
     parameters['pseudofile']='pseudopairs'
 
     return parameters

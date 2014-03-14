@@ -51,6 +51,7 @@ class PseudoPair:
         self.choice2=fields[2]
         self.votes={}
 
+
     def getPhrase(self):
         return self.phrase
 
@@ -63,6 +64,8 @@ class PseudoPair:
             return self.phrase
         elif atype=='head':
             return self.phrase.split(':')[0]
+        elif atype=='mod':
+            return self.phrase.split(':')[2]
         elif atype=='choice1':
             return self.choice1
         elif atype=='choice2':
@@ -95,6 +98,8 @@ class ThesEntry:
             self.neighbours.append(self.name)
         elif atype=='head':
             self.neighbours.append(self.name.split(':')[0])
+        elif atype=='mod':
+            self.neighbours.append(self.name.split(':')[2])
         return self.neighbours
 
 class VectorEntry:
@@ -118,6 +123,7 @@ class PseudoDisambiguator:
         self.constitpath=os.path.join(parameters['compdatadir'],parameters['constitfile'])
 
         self.k=parameters['k']
+        self.freqdict={}
         self.pseudodict={}  #dict from phrase/head to thesentry
         for type in self.parameters['typelist']:
             self.pseudodict[type]={}
@@ -131,9 +137,14 @@ class PseudoDisambiguator:
             self.dohead=True
         else:
             self.dohead=False
+        if 'mod' in self.pseudodict.keys():
+            self.domod=True
+        else:
+            self.domod=False
 
-
+        self.loadfreqs()
         self.loadpairs()
+
 
     def loadpairs(self):
         pairindex=len(self.pseudopairs)
@@ -141,24 +152,44 @@ class PseudoDisambiguator:
             print "Reading "+self.pseudopath
             for line in instream:
                 fields=line.rstrip().split('\t')
-                apair = PseudoPair(fields)
-                self.pseudopairs.append(apair)
-                for atype in self.pseudodict.keys():
-                    if self.pseudodict[atype].get(apair.get(atype),None)==None:
-                        self.pseudodict[atype][apair.get(atype)]=ThesEntry(apair.getPhrase())
+                if self.freqdict.get(fields[0],-1) >-1:
+                    apair = PseudoPair(fields)
+                    self.pseudopairs.append(apair)
+                    for atype in self.pseudodict.keys():
+                        if self.pseudodict[atype].get(apair.get(atype),None)==None:
+                            self.pseudodict[atype][apair.get(atype)]=ThesEntry(apair.getPhrase())
 
-                    self.pseudodict[atype][apair.get(atype)].pseudopairs.append(pairindex)
+                        self.pseudodict[atype][apair.get(atype)].pseudopairs.append(pairindex)
                 # if self.pseudodict['head'].get(apair.get('head'),None)==None:
                 #     self.pseudodict['head'][apair.get('head')]=ThesEntry(apair.getHead())
                 #
                 # self.pseudodict['head'][apair.get('head')].pseudopairs.append(pairindex)
 
 
-                pairindex+=1
+                    pairindex+=1
         print "Stored "+str(pairindex)+" pairs"
         #print len(self.pseudophrasedict.keys()), self.pseudophrasedict
         #print len(self.pseudoheaddict.keys()),self.pseudoheaddict
 
+    def loadfreqs(self):
+
+        freqpath=os.path.join(self.parameters['compdatadir'],self.parameters['freqfile'])
+        print parameters['usefreqthresh'],parameters['freqthresh']
+        with open(freqpath,'r') as instream:
+
+            for line in instream:
+
+                fields=line.rstrip().split('\t')
+                phrase=fields[0]
+                freq=float(fields[1])
+                if phrase.split(':')[1]=='nn-DEP':
+                    diff=freq-self.parameters['freqthresh']
+                    if self.parameters['usefreqthresh']=='above' and diff>0:
+                        self.freqdict[fields[0]]=freq
+                    elif self.parameters['usefreqthresh']=='below' and diff<0:
+                        self.freqdict[fields[0]]=freq
+                    elif self.parameters['usefreqthresh']=='none':
+                        self.freqdict[fields[0]]=freq
     def processneighbours(self):
 
         linesread=0
@@ -176,10 +207,19 @@ class PseudoDisambiguator:
 
                     if mythes==None and self.dohead:
                         mythes=self.pseudodict['head'].get(name,None)
+                        if mythes==None and self.domod:
+                            mythes=self.pseudodict['mod'].get(name,None)
+                    elif mythes==None and self.domod:
+                        mythes=self.pseudodict['mod'].get(name,None)
+
 
 
                 elif self.dohead:
                     mythes=self.pseudodict['head'].get(name,None)
+                    if mythes==None and self.domod:
+                        mythes=self.pseudodict['mod'].get(name,None)
+                elif self.domod:
+                    mythes=self.pseudodict['mod'].get(name,None)
 
 
                 if mythes!=None:
@@ -225,8 +265,10 @@ class PseudoDisambiguator:
 
 
     def processconstituents(self):
-
-        vectorpaths=[self.constitpath,self.phrasepath]
+        if self.parameters['neighsource']=='unigram':
+            vectorpaths=[self.constitpath]
+        else:
+            vectorpaths=[self.constitpath,self.phrasepath]
         #vectorpaths=[self.constitpath]
         for vectorpath in vectorpaths:
             with open(vectorpath,'r') as instream:
@@ -260,12 +302,14 @@ class PseudoDisambiguator:
 
         processed=0
         totals={}
+        accs={}
         for atype in self.pseudodict.keys():
             totals[atype]=0
 
         for pseudopair in self.pseudopairs:
             thesentry={}
             thisitem={}
+            processed+=1
             for atype in self.pseudodict.keys():
 
                 pseudopair.votes[atype]=0.0
@@ -277,27 +321,42 @@ class PseudoDisambiguator:
                     diff=neighvectorentry.relfeatdict[pseudopair.get('choice1')]-neighvectorentry.relfeatdict[pseudopair.get('choice2')]
                     #print neigh, neighvectorentry.relfeatdict[pseudopair.get('choice1')], neighvectorentry.relfeatdict[pseudopair.get('choice2')]
                     if diff>0:
-                        pseudopair.votes[atype]+=1
+                        if parameters['freqdiff']:
+                            pseudopair.votes[atype]+=diff
+                        else:
+                            pseudopair.votes[atype]+=1
                         #print "Plus"
                     elif diff<0:
-                        pseudopair.votes[atype]-=1
+                        if parameters['freqdiff']:
+                            pseudopair.votes[atype]+=diff
+                        else:
+                            pseudopair.votes[atype]-=1
                         #print "Minus"
                 if pseudopair.votes[atype]>0:
                     totals[atype]+=1.0
                 elif pseudopair.votes[atype]==0:
                     totals[atype]+=0.5  #random guess
+                accs[atype]=float(totals[atype])/float(processed)
 
-            processed+=1
+
             if self.parameters['testing']:
                 pseudopair.display()
             if processed%100==0 and self.parameters['testing']:
                 break
         print "Total processed = "+str(processed)+" with k = "+str(self.k)+" in neighbour file "+self.parameters['neighsource']
         print "Correct",totals
+        print "Accuracy", accs
         mystream=parameters['outputstream']
-        phraseacc=float(totals['phrase'])/float(processed)
-        headacc=float(totals['head'])/float(processed)
-        mystream.write(self.parameters['neighsource']+','+str(self.k)+','+str(phraseacc)+','+str(headacc)+'\n')
+
+
+        # phraseacc=float(totals['phrase'])/float(processed)
+        # headacc=float(totals['head'])/float(processed)
+        # modacc=float(totals['mod'])/float(processed)
+        mystring=self.parameters['neighsource']+','+str(self.k)+','+self.parameters['usefreqthresh']+' '+str(self.parameters['freqthresh'])
+        for key in accs.keys():
+            mystring+=','+str(accs[key])
+        mystring+='\n'
+        mystream.write(mystring)
 
 
 

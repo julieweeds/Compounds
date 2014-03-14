@@ -23,13 +23,14 @@ def configure(args):
     parameters['featurematch']='amod-HEAD'
     parameters['association']='pmi'
     parameters['composefirst']=True
-    parameters['output']='more_results.csv'
+    parameters['output']='new_results.csv'
     parameters['graphing']=False
     parameters['miroflag']=False
     parameters['NNcompflag']=False
     parameters['switch']=False
     parameters['literalityscore']='compound'
     parameters['msource']='r8'
+    parameters['freqfile']='vectors.train.PHRASES.entries.strings'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True

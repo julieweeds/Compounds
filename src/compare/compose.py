@@ -413,6 +413,7 @@ class Composer:
         self.parameters=parameters
         self.positions=['left','right']# #for adjectives and nouns - have corresponding dependency files in self.deppaths
         self.collocdict={}
+        self.freqdict={}
         self.rightdict={}
         self.leftdict={}
         self.featdict={}
@@ -437,6 +438,7 @@ class Composer:
         FeatureVector.inversefeatures=self.parameters['inversefeatures']
 
         self.readcomps()
+        self.readfreqs()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
 
@@ -472,15 +474,15 @@ class Composer:
                     if len(fields)>1:
                         if self.parameters['NNcompflag']:
                             if self.parameters['literalityscore']=='compound':
-                                self.collocdict[collocate]=fields[1] #compound literality score
+                                self.collocdict[collocate]=float(fields[1]) #compound literality score
                             elif self.parameters['literalityscore']=='right':
-                                self.collocdict[collocate]=fields[3] #right word literality score
+                                self.collocdict[collocate]=float(fields[3]) #right word literality score
                             elif self.parameters['literalityscore']=='left':
-                                self.collocdict[collocate]=fields[2]
+                                self.collocdict[collocate]=float(fields[2])
                             else:
                                 self.collocdict[collocate]=1
                         else:
-                            self.collocdict[collocate]=fields[2]#store PMI
+                            self.collocdict[collocate]=float(fields[2])#store PMI
                     else:
                         self.collocdict[collocate]=float(hash(collocate))
                     parts=collocate.split(':')
@@ -496,6 +498,48 @@ class Composer:
         print "Number of left modifiers is "+str(len(self.leftdict.keys()))
         self.collocorder=sorted(self.collocdict.keys())
         return
+
+    def readfreqs(self):
+
+        freqpath=os.path.join(self.parameters['datadir'],self.parameters['freqfile'])
+        with open(freqpath,'r') as instream:
+
+            for line in instream:
+
+                fields=line.rstrip().split('\t')
+                self.freqdict[fields[0]]=float(fields[1])
+        print self.collocdict
+        print self.freqdict
+        self.freq_correlate()
+
+
+    def freq_correlate(self):
+        xs=[]  #human score
+        ys=[]  #left freq
+        zs=[]  #right freq
+
+        for key in self.collocdict.keys():
+            xs.append(self.collocdict[key])
+            ys.append(self.freqdict.get(key,0))
+            parts=key.split(':')
+            rel = parts[1]
+            invrel=self.parameters['inversefeatures'][rel]
+            inverted=parts[2]+':'+invrel+':'+parts[0]
+            zs.append(self.freqdict.get(inverted,0))
+
+        print xs
+        print ys
+        print zs
+        xarray=np.array(xs)
+        yarray=np.array(ys)
+        zarray=np.array(zs)
+        leftcorr=stats.spearmanr(xarray,yarray)
+        rightcorr=stats.spearmanr(xarray,zarray)
+        print "Correlation with left frequency ",leftcorr
+        print "Correlation with right frequency ",rightcorr
+        self.freqthresh=stats.cmedian(zarray)
+        print "Median right frequency ",self.freqthresh
+
 
     def makecaches(self):
 
@@ -632,6 +676,9 @@ class Composer:
                     rightxs=[]
                     rightys=[]
                     rightphrases=[]
+                    allfreqs=[]
+                    rightfreqs=[]
+                    leftfreqs=[]
                     done=0
                     right_ignored=0
                     left_ignored=0
@@ -713,14 +760,22 @@ class Composer:
                             allys.append(scores)
                             leftpmi=self.collocdict.get(phrasefields[0],-1)
                             rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),-1)
+                            leftfreq=self.freqdict.get(phrasefields[0],-1)
+                            rightfreq=self.freqdict.get(phrasefields[0],-1)
+                            if rightfreq<1:
+                                print "No right freq for "+phrasefields[0]
                             if inverted:
                                 allxs.append(rightpmi)
                                 rightxs.append(rightpmi)
+                                allfreqs.append(rightfreq)
+                                rightfreqs.append(rightfreq)
                                 rightphrases.append(phrasefields[0])
                                 rightys.append(scores)
                             else:
                                 allxs.append(leftpmi)
                                 leftxs.append(leftpmi)
+                                allfreqs.append(leftfreq)
+                                leftfreqs.append(leftfreq)
                                 leftphrases.append(phrasefields[0])
                                 leftys.append(scores)
 
@@ -732,9 +787,10 @@ class Composer:
                     vectorstream.close()
         print "Ignored "+str(right_ignored)+" phrases of type right"
         print "Ignored "+str(left_ignored)+" phrases of type left"
-        self.computestats(allxs,allys,allphrases,'all')
-        self.computestats(leftxs,leftys,leftphrases,'left')
+        #self.computestats(allxs,allys,allphrases,'all')
+        #self.computestats(leftxs,leftys,leftphrases,'left')
         self.computestats(rightxs,rightys,rightphrases,'right')
+        self.computestats(rightfreqs,rightys,rightphrases,'rightfreq')
 
     def compose(self,left,right,ftag=''):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
@@ -776,7 +832,7 @@ class Composer:
 
     def computestats(self,xs,ys,phrases,type='all'):
 
-        if type=='all':
+        if type=='right' or type=='rightfreq':
             self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):
