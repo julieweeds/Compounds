@@ -32,7 +32,11 @@ class FeatureVector:
                 feature=featurelist.pop()
                 forder=len(feature.split(':'))-1
                 if forder<2: #ignore any higher order features
-                    self.featuredict[feature]=score
+                    if feature.split(':')[0] in FeatureVector.deps:
+                        #ignore
+                        pass
+                    else:
+                        self.featuredict[feature]=score
             except Exception:
                 print "Length of featurelist for "+self.name+" is not even in length"
 
@@ -67,7 +71,7 @@ class FeatureVector:
             listsofar.append(feature)
             self.reversedict[score]=listsofar
 
-    def findmatch(self,feature,trainvector):
+    def findmatch(self,feature,trainvector,filtering=True):
         score=self.featuredict.get(feature,0)
         match=feature
         if score>0:
@@ -78,7 +82,7 @@ class FeatureVector:
                 random.shuffle(possmatches)
                 match=possmatches[0]
                 possmatches=possmatches[1:]
-                if match in trainvector.featuredict.keys():
+                if filtering and match in trainvector.featuredict.keys():
                     match=feature
                     print "Discarded match due to presence with phrase in training: "+match
             if match==feature:
@@ -90,7 +94,7 @@ class FeatureVector:
                     random.shuffle(possmatches)
                     match=possmatches[0]
                     possmatches=possmatches[1:]
-                    if match in trainvector.featuredict.keys():
+                    if filtering and match in trainvector.featuredict.keys():
                         match=feature
                         print "Discarded match due to presence with phrase in training: "+match
 
@@ -100,10 +104,10 @@ class FeatureVector:
         #print match
         return match
 
-    def makepairs(self,headvector,trainvector,outstream):
+    def makepairs(self,headvector,trainvector,outstream,filtering=True):
 
         for feature in self.featuredict.keys():
-            match=headvector.findmatch(feature,trainvector)
+            match=headvector.findmatch(feature,trainvector,filtering=filtering)
             if match!=feature:
                 outstream.write(self.name+'\t'+feature+'\t'+match+'\n')
 
@@ -166,20 +170,25 @@ class PseudoBuilder:
              #   print cvector.name, cvector.reversedict.keys()
 
 
-    def setup(self):
+    def setup(self,filtering=True):
 
         outfile=os.path.join(self.parameters['compdatadir'],parameters['pseudofile'])
         with open(outfile,'w') as outstream:
-            self.testvectors=self.loadvectors('filtered')
+            if filtering:
+                self.testvectors=self.loadvectors('filtered')
+            else:
+                self.testvectors=self.loadvectors('test')
             self.constituentvectors=self.loadvectors('constituents')
             self.trainingvectors=self.loadvectors('train')
             self.findequals()
             for testvector in self.testvectors.values():
                 head=testvector.name.split(':')[0]
-                testvector.makepairs(self.constituentvectors[head],self.trainingvectors[testvector.name],outstream)
+                testvector.makepairs(self.constituentvectors[head],self.trainingvectors[testvector.name],outstream,filtering=filtering)
                 #if self.parameters['testing']:
                  #   exit()
         return
+
+
 
 
 if __name__=='__main__':
@@ -191,4 +200,4 @@ if __name__=='__main__':
     if parameters['filter']:
         myBuilder.filter()
     elif parameters['setup']:
-        myBuilder.setup()
+        myBuilder.setup(filtering=False)

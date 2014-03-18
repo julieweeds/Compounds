@@ -364,10 +364,12 @@ def go_neighs(parameters):
 
 
     #print pseudopath,neighpath
-    mypseudo=PseudoDisambiguator(parameters)
-    mypseudo.processneighbours()
-    mypseudo.processconstituents()
-    mypseudo.evaltask()
+    while len(parameters['ks'])>0:
+        parameters['k']=parameters['ks'].pop()
+        mypseudo=PseudoDisambiguator(parameters)
+        mypseudo.processneighbours()
+        mypseudo.processconstituents()
+        mypseudo.evaltask()
 
 def go_vectors(parameters):
     while len(parameters['ks'])>0:

@@ -24,6 +24,7 @@ def configure(args):
     parameters['freqdiff']=False
     parameters['usefreqthresh']='none'
     parameters['freqthresh']=0
+    parameters['neighsource']=''
 
     parameters['typelist']=['phrase','head','mod']
     #parameters['typelist']=['phrase']
@@ -112,6 +113,6 @@ def setfilenames(parameters):
     parameters['phrasefile']=parameters['neighsource']+'.vectors.train.PHRASES'
     parameters['constitfile']=parameters['vectorfiles']['nouns']
     parameters['freqfile']='vectors.train.PHRASES.entries.strings'
-    parameters['pseudofile']='pseudopairs'
+    parameters['pseudofile']='pseudopairs.nf2'
 
     return parameters
