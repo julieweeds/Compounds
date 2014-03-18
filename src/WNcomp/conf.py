@@ -11,13 +11,12 @@ def configure(args):
     parameters['featurematch']='nn-DEP'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
     parameters['featurematch']='nn-DEP'
-    parameters['ks']=[0,1,2,5,10,20,30,50,75,100]
-    #parameters['ks']=[0,1,5]
     parameters['k']=5
     parameters['mwfile']='multiwords.all'
     parameters['neighsource']=''
     parameters['NNcompflag']=True
     parameters['literalityscore']='compound'
+    parameters['wnsim']='path'
 
     parameters['typelist']=['phrase','head','mod']
     #parameters['typelist']=['phrase']
@@ -71,7 +70,7 @@ def configure(args):
             parameters['neighsource']='unigram'
             parameters['typelist']=['head','mod']
         elif arg=='setk':
-            parameters['ks']=[int(args[i+1])]
+            parameters['k']=[int(args[i+1])]
 
 
     parameters=setfilenames(parameters)
