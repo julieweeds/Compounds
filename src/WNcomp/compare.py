@@ -204,7 +204,7 @@ class Comparer:
                 thisEntry= self.collocdict.get(entry,None)
                 if thisEntry!=None:
                     thisEntry.addneighs(fields[1:2*self.k+1])
-                    print "Adding entry for "+entry
+                    #print "Adding entry for "+entry
                     added+=1
         print "Added thesaurus entry for phrases: "+str(added)
         return
@@ -224,7 +224,7 @@ class Comparer:
         return
 
     def go(self):
-
+        print self.parameters
         self.loadphrases()
         self.loadneighbours()
         self.compareneighbours()
