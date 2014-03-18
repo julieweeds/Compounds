@@ -17,7 +17,8 @@ def configure(args):
     parameters['NNcompflag']=True
     parameters['literalityscore']='compound'
     parameters['wnsim']='path'
-
+    parameters['dohead']=False
+    parameters['domod']=False
     parameters['typelist']=['phrase','head','mod']
     #parameters['typelist']=['phrase']
 
@@ -75,6 +76,10 @@ def configure(args):
             parameters['wnsim']='lin'
         elif arg=='jcn':
             parameters['wnsim']='jcn'
+        elif arg=='head':
+            parameters['dohead']=True
+        elif arg=='mod':
+            parameters['domod']=True
 
     parameters=setfilenames(parameters)
     return parameters
