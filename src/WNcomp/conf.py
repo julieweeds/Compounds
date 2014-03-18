@@ -70,7 +70,9 @@ def configure(args):
             parameters['neighsource']='unigram'
             parameters['typelist']=['head','mod']
         elif arg=='setk':
-            parameters['k']=[int(args[i+1])]
+            parameters['k']=int(args[i+1])
+        elif arg=='lin':
+            parameters['metric']='lin'
 
 
     parameters=setfilenames(parameters)
