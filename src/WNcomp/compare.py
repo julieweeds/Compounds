@@ -177,7 +177,10 @@ class Comparer:
 
                     else:
                         sc=float(hash(collocate))
-
+                    if self.parameters['dohead']:
+                        self.collocdict[right]=ThesEntry(collocate,score=sc)
+                    elif self.parameters['domod']:
+                        self.collocdict[left]=ThesEntry(collocate,score=sc)
                     self.collocdict[collocate]=ThesEntry(collocate,score=sc)
 
                     #print "mod: ",mod,"head: ",head
