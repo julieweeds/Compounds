@@ -5,6 +5,31 @@ from conf import configure
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
 
+class ThesEntry:
+
+    def __init__(self,phrase,score=1):
+
+        self.phrase=phrase
+        self.comp_score=score
+        self.neighdict={}
+
+    def getHead(self):
+        return self.phrase.split(':')[0]
+
+    def getMod(self):
+        return self.phrase.split(':')[2]
+
+    def getRel(self):
+        return self.phrase.split(':')[1]
+
+    def addneighs(self,fields):
+
+        while len(fields) > 0:
+            sc=fields.pop()
+            neigh=fields.pop()
+            self.neighdict[neigh]=float(sc)
+
+
 class Comparer:
 
 
@@ -13,11 +38,12 @@ class Comparer:
         self.collocdict={}
         self.leftdict={}
         self.rightdict={}
-        self.neighdict={}
+        self.mwpath=os.path.join(parameters['compdatadir'],parameters['mwfile'])
+        self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
 
     def loadphrases(self):
-        self.mwpath=os.path.join(parameters['compdatadir'],parameters['mwfile'])
-        with open(self.parameters['mwpath'],'r') as instream:
+
+        with open(self.mwpath,'r') as instream:
             print "Reading "+self.parameters['mwpath']
             for line in instream:
                 fields=line.rstrip().split('\t')
@@ -34,14 +60,16 @@ class Comparer:
 
                     if len(fields)>1:
                         if self.parameters['literalityscore']=='compound':
-                            self.collocdict[collocate]=float(fields[1]) #compound literality score
+                            sc=float(fields[1]) #compound literality score
                         elif self.parameters['literalityscore']=='right':
-                            self.collocdict[collocate]=float(fields[3]) #right word literality score
+                            sc=float(fields[3]) #right word literality score
                         elif self.parameters['literalityscore']=='left':
-                            self.collocdict[collocate]=float(fields[2])
+                            sc=float(fields[2])
 
                     else:
-                        self.collocdict[collocate]=float(hash(collocate))
+                        sc=float(hash(collocate))
+
+                    self.collocdict[collocate]=ThesEntry(collocate,score=sc)
 
                     #print "mod: ",mod,"head: ",head
                     self.leftdict[left]=self.leftdict.get(left,0)+1
@@ -56,6 +84,22 @@ class Comparer:
         return
 
     def loadneighbours(self):
+        with open(self.neighpath,'r') as instream:
+            print "Reading "+self.neighpath
+            linesread=0
+            added=0
+            for line in instream:
+                linesread+=1
+                if linesread%1000==0:
+                    print "Processed lines: "+str(linesread)
+                fields=line.rstrip().split('\t')
+                entry=fields[0]
+                thisEntry= self.collocdict.get(entry,None)
+                if thisEntry!=None:
+                    thisEntry.addneighs(fields[1:2*self.k+1])
+                    print "Adding entry for "+entry
+                    added+=1
+        print "Added thesaurus entry for phrases: "+str(added)
         return
 
     def compareneighbours(self):

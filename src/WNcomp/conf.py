@@ -14,7 +14,7 @@ def configure(args):
     parameters['ks']=[0,1,2,5,10,20,30,50,75,100]
     #parameters['ks']=[0,1,5]
     parameters['k']=5
-    parameters['mwpath']='multiwords.all'
+    parameters['mwfile']='multiwords.all'
     parameters['neighsource']=''
     parameters['NNcompflag']=True
     parameters['literalityscore']='compound'
