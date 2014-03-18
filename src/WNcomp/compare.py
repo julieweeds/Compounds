@@ -8,8 +8,47 @@ import numpy as np
 
 wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
 
-def wnFormat(phrase):
+def stripcompop(phrase):
     parts=phrase.split(':')
+    if len(parts)==4:
+        result=parts[0]+':'+parts[2]+':'+parts[3]
+    else:
+        result=phrase
+    return result
+
+def stripdiffc(constit):
+    parts=constit.split('!')
+    if len(parts)>1:
+        return parts[0]
+    else:
+        return constit
+
+
+def stripdiffp(phrase):
+    parts=stripcompop(phrase).split('!')
+    if len(parts)==5:
+        np1=parts[0]
+        middleparts=parts[2].split(':')
+        if len(middleparts)==6:
+            np2=middleparts[4]
+            np3=middleparts[5]
+        elif len(middleparts)==5:
+            np2=middleparts[3]
+            np3=middleparts[4]
+
+        else:
+            print "Warning error with name stripping "+phrase
+            return(phrase)
+        return np1+':'+np2+':'+np3
+
+    elif len(parts)==1:
+        return stripcompop(phrase)
+    else:
+        print "Warning error with name stripping "+phrase
+        return phrase
+
+def wnFormat(phrase):
+    parts=stripdiffp(phrase).split(':')
     wnphrase=''
     tag=''
     if len(parts)==3:
