@@ -65,7 +65,7 @@ def sensesim(ss1,ss2,metric):
     if metric=='path':
         sim=ss1.path_similarity(ss2)
     elif metric=='lin':
-        sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-brown.dat'))
+        sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
     return sim
 
 def wnsim(phrase,neighbour,metric='path'):
