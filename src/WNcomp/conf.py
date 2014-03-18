@@ -72,7 +72,7 @@ def configure(args):
         elif arg=='setk':
             parameters['k']=int(args[i+1])
         elif arg=='lin':
-            parameters['metric']='lin'
+            parameters['wnsim']='lin'
 
 
     parameters=setfilenames(parameters)
