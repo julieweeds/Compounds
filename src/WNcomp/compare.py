@@ -44,7 +44,7 @@ class Comparer:
     def loadphrases(self):
 
         with open(self.mwpath,'r') as instream:
-            print "Reading "+self.parameters['mwpath']
+            print "Reading "+self.mwpath
             for line in instream:
                 fields=line.rstrip().split('\t')
                 collocate=fields[0]
