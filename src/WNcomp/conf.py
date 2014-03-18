@@ -10,7 +10,7 @@ def configure(args):
     parameters['athome']=False
     parameters['featurematch']='nn-DEP'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
-    parameters['featurematch']='amod-HEAD'
+    parameters['featurematch']='nn-DEP'
     parameters['ks']=[0,1,2,5,10,20,30,50,75,100]
     #parameters['ks']=[0,1,5]
     parameters['k']=5
