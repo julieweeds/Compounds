@@ -73,7 +73,8 @@ def configure(args):
             parameters['k']=int(args[i+1])
         elif arg=='lin':
             parameters['wnsim']='lin'
-
+        elif arg=='jcn':
+            parameters['wnsim']='jcn'
 
     parameters=setfilenames(parameters)
     return parameters
