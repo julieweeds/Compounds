@@ -125,7 +125,7 @@ class ThesEntry:
                 break
         if mymean>-2:
             if len(sims)==0:
-                mymean=-1
+                mymean=0
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
@@ -213,8 +213,7 @@ class Comparer:
         sims=[]
         for myThes in self.collocdict.values():
             sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
-            if sim>-1:
-                sims.append(sim)
+            sims.append(sim)
 
         sarray=np.array(sims)
         mean=np.average(sarray)
