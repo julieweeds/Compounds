@@ -213,7 +213,8 @@ class Comparer:
         sims=[]
         for myThes in self.collocdict.values():
             sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
-            sims.append(sim)
+            if sim>-2:
+                sims.append(sim)
 
         sarray=np.array(sims)
         mean=np.average(sarray)
