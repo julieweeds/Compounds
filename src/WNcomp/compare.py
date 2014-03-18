@@ -52,9 +52,12 @@ class Comparer:
                 left=parts[0] #black/J
                 rel=parts[1]  #'amod-DEP'
                 right=parts[2] #swan/N
-                if rel == self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                inversematch = self.parameters['inversefeatures'][self.parameters['featurematch']]
+                print "Attempting to match "+rel+" and "+inversematch
+                if rel==inversematch
                     rel=self.parameters['featurematch']
                     collocate=right+':'+rel+':'+left
+
 
                 if rel == self.parameters['featurematch']:
 
