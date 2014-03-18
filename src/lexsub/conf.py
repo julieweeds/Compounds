@@ -4,10 +4,12 @@ def configure(args):
     parameters={}
     parameters['testing']=False
     parameters['source']='trial'
-    parameters['parentdir']='~/'
+    #parameters['parentdir']='~/'
+    parameters['parentdir']='/Users/juliewe/'
     parameters['datadir']='Documents/workspace/Compounds/data/lexsub/'+parameters['source']
     parameters['basename']='lexsub_'+parameters['source']
     parameters['datafile']=parameters['basename']+'.fixed.xml'
+    parameters['parsefile']=parameters['basename']+'.parsed.xml'
 
 
     for arg in args:
