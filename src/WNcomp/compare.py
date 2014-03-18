@@ -34,10 +34,14 @@ def wnsim(phrase,neighbour,metric='path'):
     (wnphrase,ptag)=wnFormat(phrase)
     (wnneighbour,ntag)=wnFormat(neighbour)
 
-    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[ntag])
-    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[ptag])
+    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[ntag[0]])
+    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[ptag[0]])
 
     maxsim=0
+    if len(phrasesynsets)==0:
+        maxsim=-2
+    if len(neighsynsets)==0:
+        maxsim=-1
     for psynset in phrasesynsets:
         for nsynset in neighsynsets:
             sim=sensesim(psynset,nsynset,metric)
@@ -74,10 +78,13 @@ class ThesEntry:
         sims=[]
         for neigh in self.neighdict.keys():
             sim=wnsim(self.phrase,neigh,metric)
-            sims.append(sim)
-
-        sarray=np.array(sims)
-        mymean=np.average(sarray)
+            if sim>-1:
+                sims.append(sim)
+        if len(sims)==0:
+            mymean=-1
+        else:
+            sarray=np.array(sims)
+            mymean=np.average(sarray)
         print self.phrase,mymean
         return mymean
 
@@ -161,7 +168,9 @@ class Comparer:
     def compareneighbours(self,metric='path'):
         sims=[]
         for myThes in self.collocdict.values():
-            sims.append(myThes.average_wnsim(metric))
+            sim=myThes.average_wnsim(metric)
+            if sim>-1:
+                sims.append(sim)
 
         sarray=np.array(sims)
         mean=np.average(sarray)
