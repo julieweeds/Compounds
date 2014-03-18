@@ -54,7 +54,7 @@ class Comparer:
                 right=parts[2] #swan/N
                 inversematch = self.parameters['inversefeatures'][self.parameters['featurematch']]
                 print "Attempting to match "+rel+" and "+inversematch
-                if rel==inversematch
+                if rel==inversematch:
                     rel=self.parameters['featurematch']
                     collocate=right+':'+rel+':'+left
 
