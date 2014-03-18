@@ -4,6 +4,47 @@ import sys,os
 from conf import configure
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
+import numpy as np
+
+wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
+
+def wnFormat(phrase):
+    parts=phrase.split(':')
+    wnphrase=''
+    tag=''
+    if len(parts)==3:
+        if parts[1]=='nn-DEP':
+            lex1=parts[2].split('/')[0]
+            (lex2,tag)=parts[0].split('/')
+            wnphrase=lex1+'_'+lex2
+    elif len(parts)==1:
+        (wnphrase,tag)=parts[0].split('/')
+    return (wnphrase,tag)
+
+def sensesim(ss1,ss2,metric):
+
+    if metric=='path':
+        sim=ss1.path_similarity(ss2)
+    elif metric=='lin':
+        sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-brown.dat'))
+    return sim
+
+def wnsim(phrase,neighbour,metric='path'):
+
+    (wnphrase,ptag)=wnFormat(phrase)
+    (wnneighbour,ntag)=wnFormat(neighbour)
+
+    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[ntag])
+    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[ptag])
+
+    maxsim=0
+    for psynset in phrasesynsets:
+        for nsynset in neighsynsets:
+            sim=sensesim(psynset,nsynset,metric)
+            if sim>maxsim:
+                maxsim=sim
+    return maxsim
+
 
 class ThesEntry:
 
@@ -28,6 +69,17 @@ class ThesEntry:
             sc=fields.pop()
             neigh=fields.pop()
             self.neighdict[neigh]=float(sc)
+
+    def average_wnsim(self,metric='path'):
+        sims=[]
+        for neigh in self.neighdict.keys():
+            sim=wnsim(self.phrase,neigh,metric)
+            sims.append(sim)
+
+        sarray=np.array(sims)
+        mymean=np.average(sarray)
+        print self.phrase,mymean
+        return mymean
 
 
 class Comparer:
@@ -106,7 +158,16 @@ class Comparer:
         print "Added thesaurus entry for phrases: "+str(added)
         return
 
-    def compareneighbours(self):
+    def compareneighbours(self,metric='path'):
+        sims=[]
+        for myThes in self.collocdict.values():
+            sims.append(myThes.average_wnsim(metric))
+
+        sarray=np.array(sims)
+        mean=np.average(sarray)
+        print "Mean is "+str(mean)
+
+
         return
 
     def go(self):
