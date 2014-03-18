@@ -34,8 +34,8 @@ def wnsim(phrase,neighbour,metric='path'):
     (wnphrase,ptag)=wnFormat(phrase)
     (wnneighbour,ntag)=wnFormat(neighbour)
 
-    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[ntag[0]])
-    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[ptag[0]])
+    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping['N'])
+    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping['N'])
 
     maxsim=0
     if len(phrasesynsets)==0:
@@ -113,7 +113,7 @@ class Comparer:
                 rel=parts[1]  #'amod-DEP'
                 right=parts[2] #swan/N
                 inversematch = self.parameters['inversefeatures'][self.parameters['featurematch']]
-                print "Attempting to match "+rel+" and "+inversematch
+                #print "Attempting to match "+rel+" and "+inversematch
                 if rel==inversematch:
                     rel=self.parameters['featurematch']
                     collocate=right+':'+rel+':'+left
