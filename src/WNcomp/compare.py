@@ -66,6 +66,8 @@ def sensesim(ss1,ss2,metric):
         sim=ss1.path_similarity(ss2)
     elif metric=='lin':
         sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
+    elif metric=='jcn':
+        sim=ss1.jcn_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
     return sim
 
 def wnsim(phrase,neighbour,metric='path'):
@@ -230,7 +232,8 @@ class Comparer:
 
 
     def go(self):
-        print self.parameters
+        if self.parameters['testing']:
+            print self.parameters
         self.loadphrases()
         self.loadneighbours()
         if self.parameters['testing']:
