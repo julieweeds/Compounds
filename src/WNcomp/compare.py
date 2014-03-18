@@ -40,6 +40,7 @@ class Comparer:
         self.rightdict={}
         self.mwpath=os.path.join(parameters['compdatadir'],parameters['mwfile'])
         self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
+        self.k=self.parameters['k']
 
     def loadphrases(self):
 
@@ -93,7 +94,7 @@ class Comparer:
             added=0
             for line in instream:
                 linesread+=1
-                if linesread%1000==0:
+                if linesread%10000==0:
                     print "Processed lines: "+str(linesread)
                 fields=line.rstrip().split('\t')
                 entry=fields[0]
