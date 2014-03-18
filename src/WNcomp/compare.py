@@ -212,7 +212,7 @@ class Comparer:
     def compareneighbours(self):
         sims=[]
         for myThes in self.collocdict.values():
-            sim=myThes.average_wnsim(metric=self.parameters['metric'])
+            sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
             if sim>-1:
                 sims.append(sim)
 
