@@ -80,7 +80,7 @@ def wnsim(phrase,neighbour,metric='path'):
     if len(phrasesynsets)==0:
         maxsim=-2
     if len(neighsynsets)==0:
-        maxsim=-1
+        maxsim=-0
     for psynset in phrasesynsets:
         for nsynset in neighsynsets:
             sim=sensesim(psynset,nsynset,metric)
