@@ -195,7 +195,7 @@ class Comparer:
                 if linesread%10000==0:
                     print "Processed lines: "+str(linesread)
                 fields=line.rstrip().split('\t')
-                entry=fields[0]
+                entry=stripdiffp(fields[0])
                 thisEntry= self.collocdict.get(entry,None)
                 if thisEntry!=None:
                     thisEntry.addneighs(fields[1:2*self.k+1])
