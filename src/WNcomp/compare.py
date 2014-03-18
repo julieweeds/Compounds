@@ -37,14 +37,14 @@ def stripdiffp(phrase):
             np3=middleparts[4]
 
         else:
-            print "Warning error with name stripping "+phrase
+#            print "Warning error with name stripping "+phrase
             return(phrase)
         return np1+':'+np2+':'+np3
 
     elif len(parts)==1:
         return stripcompop(phrase)
     else:
-        print "Warning error with name stripping "+phrase
+ #       print "Warning error with name stripping "+phrase
         return phrase
 
 def wnFormat(phrase):
@@ -223,10 +223,18 @@ class Comparer:
 
         return
 
+    def check(self):
+        for myThes in self.collocdict.values():
+            if len(myThes.neighdict.keys())==0:
+                print myThes.phrase
+
+
     def go(self):
         print self.parameters
         self.loadphrases()
         self.loadneighbours()
+        if self.parameters['testing']:
+            self.check()
         self.compareneighbours()
 
 if __name__=='__main__':
