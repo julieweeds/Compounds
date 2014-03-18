@@ -115,15 +115,20 @@ class ThesEntry:
 
     def average_wnsim(self,metric='path'):
         sims=[]
+        mymean=0
         for neigh in self.neighdict.keys():
             sim=wnsim(self.phrase,neigh,metric)
             if sim>-1:
                 sims.append(sim)
-        if len(sims)==0:
-            mymean=-1
-        else:
-            sarray=np.array(sims)
-            mymean=np.average(sarray)
+            elif sim==-2:
+                mymean=-2
+                break
+        if mymean>-2:
+            if len(sims)==0:
+                mymean=-1
+            else:
+                sarray=np.array(sims)
+                mymean=np.average(sarray)
         print self.phrase,mymean
         return mymean
 
@@ -204,10 +209,10 @@ class Comparer:
         print "Added thesaurus entry for phrases: "+str(added)
         return
 
-    def compareneighbours(self,metric='path'):
+    def compareneighbours(self):
         sims=[]
         for myThes in self.collocdict.values():
-            sim=myThes.average_wnsim(metric)
+            sim=myThes.average_wnsim(metric=self.parameters['metric'])
             if sim>-1:
                 sims.append(sim)
 
