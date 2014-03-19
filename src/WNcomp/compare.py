@@ -181,7 +181,8 @@ class Comparer:
                         self.collocdict[right]=ThesEntry(collocate,score=sc)
                     elif self.parameters['domod']:
                         self.collocdict[left]=ThesEntry(collocate,score=sc)
-                    self.collocdict[collocate]=ThesEntry(collocate,score=sc)
+                    else:
+                        self.collocdict[collocate]=ThesEntry(collocate,score=sc)
 
                     #print "mod: ",mod,"head: ",head
                     self.leftdict[left]=self.leftdict.get(left,0)+1
@@ -191,8 +192,8 @@ class Comparer:
         print "Number of collocations is "+str(len(self.collocdict.keys()))
         print "Number of right heads is "+str(len(self.rightdict.keys()))
         print "Number of left modifiers is "+str(len(self.leftdict.keys()))
-        self.collocorder=sorted(self.collocdict.keys())
-
+        #self.collocorder=sorted(self.collocdict.keys())
+        print self.collocdict.keys()
         return
 
     def loadneighbours(self):
