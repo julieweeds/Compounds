@@ -82,7 +82,7 @@ def wnsim(phrase,neighbour,metric='path'):
     if len(phrasesynsets)==0:
         maxsim=-2
     elif len(neighsynsets)==0:
-        maxsim=-1
+        maxsim=-1  #no neighbours in wn
 
     else:
         psynset = phrasesynsets[0]
@@ -110,12 +110,14 @@ class ThesEntry:
     def getRel(self):
         return self.phrase.split(':')[1]
 
-    def addneighs(self,fields):
+    def addneighs(self,fields,k=10):
 
-        while len(fields) > 0:
-            sc=fields.pop()
+        #print fields
+        while len(self.neighdict.keys()) < k and len(fields)>0:
             neigh=fields.pop()
-            self.neighdict[neigh]=float(sc)
+            sc=fields.pop()
+            if neigh !=self.phrase:
+                self.neighdict[neigh]=float(sc)
 
     def average_wnsim(self,metric='path'):
         sims=[]
@@ -129,7 +131,7 @@ class ThesEntry:
                 break
         if mymean>-2:
             if len(sims)==0:
-                mymean=-1
+                mymean=-1  #no neighbours found or no neighbours in wn
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
@@ -212,7 +214,9 @@ class Comparer:
                 entry=stripdiffp(fields[0])
                 thisEntry= self.collocdict.get(entry,None)
                 if thisEntry!=None:
-                    thisEntry.addneighs(fields[1:2*self.k+1])
+                    neighs=list(fields[1:])
+                    neighs.reverse()
+                    thisEntry.addneighs(neighs,self.k)
                     #print "Adding entry for "+entry
                     added+=1
         print "Added thesaurus entry for phrases: "+str(added)
