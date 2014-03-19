@@ -82,7 +82,7 @@ def wnsim(phrase,neighbour,metric='path'):
     if len(phrasesynsets)==0:
         maxsim=-2
     if len(neighsynsets)==0:
-        maxsim=-0
+        maxsim=-1
     for psynset in phrasesynsets:
         for nsynset in neighsynsets:
             sim=sensesim(psynset,nsynset,metric)
@@ -127,7 +127,7 @@ class ThesEntry:
                 break
         if mymean>-2:
             if len(sims)==0:
-                mymean=0
+                mymean=-1
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
@@ -193,7 +193,8 @@ class Comparer:
         print "Number of right heads is "+str(len(self.rightdict.keys()))
         print "Number of left modifiers is "+str(len(self.leftdict.keys()))
         #self.collocorder=sorted(self.collocdict.keys())
-        print self.collocdict.keys()
+        if self.parameters['testing']:
+            print self.collocdict.keys()
         return
 
     def loadneighbours(self):
@@ -219,7 +220,7 @@ class Comparer:
         sims=[]
         for myThes in self.collocdict.values():
             sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
-            if sim>-2:
+            if sim>-1:
                 sims.append(sim)
 
         sarray=np.array(sims)
