@@ -9,6 +9,7 @@ def configure(args):
     parameters['apollo']=False
     parameters['athome']=False
     parameters['featurematch']='nn-DEP'
+    parameters['seed']=37
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
     parameters['featurematch']='nn-DEP'
     parameters['k']=5
@@ -20,6 +21,7 @@ def configure(args):
     parameters['dohead']=False
     parameters['domod']=False
     parameters['typelist']=['phrase','head','mod']
+    parameters['random']=False
     #parameters['typelist']=['phrase']
 
 
@@ -80,6 +82,8 @@ def configure(args):
             parameters['dohead']=True
         elif arg=='mod':
             parameters['domod']=True
+        elif arg=='random':
+            parameters['random']=True
 
     parameters=setfilenames(parameters)
     return parameters

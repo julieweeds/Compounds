@@ -5,6 +5,7 @@ from conf import configure
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
 import numpy as np
+import random
 
 wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
 
@@ -85,11 +86,11 @@ def wnsim(phrase,neighbour,metric='path'):
         maxsim=-1  #no neighbours in wn
 
     else:
-        psynset = phrasesynsets[0]
-        for nsynset in [neighsynsets[0]]:
-            sim=sensesim(psynset,nsynset,metric)
-            if sim>maxsim:
-                maxsim=sim
+        for psynset in phrasesynsets:
+            for nsynset in neighsynsets:
+                sim=sensesim(psynset,nsynset,metric)
+                if sim>maxsim:
+                    maxsim=sim
     return maxsim
 
 
@@ -116,8 +117,29 @@ class ThesEntry:
         while len(self.neighdict.keys()) < k and len(fields)>0:
             neigh=fields.pop()
             sc=fields.pop()
-            if neigh !=self.phrase:
-                self.neighdict[neigh]=float(sc)
+            if self.validcheck(neigh):
+                #self.neighdict[neigh]=float(sc)
+                self.neighdict[neigh]=1
+
+        print self.phrase, self.neighdict.keys()
+
+    def validcheck(self,neigh):
+        if neigh == self.phrase:
+            #print neigh + "is phrase itself"
+            return False  #neighbour can't be phrase itself
+        parts=neigh.split(':')
+        if len(parts)>1: #neighbour can't be any phrase
+            #print neigh + " is a phrase"
+            return False
+        parts=neigh.split('/')
+        if len(parts)<2: #neigh is score (random function)
+            return False
+        neighsynsets=wn.synsets(wnFormat(neigh)[0],wn.NOUN)
+        if len(neighsynsets)==0:
+            #print neigh + " not in WN" #neighbour must be in WN
+            return False
+
+        return True
 
     def average_wnsim(self,metric='path'):
         sims=[]
@@ -216,6 +238,9 @@ class Comparer:
                 if thisEntry!=None:
                     neighs=list(fields[1:])
                     neighs.reverse()
+                    if self.parameters['random']:
+                        random.shuffle(neighs)
+
                     thisEntry.addneighs(neighs,self.k)
                     #print "Adding entry for "+entry
                     added+=1
@@ -254,6 +279,7 @@ class Comparer:
 if __name__=='__main__':
 
     parameters=configure(sys.argv)
+    random.seed(parameters['seed'])
     myComparer=Comparer(parameters)
 
     myComparer.go()
