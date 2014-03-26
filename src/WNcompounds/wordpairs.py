@@ -114,7 +114,7 @@ class PairGenerator:
             thisentry=self.headdict.get(parts[0],None)
             if thisentry==None:
                 thisentry=[]
-            thisentry.append(self.parameters['featurematch'][self.parameters['comptype']]+parts[2])
+            thisentry.append(self.parameters['featurematch'][self.parameters['comptype']]+':'+parts[2])
             self.headdict[parts[0]]=thisentry
         print self.headdict
         print "Processing event file "+self.wikiNpath
@@ -124,14 +124,14 @@ class PairGenerator:
 
             for line in instream:
                 linesread+=1
-                fields=line.rstrip.split('\t')
+                fields=line.rstrip().split('\t')
                 headtomods=self.headdict.get(fields[0],None)
                 if headtomods!=None:
                     for i in range(1,len(fields),2):
                         if fields[i] in headtomods:
                             freq=fields[i+1]
                             if freq>self.freqthresh:
-                                phrase=fields[0]+self.parameters['featurematch'][self.parameters['comptype']]+fields[i]
+                                phrase=fields[0]+':'+self.parameters['featurematch'][self.parameters['comptype']]+':'+fields[i]
                                 newlist.append(phrase)
                 else:
                     #don't care about this head so discard line
