@@ -116,7 +116,8 @@ class PairGenerator:
                 thisentry=[]
             thisentry.append(self.parameters['featurematch'][self.parameters['comptype']]+':'+parts[2])
             self.headdict[parts[0]]=thisentry
-        print self.headdict
+        if self.parameters['testing']:
+            print self.headdict
         print "Processing event file "+self.wikiNpath
         newlist=[]
         linesread=0
@@ -139,7 +140,12 @@ class PairGenerator:
                 if self.parameters['testing'] and linesread%100==0:
                     break
 
-        print newlist
+        print "Filtered list = "+str(len(newlist))
+        if self.parameters['testing']:
+            print newlist
+        with open(self.NNfiltpath,'w') as outstream: #update for ANs too
+            for phrase in newlist:
+                outstream.write(phrase+'\n')
         return
 
     def get_names(self):
