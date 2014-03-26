@@ -15,10 +15,11 @@ class PairGenerator:
         self.NNpath=os.path.join(self.parameters['compdatadir'],'wn.NNs.txt')
         self.NNfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.NNs.txt')
         self.ANfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.NNs.txt')
-        self.wikiNfilt=os.path.join(self.parameters['compdatadir'],'wikiPOS_nounsdeps')
+        self.wikiNpath=os.path.join(self.parameters['compdatadir'],'wikiPOS_nounsdeps.events.strings')
         self.ANs=[]
         self.NNs=[]
         self.headdict={}
+        self.freqthresh=100
 
     @staticmethod
     def getpos(word):
@@ -44,8 +45,8 @@ class PairGenerator:
         with open(self.NNpath,'r') as instream:
             for line in instream:
                 self.NNs.append(line.rstrip())
-        print len(self.NNs)
-        print len(self.ANs)
+        print 'NNs',len(self.NNs)
+        print 'ANs',len(self.ANs)
         return
 
     def _run_extract(self):
@@ -107,6 +108,7 @@ class PairGenerator:
             complist=[]
 
         self.headdict={}
+        print "Building phrase dictionary"
         for comp in complist:  #set up hashes for checking data file against
             parts=comp.split(':')
             thisentry=self.headdict.get(parts[0],None)
@@ -115,6 +117,29 @@ class PairGenerator:
             thisentry.append(parts[2])
             self.headdict[parts[0]]=thisentry
         print self.headdict
+        print "Processing event file "+self.wikiNpath
+        newlist=[]
+        linesread=0
+        with open(self.wikiNpath,'r') as instream:
+
+            for line in instream:
+                linesread+=1
+                fields=line.rstrip.split('\t')
+                headtomods=self.headdict.get(fields[0],None)
+                if headtomods!=None:
+                    for i in range(1,len(fields),2):
+                        if fields[i] in headtomods:
+                            freq=fields[i+1]
+                            if freq>self.freqthresh:
+                                phrase=fields[0]+self.parameters['featurematch'][self.parameters['comptype']]+fields[i]
+                                newlist.append(phrase)
+                else:
+                    #don't care about this head so discard line
+                    pass
+                if self.parameters['testing'] and linesread%100==0:
+                    break
+
+        print newlist
         return
 
     def get_names(self):
