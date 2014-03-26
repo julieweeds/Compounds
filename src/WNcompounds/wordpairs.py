@@ -131,7 +131,7 @@ class PairGenerator:
                         if fields[i] in headtomods:
                             freq=fields[i+1]
                             if freq>self.freqthresh:
-                                phrase=fields[0]+':'+self.parameters['featurematch'][self.parameters['comptype']]+':'+fields[i]
+                                phrase=fields[0]+':'+fields[i]
                                 newlist.append(phrase)
                 else:
                     #don't care about this head so discard line
