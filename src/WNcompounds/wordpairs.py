@@ -114,7 +114,7 @@ class PairGenerator:
             thisentry=self.headdict.get(parts[0],None)
             if thisentry==None:
                 thisentry=[]
-            thisentry.append(parts[2])
+            thisentry.append(self.parameters['featurematch'][self.parameters['comptype']]+parts[2])
             self.headdict[parts[0]]=thisentry
         print self.headdict
         print "Processing event file "+self.wikiNpath
