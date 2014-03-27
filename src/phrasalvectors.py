@@ -26,7 +26,7 @@ class VectorExtractor:
         self.featuretotal={'left':0,'right':0}
 
         self.deppath = os.path.join(self.datadir,self.parameters['depfile']) #for first POS (e.g., J in ANcompounds)
-        if self.parameters['adjlist']:
+        if self.parameters['lefttype']!=self.parameters['righttype']:
             self.altdeppath = os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['altdepfile'])  #for other POS (e.g., N in ANcompounds)
             self.deppaths=[self.deppath,self.altdeppath]
         else:
@@ -44,38 +44,37 @@ class VectorExtractor:
         self.miroflag=self.parameters['miroflag']
 
     def loadphrases(self):
-        if self.parameters['adjlist']:
-            filename='multiwords.'+self.parameters['usefile']
-        else:
-            filename=self.parameters['collocatefile']
-        filepath = os.path.join(self.datadir,filename)
-        with open(filepath,'r') as instream:
-            print "Reading "+filepath
-            linesread=0
-            for line in instream:
-                fields=line.rstrip().split('\t')
-                collocate=fields[0] #black/J:amod-HEAD:swan
-                if self.miroflag:
-                    #AN:black/J_swan/N
-                    parts=collocate.split(':')
-                    words=parts[1].split('_')
-                    left=words[0]
-                    right=words[1]
-                    dep=self.parameters['featurematch']
-                    collocate=left+':'+dep+':'+right
-                    self.collocdict[collocate]=1
-                else:
-                    if len(fields)>2:
-                        self.collocdict[collocate]=fields[2]#store PMI
-                    else:
+
+        for fn in self.parameters['collocatefile']:
+            filename=fn+'.'+self.parameters['usefile']
+            filepath = os.path.join(self.datadir,filename)
+            with open(filepath,'r') as instream:
+                print "Reading "+filepath
+                linesread=0
+                for line in instream:
+                    fields=line.rstrip().split('\t')
+                    collocate=fields[0] #black/J:amod-HEAD:swan
+                    if self.miroflag:
+                        #AN:black/J_swan/N
+                        parts=collocate.split(':')
+                        words=parts[1].split('_')
+                        left=words[0]
+                        right=words[1]
+                        dep=self.parameters['featurematch']
+                        collocate=left+':'+dep+':'+right
                         self.collocdict[collocate]=1
-                    parts=collocate.split(':')
-                    left=parts[0] #black/J
-                    right=parts[2] #swan/N
-                self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
-                self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
-                linesread+=1
-            print "Read "+str(linesread)+" lines"
+                    else:
+                        if len(fields)>2:
+                            self.collocdict[collocate]=fields[2]#store PMI
+                        else:
+                            self.collocdict[collocate]=1
+                        parts=collocate.split(':')
+                        left=parts[0] #black/J
+                        right=parts[2] #swan/N
+                    self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
+                    self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
+                    linesread+=1
+                print "Read "+str(linesread)+" lines"
 
 
 
