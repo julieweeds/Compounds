@@ -14,7 +14,7 @@ class PairGenerator:
         self.ANpath=os.path.join(self.parameters['compdatadir'],'wn.ANs.txt')
         self.NNpath=os.path.join(self.parameters['compdatadir'],'wn.NNs.txt')
         self.NNfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.NNs.txt')
-        self.ANfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.NNs.txt')
+        self.ANfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.ANs.txt')
         self.wikiNpath=os.path.join(self.parameters['compdatadir'],'wikiPOS_nounsdeps.events.strings')
         self.ANs=[]
         self.NNs=[]
@@ -99,13 +99,18 @@ class PairGenerator:
         return
 
     def _run_filter(self):
-        print "Running filter"
+        print "Running filter: "+self.parameters['comptype']
         if self.parameters['comptype']=='NNs':
             complist=list(self.NNs)
+            outpath=self.NNfiltpath
+            wikipath=self.wikiNpath
         elif self.parameters['comptype']=='ANs':
             complist=list(self.ANs)
+            outpath=self.ANfiltpath
+            wikipath=self.wikiNpath
         else:
             complist=[]
+            print "outpath not defined for "+self.parameters['comptype']
 
         self.headdict={}
         print "Building phrase dictionary"
@@ -118,10 +123,10 @@ class PairGenerator:
             self.headdict[parts[0]]=thisentry
         if self.parameters['testing']:
             print self.headdict
-        print "Processing event file "+self.wikiNpath
+        print "Processing event file "+wikipath
         newlist=[]
         linesread=0
-        with open(self.wikiNpath,'r') as instream:
+        with open(wikipath,'r') as instream:
 
             for line in instream:
                 linesread+=1
@@ -130,10 +135,10 @@ class PairGenerator:
                 if headtomods!=None:
                     for i in range(1,len(fields),2):
                         if fields[i] in headtomods:
-                            freq=fields[i+1]
+                            freq=float(fields[i+1])
                             if freq>self.freqthresh:
                                 phrase=fields[0]+':'+fields[i]
-                                newlist.append(phrase)
+                                newlist.append((phrase,str(freq)))
                 else:
                     #don't care about this head so discard line
                     pass
@@ -143,9 +148,10 @@ class PairGenerator:
         print "Filtered list = "+str(len(newlist))
         if self.parameters['testing']:
             print newlist
-        with open(self.NNfiltpath,'w') as outstream: #update for ANs too
-            for phrase in newlist:
-                outstream.write(phrase+'\n')
+
+        with open(outpath,'w') as outstream:
+            for (phrase,freq) in newlist:
+                outstream.write(phrase+'\t'+freq+'\n')
         return
 
     def get_names(self):
