@@ -17,7 +17,7 @@ def configure(args):
     parameters['featurematch']='nn-DEP'
     parameters['tagmatch']='N'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
-    parameters['phrasefeatures']={'ANs':'amod-DEP','NNs':'nn-DEP'}
+    parameters['phrasefeatures']={'ANs':'amod-HEAD','NNs':'nn-HEAD'}  #this is the dep in the file for the left pos NOT the dep in the multiwords file (this can be either the same or the inverse)
     parameters['testing']=False
     parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','conj-HEAD','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','amod-HEAD','advmod-HEAD','advmod-DEP']
 
@@ -238,7 +238,7 @@ def configure(args):
             parentdir='data/WNcompounds/'
             parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
             parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
-            parameters['depfile']='wikiPOS_nounsdeps'
+            parameters['depfile']='wikiPOS_nounsdeps'  #update for ANs
             parameters['altdepfile']='wikiPOS_nounsdeps'
             parameters['featurefile']=parameters['depfile']+'.features.strings'
             parameters['adjlist']=True
@@ -249,6 +249,8 @@ def configure(args):
             parameters['featurematch']=parameters['phrasefeatures'][parameters['phrasetype']]
             if parameters['wins']:
                 parameters['deplist']=['T']
+                parameters['depfile']='wikiPOS_nouns'  #update for ANs
+                parameters['altdepfile']='wikiPOS_nouns'
             else:
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
 

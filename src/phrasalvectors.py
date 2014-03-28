@@ -31,8 +31,12 @@ class VectorExtractor:
             self.deppaths=[self.deppath,self.altdeppath]
         else:
             self.deppaths=[self.deppath]
-        self.phrasal_path = self.deppath+'_'+self.parameters['featurematch']+'_phrases'
-        self.constituent_path=self.deppath+'_'+self.parameters['featurematch']+'_constituents'
+        if self.parameters['wins']:
+            infix='wins'
+        else:
+            infix=''
+        self.phrasal_path = self.deppath+infix+'_'+self.parameters['featurematch']+'_phrases'
+        self.constituent_path=self.deppath+infix+'_'+self.parameters['featurematch']+'_constituents'
         #self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
         #self.headvectordict={}
         self.worddict={}
@@ -125,6 +129,8 @@ class VectorExtractor:
                                     phrase=entry+':'+feature
                                     newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                     newfields=self.depfilter(newfields)
+                                    if self.parameters['wins']:
+                                        newfields=self.winfilter(newfields,parts[1])  #need to remove window feature corresponding to dep feature in phrase
                                     self.writeoutput(phrase,newfields,outstream1,'')  #1st order phrasal dependencies of the entry in the context of the feature
                                     self.writeoutput(parts[1],newfields,outstream2,self.fmatch[(i+1)%2]+':') #2nd order dependencies of the feature word when used as this type of feature
                                    # self.writeoutput(entry+':'+parts[0],newfields.append(fields[index]),outstream2,'1st') #1st order dependencies of entry when it has this type of feature
@@ -135,8 +141,28 @@ class VectorExtractor:
 
         for field in fields:
             parts=field.split(':')
-            if parts[0] in parameters['deplist']:
+            if parts[0] in self.parameters['deplist']:
                 newfields.append(field)
+        return newfields
+
+    def winfilter(self,fields,word):
+        #remove at most 1 occurrence of word from window features in fields
+
+        index=-1
+        for i,field in enumerate(fields):
+            parts=field.split(':')
+            if parts[1]==word:
+                index=i
+                break
+
+        if index>-1:
+            if index==0:
+                newfields=fields[1:]
+            else:
+                newfields=fields[0:index]+fields[index+1:len(fields)]
+        else:
+            newfields=fields
+
         return newfields
 
 
