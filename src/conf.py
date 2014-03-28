@@ -247,12 +247,15 @@ def configure(args):
             parameters['usefile']=parameters['phrasetype']
             parameters['miroflag']=False
             parameters['featurematch']=parameters['phrasefeatures'][parameters['phrasetype']]
+
             if parameters['wins']:
                 parameters['deplist']=['T']
                 parameters['depfile']='wikiPOS_nouns'  #update for ANs
                 parameters['altdepfile']='wikiPOS_nouns'
+                vinfix='wins'
             else:
+                vinfix='deps'
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
-
+            parameters['vsource']=parameters['phrasetype']+'.'+vinfix+'.observed'
 
     return parameters
