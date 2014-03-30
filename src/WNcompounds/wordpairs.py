@@ -137,6 +137,8 @@ class PairGenerator:
                 else:
                     #don't care about this head so discard line
                     pass
+                if linesread%1000==0:
+                    print "Read "+str(linesread)+" lines"
                 if self.parameters['testing'] and linesread%100==0:
                     break
 
