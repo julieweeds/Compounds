@@ -238,8 +238,8 @@ def configure(args):
             parentdir='data/WNcompounds/'
             parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
             parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
-            parameters['depfile']='wikiPOS_nounsdeps'  #update for ANs
-            parameters['altdepfile']='wikiPOS_nounsdeps'
+            parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]+'deps'
+            parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]+'deps'
             parameters['featurefile']=parameters['depfile']+'.features.strings'
             parameters['adjlist']=True
             parameters['allheads']=True
@@ -250,8 +250,8 @@ def configure(args):
 
             if parameters['wins']:
                 parameters['deplist']=['T']
-                parameters['depfile']='wikiPOS_nouns'  #update for ANs
-                parameters['altdepfile']='wikiPOS_nouns'
+                parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
+                parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
                 vinfix='wins'
             else:
                 vinfix='deps'
