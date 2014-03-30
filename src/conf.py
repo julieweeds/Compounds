@@ -17,6 +17,7 @@ def configure(args):
     parameters['featurematch']='nn-DEP'
     parameters['tagmatch']='N'
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP'}
+    parameters['phrasefeatures']={'ANs':'amod-HEAD','NNs':'nn-HEAD'}  #this is the dep in the file for the left pos NOT the dep in the multiwords file (this can be either the same or the inverse)
     parameters['testing']=False
     parameters['deplist']=['amod-DEP','dobj-HEAD','conj-DEP','conj-HEAD','iobj-HEAD','nsubj-HEAD','nn-DEP','nn-HEAD','amod-HEAD','advmod-HEAD','advmod-DEP']
 
@@ -33,11 +34,14 @@ def configure(args):
     parameters['windows']=False
     #parameters['raw']=False
     parameters['phrasetype']='ANs'
+    parameters['lefttype']='J'
+    parameters['righttype']='N'
     parameters['posdict']={'N':'nouns','J':'adjs','R':'advs','V':'verbs'}
     parameters['vsource']='giga'
     parameters['msource']='r8'
     parameters['miroflag']=False
     parameters['NNcompflag']=False
+    parameters['wins']=False
 
     for arg in args:
         if arg=='testing':
@@ -153,6 +157,8 @@ def configure(args):
             parameters['phrasetype']='NNs'
             parameters['lefttype']='N'
             parameters['righttype']='N'
+        elif arg=='wins':
+            parameters['wins']=True
         elif arg=='giga':
             parameters['vsource']='giga'
         elif arg=='wiki':
@@ -225,5 +231,31 @@ def configure(args):
             elif parameters['phrasetype']=='NNs':
                 parameters['featurematch']='nn-HEAD'
             parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
+
+        elif arg=='wn_wiki':
+            #phrasetype should be set first via ANs or NNs
+            #wins should be set first
+            parentdir='data/WNcompounds/'
+            parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            parameters['depfile']='wikiPOS_nounsdeps'  #update for ANs
+            parameters['altdepfile']='wikiPOS_nounsdeps'
+            parameters['featurefile']=parameters['depfile']+'.features.strings'
+            parameters['adjlist']=True
+            parameters['allheads']=True
+            parameters['collocatefile']=['multiwords.wn_wiki']
+            parameters['usefile']=parameters['phrasetype']
+            parameters['miroflag']=False
+            parameters['featurematch']=parameters['phrasefeatures'][parameters['phrasetype']]
+
+            if parameters['wins']:
+                parameters['deplist']=['T']
+                parameters['depfile']='wikiPOS_nouns'  #update for ANs
+                parameters['altdepfile']='wikiPOS_nouns'
+                vinfix='wins'
+            else:
+                vinfix='deps'
+                parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
+            parameters['vsource']=parameters['phrasetype']+'.'+vinfix+'.observed'
 
     return parameters

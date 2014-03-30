@@ -26,13 +26,17 @@ class VectorExtractor:
         self.featuretotal={'left':0,'right':0}
 
         self.deppath = os.path.join(self.datadir,self.parameters['depfile']) #for first POS (e.g., J in ANcompounds)
-        if self.parameters['adjlist']:
+        if True:
             self.altdeppath = os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['altdepfile'])  #for other POS (e.g., N in ANcompounds)
             self.deppaths=[self.deppath,self.altdeppath]
         else:
             self.deppaths=[self.deppath]
-        self.phrasal_path = self.deppath+'_'+self.parameters['featurematch']+'_phrases'
-        self.constituent_path=self.deppath+'_'+self.parameters['featurematch']+'_constituents'
+        if self.parameters['wins']:
+            infix='wins'
+        else:
+            infix=''
+        self.phrasal_path = self.deppath+infix+'_'+self.parameters['featurematch']+'_phrases'
+        self.constituent_path=self.deppath+infix+'_'+self.parameters['featurematch']+'_constituents'
         #self.nfmod_path=self.deppath+'_'+self.parameters['featurematch']+'_NFmods'
         #self.headvectordict={}
         self.worddict={}
@@ -44,38 +48,37 @@ class VectorExtractor:
         self.miroflag=self.parameters['miroflag']
 
     def loadphrases(self):
-        if self.parameters['adjlist']:
-            filename='multiwords.'+self.parameters['usefile']
-        else:
-            filename=self.parameters['collocatefile']
-        filepath = os.path.join(self.datadir,filename)
-        with open(filepath,'r') as instream:
-            print "Reading "+filepath
-            linesread=0
-            for line in instream:
-                fields=line.rstrip().split('\t')
-                collocate=fields[0] #black/J:amod-HEAD:swan
-                if self.miroflag:
-                    #AN:black/J_swan/N
-                    parts=collocate.split(':')
-                    words=parts[1].split('_')
-                    left=words[0]
-                    right=words[1]
-                    dep=self.parameters['featurematch']
-                    collocate=left+':'+dep+':'+right
-                    self.collocdict[collocate]=1
-                else:
-                    if len(fields)>2:
-                        self.collocdict[collocate]=fields[2]#store PMI
-                    else:
+
+        for fn in self.parameters['collocatefile']:
+            filename=fn+'.'+self.parameters['usefile']
+            filepath = os.path.join(self.datadir,filename)
+            with open(filepath,'r') as instream:
+                print "Reading "+filepath
+                linesread=0
+                for line in instream:
+                    fields=line.rstrip().split('\t')
+                    collocate=fields[0] #black/J:amod-HEAD:swan
+                    if self.miroflag:
+                        #AN:black/J_swan/N
+                        parts=collocate.split(':')
+                        words=parts[1].split('_')
+                        left=words[0]
+                        right=words[1]
+                        dep=self.parameters['featurematch']
+                        collocate=left+':'+dep+':'+right
                         self.collocdict[collocate]=1
-                    parts=collocate.split(':')
-                    left=parts[0] #black/J
-                    right=parts[2] #swan/N
-                self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
-                self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
-                linesread+=1
-            print "Read "+str(linesread)+" lines"
+                    else:
+                        if len(fields)>2:
+                            self.collocdict[collocate]=fields[2]#store PMI
+                        else:
+                            self.collocdict[collocate]=1
+                        parts=collocate.split(':')
+                        left=parts[0] #black/J
+                        right=parts[2] #swan/N
+                    self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
+                    self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
+                    linesread+=1
+                print "Read "+str(linesread)+" lines"
 
 
 
@@ -126,6 +129,8 @@ class VectorExtractor:
                                     phrase=entry+':'+feature
                                     newfields=fields[1:index+1]+fields[index+2:len(fields)]
                                     newfields=self.depfilter(newfields)
+                                    if self.parameters['wins']:
+                                        newfields=self.winfilter(newfields,parts[1])  #need to remove window feature corresponding to dep feature in phrase
                                     self.writeoutput(phrase,newfields,outstream1,'')  #1st order phrasal dependencies of the entry in the context of the feature
                                     self.writeoutput(parts[1],newfields,outstream2,self.fmatch[(i+1)%2]+':') #2nd order dependencies of the feature word when used as this type of feature
                                    # self.writeoutput(entry+':'+parts[0],newfields.append(fields[index]),outstream2,'1st') #1st order dependencies of entry when it has this type of feature
@@ -136,8 +141,28 @@ class VectorExtractor:
 
         for field in fields:
             parts=field.split(':')
-            if parts[0] in parameters['deplist']:
+            if parts[0] in self.parameters['deplist']:
                 newfields.append(field)
+        return newfields
+
+    def winfilter(self,fields,word):
+        #remove at most 1 occurrence of word from window features in fields
+
+        index=-1
+        for i,field in enumerate(fields):
+            parts=field.split(':')
+            if parts[1]==word:
+                index=i
+                break
+
+        if index>-1:
+            if index==0:
+                newfields=fields[1:]
+            else:
+                newfields=fields[0:index]+fields[index+1:len(fields)]
+        else:
+            newfields=fields
+
         return newfields
 
 

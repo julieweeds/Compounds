@@ -43,7 +43,7 @@ if __name__=='__main__':
                                 currentposition=len(context.text.split(' '))
                                 currentsentence=context.text+head.text
                             else:
-                                currentposition=0
+                                currentposition=1
                                 currentsentence=head.text
                             if head.tail is not None:
                                 currentsentence+=head.tail
