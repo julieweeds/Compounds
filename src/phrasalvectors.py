@@ -396,18 +396,22 @@ class VectorBuilder(VectorExtractor):
 
         constituent = constituent_vector.word
         mycollocs=[]
+        inwordflags=[]
         for colloc in self.collocdict.keys():
             parts=colloc.split(':')
             if ('left' in self.inwordflag and parts[0]==constituent) or ('right' in self.inwordflag and parts[2]==constituent):
                 mycollocs.append(colloc)
+                if parts[0]==constituent:
+                    inwordflags.append('left')
+                else:
+                    inwordflags.append('right')
         print mycollocs
-        for colloc in mycollocs:
+        for (colloc,inwordflag) in zip(mycollocs,inwordflags):
             parts=colloc.split(':')
             invcolloc=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
             diffvector=constituent_vector.finddiff(self.phrasevectordict.get(colloc,FeatureVector(colloc)))  #swan!black swan - could be a zero vector
             diffvector=diffvector.finddiff(self.phrasevectordict.get(invcolloc,FeatureVector(invcolloc)))    #swan!swan black - could be a zero vector
-            for inwordflag in self.inwordflag:
-                diffvector.finalise(self.featdict[inwordflag],self.featdict[VectorBuilder.flags[inwordflag]],self.diffstream)
+            diffvector.finalise(self.featdict[inwordflag],self.featdict[VectorBuilder.flags[inwordflag]],self.diffstream)
 
         return
 
