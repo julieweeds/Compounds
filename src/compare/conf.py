@@ -10,7 +10,7 @@ def configure(args):
     parameters['diff']=False
     parameters['funct']=False
     parameters['mod']=False
-    parameters['metric']=['recall','precision','cosine']
+    parameters['metric']=['cosine']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
@@ -31,6 +31,9 @@ def configure(args):
     parameters['literalityscore']='compound'
     parameters['msource']='r8'
     parameters['freqfile']='vectors.train.PHRASES.entries.strings'
+    parameters['wn_wiki']=False
+    parameters['wins']=False
+    parameters['collocatefile']='multiwords.'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -67,6 +70,18 @@ def configure(args):
             parameters['phrasetype']='NNs'
             parameters['postype']='nouns'
             parameters['altpostype']='nouns'
+        elif arg=='wn_wiki':
+            parameters['wn_wiki']=True
+            parameters['usefile']=parameters['phrasetype']
+            parameters['compop']='gm'
+            parameters['funct']=True
+            parameters['association']='pmi'
+            parameters['diff']=True
+            parameters['composefirst']=True
+            parameters['composesecond']=False
+            parameters['collocatefile']='multiwords.wn_wiki.'
+
+
         elif arg=='train':
             parameters['vsource']='train'
             if parameters['switch']:
@@ -131,6 +146,8 @@ def configure(args):
             parameters['msource']='movies'
         elif arg=='r8':
             parameters['msource']=='r8'
+        elif arg=='wins':
+            parameters['wins']=True
 
     parameters = setfilenames(parameters)
 
@@ -160,6 +177,15 @@ def setfilenames(parameters):
         parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['postype']
         basename=basename+'.'+parameters['vsource']
         basename2=basename
+    if parameters['wn_wiki']:
+        parameters['datadir']=parentdir+'WNcompounds/'+parameters['phrasetype']+'/'+parameters['postype']
+        parameters['altdatadir']=parentdir+'WNcompounds/'+parameters['phrasetype']+'/'+parameters['altpostype']
+        if parameters['wins']:
+            parameters['vsource']="wins"
+        else:
+            parameters['vsource']="deps"
+        basename=basename+'.'+parameters['vsource']
+        basename2=basename
 
     parameters['phrasalpath']=os.path.join(parameters['datadir'],basename2+'.PHRASES')
     if parameters['diff']:
@@ -167,7 +193,7 @@ def setfilenames(parameters):
     else:
         parameters['constituentfile']=basename+'.CONSTITUENTS'
     parameters['constituentpath']=os.path.join(parameters['datadir'],parameters['constituentfile'])
-    parameters['mwpath']=os.path.join(parameters['datadir'],'multiwords.'+parameters['usefile'])
+    parameters['mwpath']=os.path.join(parameters['datadir'],parameters['collocatefile']+parameters['usefile'])
 
 
     parameters['featurefile']='features.strings'
@@ -175,6 +201,7 @@ def setfilenames(parameters):
         parameters['featurefile']=parameters['vsource']+'.'+parameters['featurefile']
     if parameters['NNcompflag']:
         parameters['featurefile']='wikiPOS.'+parameters['vsource']+'.'+parameters['featurefile']
+    parameters['freqfile']=basename2+'.PHRASES.entries.strings'
 
     #parameters['featurepath']=os.path.join(parameters['altdatadir'],parameters['featurefile'])
 

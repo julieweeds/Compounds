@@ -73,8 +73,12 @@ class VectorExtractor:
                         else:
                             self.collocdict[collocate]=1
                         parts=collocate.split(':')
-                        left=parts[0] #black/J
-                        right=parts[2] #swan/N
+                        if parts[1]==self.parameters['featurematch']:
+                            left=parts[0] #black/J
+                            right=parts[2] #swan/N
+                        elif parts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                            left=parts[2]
+                            right=parts[0]
                     self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
                     self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
                     linesread+=1
@@ -300,31 +304,40 @@ class VectorBuilder(VectorExtractor):
     flags={'left':'right','right':'left'}
 
     def finalise(self,currentvector):
-        self.inwordflag='none'
+        self.inwordflag=[]
         if self.flag=='constituents':
             if self.worddict['left'].get(currentvector.word,0)>0:
-                self.inwordflag='left'
-            elif self.worddict['right'].get(currentvector.word,0)>0:self.inwordflag='right'
-            if self.inwordflag !='none':
-                print "Doing differences for ",currentvector.word,str(self.inwordflag)
+                self.inwordflag=['left']
+                if self.worddict['right'].get(currentvector.word,0)>0:
+                    self.inwordflag.append('right')
+            elif self.worddict['right'].get(currentvector.word,0)>0:
+                self.inwordflag=['right']
+            if self.inwordflag !=[]:
+                print "Doing differences for ",currentvector.word,self.inwordflag
                 self.makedifferences(currentvector)  #do differences with phrases
         else:  #self.flag=="phrases"
             #print "Checking "+currentvector.word
-            if self.collocdict.get(currentvector.word,0)>0:self.inwordflag='left'
+            if self.collocdict.get(currentvector.word,0)>0:
+                self.inwordflag=['left']
+                #parts=currentvector.word.split(':')
+                #if len(parts)>2:
+                #    invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
+                #    if self.collocdict.get(invphrase,0)>0:self.inwordflag.append('right)')
             else:
                 parts=currentvector.word.split(':')
                 if len(parts)>2:
                     invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
                     #print "Checking "+invphrase
-                    if self.collocdict.get(invphrase,0)>0:self.inwordflag='right'
-            if self.inwordflag!='none':
+                    if self.collocdict.get(invphrase,0)>0:self.inwordflag=['right']
+            if self.inwordflag!=[]:
                 self.phrasevectordict[currentvector.word]=currentvector  #store phrasevector for differences on constituents run
                 #print "storing vector for "+currentvector.word
 
 
-        if self.inwordflag !='none':
+        if self.inwordflag !=[]:
             #print "Outputting vector for "+currentvector.word
-            currentvector.finalise(self.featdict[self.inwordflag],self.featdict[VectorBuilder.flags[self.inwordflag]],self.outstream) #finalise and output currentvector
+            for inwordflag in self.inwordflag:
+                currentvector.finalise(self.featdict[inwordflag],self.featdict[VectorBuilder.flags[inwordflag]],self.outstream) #finalise and output currentvector
         else:
             #print "Ignoring vector for "+currentvector.word
             pass
@@ -385,7 +398,7 @@ class VectorBuilder(VectorExtractor):
         mycollocs=[]
         for colloc in self.collocdict.keys():
             parts=colloc.split(':')
-            if (self.inwordflag=='left' and parts[0]==constituent) or (self.inwordflag=='right' and parts[2]==constituent):
+            if ('left' in self.inwordflag and parts[0]==constituent) or ('right' in self.inwordflag and parts[2]==constituent):
                 mycollocs.append(colloc)
         print mycollocs
         for colloc in mycollocs:
@@ -393,7 +406,8 @@ class VectorBuilder(VectorExtractor):
             invcolloc=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
             diffvector=constituent_vector.finddiff(self.phrasevectordict.get(colloc,FeatureVector(colloc)))  #swan!black swan - could be a zero vector
             diffvector=diffvector.finddiff(self.phrasevectordict.get(invcolloc,FeatureVector(invcolloc)))    #swan!swan black - could be a zero vector
-            diffvector.finalise(self.featdict[self.inwordflag],self.featdict[VectorBuilder.flags[self.inwordflag]],self.diffstream)
+            for inwordflag in self.inwordflag:
+                diffvector.finalise(self.featdict[inwordflag],self.featdict[VectorBuilder.flags[inwordflag]],self.diffstream)
 
         return
 
@@ -421,10 +435,10 @@ def gobuild(parameters):
 def gomake(parameters):
     filepath=os.path.join(parameters['parentdir'],parameters['datadir'])
     observedvectors='vectors.'+parameters['vsource']+'.PHRASES'
-    composedvectors='comp.cache.diff.'+parameters['vsource']+'.gm.nofunct.raw'
+    #composedvectors='comp.cache.diff.'+parameters['vsource']+'.gm.nofunct.raw'
 
     mypaths=[os.path.join(filepath,observedvectors)]
-    mypaths.append(os.path.join(filepath,composedvectors))
+    #mypaths.append(os.path.join(filepath,composedvectors))
     print mypaths
 
     for mypath in mypaths:
