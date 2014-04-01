@@ -791,12 +791,16 @@ class Composer:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
                     vectorstream.close()
-        print "Ignored "+str(right_ignored)+" phrases of type right"
-        print "Ignored "+str(left_ignored)+" phrases of type left"
+        print "Ignored "+str(right_ignored)+" phrases of type inverted"
+        print "Ignored "+str(left_ignored)+" phrases of type straight"
         #self.computestats(allxs,allys,allphrases,'all')
         #self.computestats(leftxs,leftys,leftphrases,'left')
-        self.computestats(rightxs,rightys,rightphrases,'right')
-        self.computestats(rightfreqs,rightys,rightphrases,'rightfreq')
+        if self.parameters['wn_wiki']:
+            self.computestats(leftxs,leftys,leftphrases,'straight')
+            self.computestats(leftfreqs,leftys,leftphrases,'straighfreqs')
+        else:
+            self.computestats(rightxs,rightys,rightphrases,'inverted')
+            self.computestats(rightfreqs,rightys,rightphrases,'invfreq')
 
     def compose(self,left,right,ftag=''):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
@@ -838,8 +842,8 @@ class Composer:
 
     def computestats(self,xs,ys,phrases,type='all'):
 
-        if type=='right' or type=='rightfreq':
-            self.writestats(xs,ys,phrases)
+        #if type=='right' or type=='rightfreq':
+        self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):
             total=0
@@ -870,7 +874,7 @@ class Composer:
                 x=np.array(xs)
                 y=np.array(zs)
                 correlation=stats.spearmanr(x,y)
-                if type=='right' and self.parameters['graphing']:
+                if self.parameters['graphing']:
 
                     title="Scatter Graph for "+metric+" Against PPMI"
                     drawscatter(x,y,np.poly1d(np.polyfit(x,y,1)),title,metric,correlation,10,1)
