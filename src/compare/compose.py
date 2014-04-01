@@ -517,6 +517,7 @@ class Composer:
         print self.collocdict
         print self.freqdict
         self.freq_correlate()
+        self.freqdict={}
 
 
     def freq_correlate(self):
