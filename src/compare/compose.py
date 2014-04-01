@@ -606,11 +606,12 @@ class Composer:
                     fields=line.rstrip().split('\t')
                     if self.parameters['diff']:
                         (headmatch,collocmatch,invmatch)=fields[0].split('!')
-                        if self.leftdict.get(headmatch,-1)>-1:
+                        collocparts=collocmatch.split(':')
+                        if self.leftdict.get(headmatch,-1)>-1 and headmatch==collocparts[2]:
                             leftvectordict[invmatch]=line
                             rightvectordict[collocmatch]=line
                             added+=2
-                        if self.rightdict.get(headmatch,-1)>-1:
+                        if self.rightdict.get(headmatch,-1)>-1 and headmatch==collocparts[0]:
                             rightvectordict[invmatch]=line
                             leftvectordict[collocmatch]=line
                             added+=2
