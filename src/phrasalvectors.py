@@ -399,7 +399,7 @@ class VectorBuilder(VectorExtractor):
         inwordflags=[]
         for colloc in self.collocdict.keys():
             parts=colloc.split(':')
-            if ('left' in self.inwordflag and parts[0]==constituent) or ('right' in self.inwordflag and parts[2]==constituent):
+            if ('left' in self.inwordflag and parts[2]==constituent) or ('right' in self.inwordflag and parts[0]==constituent):
                 mycollocs.append(colloc)
                 if parts[0]==constituent:
                     inwordflags.append('left')
