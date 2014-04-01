@@ -10,7 +10,7 @@ def configure(args):
     parameters['diff']=False
     parameters['funct']=False
     parameters['mod']=False
-    parameters['metric']=['recall','precision','cosine']
+    parameters['metric']=['cosine']
     #parameters['datadir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/wiki_nounsdeps'
     parameters['compop']='add'
     parameters['cached']=False
@@ -73,7 +73,7 @@ def configure(args):
         elif arg=='wn_wiki':
             parameters['wn_wiki']=True
             parameters['usefile']=parameters['phrasetype']
-            parameters['compop']='mult'
+            parameters['compop']='gm'
             parameters['funct']=True
             parameters['association']='pmi'
             parameters['diff']=True

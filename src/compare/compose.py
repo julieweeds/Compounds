@@ -488,8 +488,12 @@ class Composer:
                     else:
                         self.collocdict[collocate]=float(hash(collocate))
                     parts=collocate.split(':')
-                    left=parts[0] #black/J
-                    right=parts[2] #swan/N
+                    if parts[1]==self.parameters['featurematch']:
+                        left=parts[0] #black/J
+                        right=parts[2] #swan/N
+                    elif parts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                        left = parts[2]
+                        right=parts[0]
                 #print "mod: ",mod,"head: ",head
                 self.leftdict[left]=self.leftdict.get(left,0)+1
                 self.rightdict[right]=self.rightdict.get(right,0)+1
@@ -603,12 +607,12 @@ class Composer:
                     if self.parameters['diff']:
                         (headmatch,collocmatch,invmatch)=fields[0].split('!')
                         if self.leftdict.get(headmatch,-1)>-1:
-                            leftvectordict[collocmatch]=line
-                            rightvectordict[invmatch]=line
+                            leftvectordict[invmatch]=line
+                            rightvectordict[collocmatch]=line
                             added+=2
                         elif self.rightdict.get(headmatch,-1)>-1:
-                            rightvectordict[collocmatch]=line
-                            leftvectordict[invmatch]=line
+                            rightvectordict[invmatch]=line
+                            leftvectordict[collocmatch]=line
                             added+=2
                         else:
                             print "Warning: ignoring "+headmatch
@@ -729,6 +733,7 @@ class Composer:
                             #rightVector.normalise()
                             #leftVector.normalise()
                             pass
+
                         composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
                         if composedVector.computelength()>0:
                             composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
@@ -764,8 +769,8 @@ class Composer:
 
                             allphrases.append(phrasefields[0])
                             allys.append(scores)
-                            leftpmi=self.collocdict.get(phrasefields[0],-1)
-                            rightpmi=self.collocdict.get(self.inverse(phrasefields[0]),-1)
+                            leftpmi=self.collocdict.get(self.inverse(phrasefields[0]),-1)
+                            rightpmi=self.collocdict.get(phrasefields[0],-1)
                             leftfreq=self.freqdict.get(phrasefields[0],-1)
                             rightfreq=self.freqdict.get(phrasefields[0],-1)
                             if rightfreq<1:
@@ -787,20 +792,19 @@ class Composer:
 
                         if done % 100 == 0:
                             print "Processed "+str(done)+" phrasal expressions"
-                        if self.parameters['testing'] and done%2==0:
+                        if self.parameters['testing'] and done%50==0:
                             print "Processed "+str(done)+" phrasal expressions"
                             break
                     vectorstream.close()
-        print "Ignored "+str(right_ignored)+" phrases of type inverted"
-        print "Ignored "+str(left_ignored)+" phrases of type straight"
+        print "Ignored "+str(right_ignored)+" phrases of type head"
+        print "Ignored "+str(left_ignored)+" phrases of type mod"
         #self.computestats(allxs,allys,allphrases,'all')
         #self.computestats(leftxs,leftys,leftphrases,'left')
-        if self.parameters['wn_wiki']:
-            self.computestats(leftxs,leftys,leftphrases,'straight')
-            self.computestats(leftfreqs,leftys,leftphrases,'straighfreqs')
-        else:
-            self.computestats(rightxs,rightys,rightphrases,'inverted')
-            self.computestats(rightfreqs,rightys,rightphrases,'invfreq')
+
+        #print self.collocdict.keys(),rightphrases
+        self.computestats(rightxs,rightys,rightphrases,'head')
+        self.computestats(leftxs,leftys,leftphrases,'mod')
+        #self.computestats(rightfreqs,rightys,rightphrases,'headfreq')
 
     def compose(self,left,right,ftag=''):
         compfunct=getattr(self,'_compose_'+self.parameters['compop'])
@@ -843,6 +847,7 @@ class Composer:
     def computestats(self,xs,ys,phrases,type='all'):
 
         #if type=='right' or type=='rightfreq':
+        #print phrases,xs,ys
         self.writestats(xs,ys,phrases)
 
         for i,metric in enumerate(self.parameters['metric']):

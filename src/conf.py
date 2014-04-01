@@ -247,6 +247,10 @@ def configure(args):
             parameters['usefile']=parameters['phrasetype']
             parameters['miroflag']=False
             parameters['featurematch']=parameters['phrasefeatures'][parameters['phrasetype']]
+            if parameters['phrasetype']=='ANs':
+                parameters['featurematch']='amod-HEAD'
+            else:
+                parameters['featurematch']=='nn-HEAD'
 
             if parameters['wins']:
                 parameters['deplist']=['T']

@@ -73,8 +73,12 @@ class VectorExtractor:
                         else:
                             self.collocdict[collocate]=1
                         parts=collocate.split(':')
-                        left=parts[0] #black/J
-                        right=parts[2] #swan/N
+                        if parts[1]==self.parameters['featurematch']:
+                            left=parts[0] #black/J
+                            right=parts[2] #swan/N
+                        elif parts[1]==self.parameters['inversefeatures'][self.parameters['featurematch']]:
+                            left=parts[2]
+                            right=parts[0]
                     self.worddict['left'][left]=self.worddict['left'].get(left,0)+1
                     self.worddict['right'][right]=self.worddict['right'].get(right,0)+1
                     linesread+=1
