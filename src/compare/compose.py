@@ -610,12 +610,12 @@ class Composer:
                             leftvectordict[invmatch]=line
                             rightvectordict[collocmatch]=line
                             added+=2
-                        elif self.rightdict.get(headmatch,-1)>-1:
+                        if self.rightdict.get(headmatch,-1)>-1:
                             rightvectordict[invmatch]=line
                             leftvectordict[collocmatch]=line
                             added+=2
-                        else:
-                            print "Warning: ignoring "+headmatch
+                        #else:
+                        #    print "Warning: ignoring "+headmatch
                     else:
                         headmatch = fields[0]
                         if self.leftdict.get(headmatch,-1)>-1:
