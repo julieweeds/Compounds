@@ -604,6 +604,7 @@ class Composer:
                 added=0
                 for line in instream:
                     linesread+=1
+
                     fields=line.rstrip().split('\t')
                     if self.parameters['diff']:
                         (headmatch,collocmatch,invmatch)=fields[0].split('!')
@@ -628,6 +629,8 @@ class Composer:
                             added+=1
                         #else:
                          #   print "Warning: ignoring "+headmatch
+                    if self.parameters['testing'] and linesread%1000==0:
+                        print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
                 print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
 
             with open(self.parameters['leftcache'],'w') as leftstream:
