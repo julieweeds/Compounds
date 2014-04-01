@@ -315,17 +315,17 @@ class VectorBuilder(VectorExtractor):
             #print "Checking "+currentvector.word
             if self.collocdict.get(currentvector.word,0)>0:
                 self.inwordflag=['left']
-                parts=currentvector.word.split(':')
-                if len(parts)>2:
-                    invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
-                    if self.collocdict.get(invphrase,0)>0:self.inwordflag.append('right)')
+                #parts=currentvector.word.split(':')
+                #if len(parts)>2:
+                #    invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
+                #    if self.collocdict.get(invphrase,0)>0:self.inwordflag.append('right)')
             else:
                 parts=currentvector.word.split(':')
                 if len(parts)>2:
                     invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
                     #print "Checking "+invphrase
                     if self.collocdict.get(invphrase,0)>0:self.inwordflag=['right']
-            if self.inwordflag!='none':
+            if self.inwordflag!=[]:
                 self.phrasevectordict[currentvector.word]=currentvector  #store phrasevector for differences on constituents run
                 #print "storing vector for "+currentvector.word
 
