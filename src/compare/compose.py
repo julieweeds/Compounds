@@ -438,7 +438,7 @@ class Composer:
         FeatureVector.inversefeatures=self.parameters['inversefeatures']
 
         self.readcomps()
-        self.readfreqs()
+        #self.readfreqs()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
 
@@ -657,6 +657,8 @@ class Composer:
                             right=parts[2]
                             leftstream.write(rightvectordict.get(left,left+'\t\n'))
                             rightstream.write(leftvectordict.get(right,right+'\t\n'))
+            leftvectordict={}
+            rightvectordict={}
 
 
     def loadfeaturefile(self):
