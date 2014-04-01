@@ -421,10 +421,10 @@ def gobuild(parameters):
 def gomake(parameters):
     filepath=os.path.join(parameters['parentdir'],parameters['datadir'])
     observedvectors='vectors.'+parameters['vsource']+'.PHRASES'
-    composedvectors='comp.cache.diff.'+parameters['vsource']+'.gm.nofunct.raw'
+    #composedvectors='comp.cache.diff.'+parameters['vsource']+'.gm.nofunct.raw'
 
     mypaths=[os.path.join(filepath,observedvectors)]
-    mypaths.append(os.path.join(filepath,composedvectors))
+    #mypaths.append(os.path.join(filepath,composedvectors))
     print mypaths
 
     for mypath in mypaths:

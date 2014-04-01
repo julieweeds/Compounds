@@ -481,6 +481,8 @@ class Composer:
                                 self.collocdict[collocate]=float(fields[2])
                             else:
                                 self.collocdict[collocate]=1
+                        elif self.parameters['wn_wiki']:
+                            self.collocdict[collocate]=float(fields[1]) #store frequency
                         else:
                             self.collocdict[collocate]=float(fields[2])#store PMI
                     else:
@@ -537,8 +539,12 @@ class Composer:
         rightcorr=stats.spearmanr(xarray,zarray)
         print "Correlation with left frequency ",leftcorr
         print "Correlation with right frequency ",rightcorr
-        self.freqthresh=stats.cmedian(zarray)
-        print "Median right frequency ",self.freqthresh
+        if self.parameters['wn_wiki']:
+            self.freqthresh=stats.cmedian(yarray)
+            print "Median left frequency ",self.freqthresh
+        else:
+            self.freqthresh=stats.cmedian(zarray)
+            print "Median right frequency ",self.freqthresh
 
 
     def makecaches(self):
