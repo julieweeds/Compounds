@@ -252,6 +252,7 @@ def configure(args):
                 parameters['deplist']=['T']
                 parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
                 parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
+                parameters['featurefile']=parameters['depfile']+'.features.strings'
                 vinfix='wins'
             else:
                 vinfix='deps'
