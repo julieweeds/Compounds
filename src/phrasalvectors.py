@@ -447,7 +447,7 @@ def gomake(parameters):
         diffflag='diff'
     else:
         diffflag='nodiff'
-    composedvectors='comp.cache.'+diffflag+'.'+parameters['vsource']+'.'+parameters['compop']+'.'+funflag+'.'+parameters['association']
+    composedvectors='comp.cache.'+diffflag+'.'+parameters['vinfix']+'.'+parameters['compop']+'.'+funflag+'.'+parameters['association']
 
     mypaths=[os.path.join(filepath,observedvectors)]
     mypaths.append(os.path.join(filepath,composedvectors))
