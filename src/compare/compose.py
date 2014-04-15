@@ -222,15 +222,16 @@ class FeatureVector:
 
     def selectself(self,avector,ftag=''):
         #return first order features of self - doesn't matter because cosine only compares upto and order anyway
+        #does matter if composefirst as in this case, transform expects only 1st order features
         if FeatureVector.miroflag:
             ctag=':'
         else:
             ctag=':ss:'
-        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
-        #for feature in self.featuredict.keys():
-        #    aorder=FeatureVector.findorder(feature)
-        #    if aorder==1:
-        #        newvector.featuredict[feature]=self.featuredict[feature]
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
+        for feature in self.featuredict.keys():
+            aorder=FeatureVector.findorder(feature)
+            if aorder==1:
+                newvector.featuredict[feature]=self.featuredict[feature]
 
         return newvector
 
@@ -362,10 +363,15 @@ class FeatureVector:
             for feature in self.rawdict.keys():
                 aorder=FeatureVector.findorder(feature)
                 storedorder=aorder-1
+
                 fofeat=feature
                 while aorder>1:
                     fofeat=FeatureVector.strip(fofeat)
                     aorder=aorder-1
+                #print feature,storedorder
+                if storedorder > len(featdictlist)-1:
+                    print feature, storedorder
+                    exit()
                 feattot=featdictlist[storedorder].get(fofeat,0)
                 if feattot>0:
                     ratio = (self.rawdict[feature]*featuretotallist[storedorder])/(self.sum[storedorder+1]*feattot)
@@ -848,6 +854,7 @@ class Composer:
         #print self.collocdict.keys(),rightphrases
         self.computestats(rightxs,rightys,rightphrases,'head')
         self.computestats(leftxs,leftys,leftphrases,'mod')
+        self.computestats(allxs,allys,allphrases,'all')
         #self.computestats(rightfreqs,rightys,rightphrases,'headfreq')
 
     def compose(self,left,right,ftag=''):
