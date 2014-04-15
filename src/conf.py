@@ -261,11 +261,11 @@ def configure(args):
                 parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
                 parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
                 parameters['featurefile']=parameters['depfile']+'.features.strings'
-                vinfix='wins'
+                parameters['vinfix']='wins'
             else:
-                vinfix='deps'
+                parameters['vinfix']='deps'
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
-            parameters['vsource']=parameters['phrasetype']+'.'+vinfix
+            parameters['vsource']=parameters['phrasetype']+'.'+parameters['vinfix']
         elif arg=='nofunct':
             parameters['funct']=False
         elif arg=='funct':
