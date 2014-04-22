@@ -247,6 +247,10 @@ def configure(args):
             parameters['usefile']=parameters['phrasetype']
             parameters['miroflag']=False
             parameters['featurematch']=parameters['phrasefeatures'][parameters['phrasetype']]
+            parameters['funct']=True
+            parameters['diff']=True
+            parameters['compop']='gm'
+            parameters['association']='raw'
             if parameters['phrasetype']=='ANs':
                 parameters['featurematch']='amod-HEAD'
             else:
@@ -257,10 +261,24 @@ def configure(args):
                 parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
                 parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
                 parameters['featurefile']=parameters['depfile']+'.features.strings'
-                vinfix='wins'
+                parameters['vinfix']='wins'
             else:
-                vinfix='deps'
+                parameters['vinfix']='deps'
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
-            parameters['vsource']=parameters['phrasetype']+'.'+vinfix
+            parameters['vsource']=parameters['phrasetype']+'.'+parameters['vinfix']
+        elif arg=='nofunct':
+            parameters['funct']=False
+        elif arg=='funct':
+            parameters['funct']=True
+        elif arg=='diff':
+            parameters['diff']=True
+        elif arg=='nodiff':
+            parameters['diff']=False
+        elif arg=='mult':
+            parameters['compop']='mult'
+        elif arg=='min':
+            parameters['compop']='min'
+        elif arg=='gm':
+            parameters['compop']='gm'
 
     return parameters

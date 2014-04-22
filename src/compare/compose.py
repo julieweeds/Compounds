@@ -222,15 +222,16 @@ class FeatureVector:
 
     def selectself(self,avector,ftag=''):
         #return first order features of self - doesn't matter because cosine only compares upto and order anyway
+        #does matter if composefirst as in this case, transform expects only 1st order features
         if FeatureVector.miroflag:
             ctag=':'
         else:
             ctag=':ss:'
-        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
-        #for feature in self.featuredict.keys():
-        #    aorder=FeatureVector.findorder(feature)
-        #    if aorder==1:
-        #        newvector.featuredict[feature]=self.featuredict[feature]
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
+        for feature in self.featuredict.keys():
+            aorder=FeatureVector.findorder(feature)
+            if aorder==1:
+                newvector.featuredict[feature]=self.featuredict[feature]
 
         return newvector
 
@@ -362,10 +363,15 @@ class FeatureVector:
             for feature in self.rawdict.keys():
                 aorder=FeatureVector.findorder(feature)
                 storedorder=aorder-1
+
                 fofeat=feature
                 while aorder>1:
                     fofeat=FeatureVector.strip(fofeat)
                     aorder=aorder-1
+                #print feature,storedorder
+                if storedorder > len(featdictlist)-1:
+                    print feature, storedorder
+                    exit()
                 feattot=featdictlist[storedorder].get(fofeat,0)
                 if feattot>0:
                     ratio = (self.rawdict[feature]*featuretotallist[storedorder])/(self.sum[storedorder+1]*feattot)
@@ -409,6 +415,8 @@ class FeatureVector:
 
 class Composer:
 
+    chunkSize=6000
+
     def __init__(self,parameters):
         self.parameters=parameters
         self.positions=['left','right']# #for adjectives and nouns - have corresponding dependency files in self.deppaths
@@ -438,7 +446,7 @@ class Composer:
         FeatureVector.inversefeatures=self.parameters['inversefeatures']
 
         self.readcomps()
-        #self.readfreqs()
+        self.readfreqs()
         self.makecaches()
         self.resultspath=os.path.join(self.parameters['datadir'],self.parameters['output'])
 
@@ -517,7 +525,7 @@ class Composer:
         print self.collocdict
         print self.freqdict
         self.freq_correlate()
-        self.freqdict={}
+        #self.freqdict={}  NEED THIS - can't wipe it!
 
 
     def freq_correlate(self):
@@ -551,6 +559,11 @@ class Composer:
             self.freqthresh=stats.cmedian(zarray)
             print "Median right frequency ",self.freqthresh
 
+        if self.parameters['diff']:
+            self.chunkthresh=[stats.cmedian(xarray),np.max(xarray)]  #for chunking the input into len(self.chunkthresh) chunks  - needs work for generalisation to more than 2 chunks
+        else:
+            self.chunkthresh=[np.max(xarray)]
+
 
     def makecaches(self):
 
@@ -563,102 +576,132 @@ class Composer:
             #phrasal
             vectordict={}
 
-            with open(self.parameters['phrasalpath'],'r') as instream:
-                print "Reading "+self.parameters['phrasalpath']
-                linesread=0
-                added=0
-                for line in instream:
-                    linesread+=1
-                    fields=line.split('\t')
+            for i,maxthresh in enumerate(self.chunkthresh):
+                if i==0:
+                    writemode='w'
+                else:
+                    writemode='a'
 
-                    if self.collocdict.get(fields[0],-1)>-1:
-                        vectordict[fields[0]]=line
-                        added+=1
-                    elif self.collocdict.get(self.inverse(fields[0]),-1)>-1:
-                        vectordict[fields[0]]=line
-                        added+=1
-                    else:
-                        #   print "Not added vector for "+fields[0]
-                        pass
-                    if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
+                minthresh=self.chunkthresh[i-1]
+                if minthresh>=maxthresh:
+                    minthresh=-1
 
-                print "Read "+str(linesread)+" lines"
-                print "Copying "+str(added)+" vectors"
+                with open(self.parameters['phrasalpath'],'r') as instream:
+                    print "Reading "+self.parameters['phrasalpath']
+                    linesread=0
+                    added=0
+                    for line in instream:
+                        linesread+=1
+                        fields=line.split('\t')
 
-            with open(self.parameters['phrasalcache'],'w') as outstream:
-                print "Writing "+self.parameters['phrasalcache']
-                for colloc in self.collocorder:
-                    outstream.write(vectordict.get(colloc,colloc+'\n'))
-                    inverted = self.inverse(colloc)
-                    outstream.write(vectordict.get(inverted,inverted+'\n'))
+                        collocscore=self.collocdict.get(fields[0],-1)
+                        invcollocscore=self.collocdict.get(self.inverse(fields[0]),-1)
 
-            vectordict={} #free memory
-            #load constituents
-
-            leftvectordict={}
-            rightvectordict={}
-
-            with open(self.parameters['constituentpath'],'r') as instream:
-                print "Reading "+self.parameters['constituentpath']
-                linesread=0
-                added=0
-                for line in instream:
-                    linesread+=1
-
-                    fields=line.rstrip().split('\t')
-                    if self.parameters['diff']:
-                        (headmatch,collocmatch,invmatch)=fields[0].split('!')
-                        collocparts=collocmatch.split(':')
-                        if self.leftdict.get(headmatch,-1)>-1 and headmatch==collocparts[2]:
-                            leftvectordict[invmatch]=line
-                            rightvectordict[collocmatch]=line
-                            added+=2
-                        if self.rightdict.get(headmatch,-1)>-1 and headmatch==collocparts[0]:
-                            rightvectordict[invmatch]=line
-                            leftvectordict[collocmatch]=line
-                            added+=2
-                        #else:
-                        #    print "Warning: ignoring "+headmatch
-                    else:
-                        headmatch = fields[0]
-                        if self.leftdict.get(headmatch,-1)>-1:
-                            leftvectordict[headmatch]=line
+                        if collocscore>minthresh and collocscore<=maxthresh:
+                            vectordict[fields[0]]=line
                             added+=1
-                        if self.rightdict.get(headmatch,-1)>-1:
-                            rightvectordict[headmatch]=line
+                        elif invcollocscore>minthresh and collocscore <=maxthresh:
+                            vectordict[fields[0]]=line
                             added+=1
-                        #else:
-                         #   print "Warning: ignoring "+headmatch
-                    if self.parameters['testing'] and linesread%1000==0:
-                        print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
-                print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
+                        else:
+                            #   print "Not added vector for "+fields[0]
+                            pass
+                        if self.parameters['testing'] and linesread%1000==0:print "Read "+str(linesread)+" lines and copying "+str(added)+" vectors"
 
-            with open(self.parameters['leftcache'],'w') as leftstream:
-                with open(self.parameters['rightcache'],'w') as rightstream:
-                    print "Writing "+self.parameters['leftcache']+" and "+self.parameters['rightcache']
+                    print "Read "+str(linesread)+" lines"
+                    print "Copying "+str(added)+" vectors"
+
+                with open(self.parameters['phrasalcache'],writemode) as outstream:
+                    print "Writing "+self.parameters['phrasalcache']
                     for colloc in self.collocorder:
+                        collocscore=self.collocdict.get(colloc,-1)
+                        if collocscore>minthresh and collocscore <=maxthresh:
+                            outstream.write(vectordict.get(colloc,colloc+'\n'))
+                            inverted = self.inverse(colloc)
+                            outstream.write(vectordict.get(inverted,inverted+'\n'))
+
+                vectordict={} #free memory
+                #load constituents
+
+                leftvectordict={}   #store collocate --> linenumber for output on left stream
+                rightvectordict={}  #store collocate-->linenumber for output on right stream
+                linedict={}  #store linenumber-->line
+
+                with open(self.parameters['constituentpath'],'r') as instream:
+                    print "Reading "+self.parameters['constituentpath']
+                    linesread=0
+                    added=0
+                    for line in instream:
+                        linesread+=1
+
+                        fields=line.rstrip().split('\t')
                         if self.parameters['diff']:
-                            leftstream.write(leftvectordict.get(colloc,colloc+'\n'))
-                            rightstream.write(rightvectordict.get(colloc,colloc+'\n'))
+                            (headmatch,collocmatch,invmatch)=fields[0].split('!')
+                            collocscore=self.collocdict.get(collocmatch,-1)
+                            if collocscore>minthresh and collocscore < maxthresh:
+                                collocparts=collocmatch.split(':')
+                                if self.leftdict.get(headmatch,-1)>-1 and headmatch==collocparts[2]:
+                                    linedict[linesread]=line
+                                    leftvectordict[invmatch]=linesread
+                                    rightvectordict[collocmatch]=linesread
+                                    added+=2
+                                if self.rightdict.get(headmatch,-1)>-1 and headmatch==collocparts[0]:
+                                    linedict[linesread]=line
+                                    rightvectordict[invmatch]=linesread
+                                    leftvectordict[collocmatch]=linesread
+                                    added+=2
+                            #else:
+                            #    print "Warning: ignoring "+headmatch
                         else:
-                            parts=colloc.split(':')
-                            left=parts[0]
-                            right=parts[2]
-                            leftstream.write(leftvectordict.get(left,left+'\t\n'))
-                            rightstream.write(rightvectordict.get(right,right+'\t\n'))
-                        #inverse collocation
-                        inverted=self.inverse(colloc)
-                        if self.parameters['diff']:
-                            leftstream.write(leftvectordict.get(inverted,inverted+'\n'))
-                            rightstream.write(rightvectordict.get(inverted,inverted+'\n'))
-                        else:
-                            parts=inverted.split(':')
-                            left=parts[0]
-                            right=parts[2]
-                            leftstream.write(rightvectordict.get(left,left+'\t\n'))
-                            rightstream.write(leftvectordict.get(right,right+'\t\n'))
-            leftvectordict={}
-            rightvectordict={}
+                            headmatch = fields[0]
+                            if self.leftdict.get(headmatch,-1)>-1:
+                                linedict[linesread]=line
+                                leftvectordict[headmatch]=linesread
+                                rightvectordict[headmatch]=linesread
+                                added+=2
+                            if self.rightdict.get(headmatch,-1)>-1:
+                                linedict[linesread]=line
+                                rightvectordict[headmatch]=linesread
+                                leftvectordict[headmatch]=linesread
+                                added+=2
+
+                             #   print "Warning: ignoring "+headmatch
+                        if self.parameters['testing'] and linesread%1000==0:
+                            print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
+                    print "Read "+str(linesread)+" lines and copied "+str(added)+" vectors"
+
+                #print leftvectordict
+                #print rightvectordict
+                #test1='absorber/N'
+                #test2='shock/N'
+
+                with open(self.parameters['leftcache'],writemode) as leftstream:
+                    with open(self.parameters['rightcache'],writemode) as rightstream:
+                        print "Writing "+self.parameters['leftcache']+" and "+self.parameters['rightcache']
+                        for colloc in self.collocorder:
+                            collocscore=self.collocdict.get(colloc,-1)
+                            if collocscore > minthresh and collocscore <= maxthresh:
+
+                                if self.parameters['diff']:
+                                    leftstream.write(linedict.get(leftvectordict.get(colloc,-1),colloc+'\n'))
+                                    rightstream.write(linedict.get(rightvectordict.get(colloc,-1),colloc+'\n'))
+                                else:
+                                    parts=colloc.split(':')
+                                    left=parts[0]
+                                    right=parts[2]
+                                    leftstream.write(linedict.get(leftvectordict.get(left,-1),left+'\t\n'))
+                                    rightstream.write(linedict.get(rightvectordict.get(right,-1),right+'\t\n'))
+                                #inverse collocation
+                                inverted=self.inverse(colloc)
+                                if self.parameters['diff']:
+                                    leftstream.write(linedict.get(leftvectordict.get(inverted,-1),inverted+'\n'))
+                                    rightstream.write(linedict.get(rightvectordict.get(inverted,-1),inverted+'\n'))
+                                else:
+                                    parts=inverted.split(':')
+                                    left=parts[0]
+                                    right=parts[2]
+                                    leftstream.write(linedict.get(rightvectordict.get(left,-1),left+'\t\n'))
+                                    rightstream.write(linedict.get(leftvectordict.get(right,-1),right+'\t\n'))
 
 
     def loadfeaturefile(self):
@@ -811,6 +854,7 @@ class Composer:
         #print self.collocdict.keys(),rightphrases
         self.computestats(rightxs,rightys,rightphrases,'head')
         self.computestats(leftxs,leftys,leftphrases,'mod')
+        self.computestats(allxs,allys,allphrases,'all')
         #self.computestats(rightfreqs,rightys,rightphrases,'headfreq')
 
     def compose(self,left,right,ftag=''):
