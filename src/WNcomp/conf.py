@@ -94,7 +94,6 @@ def setfilenames(parameters):
     if parameters['apollo']:
         parameters['datadir']='/mnt/lustre/scratch/inf/juliewe/FeatureExtractionToolkit/feoutput-deppars'
         parameters['compoundparentdir']='/mnt/lustre/scratch/inf/juliewe/Compounds/data/'
-
     if parameters['local']:
         parameters['compoundparentdir']='/Volumes/LocalScratchHD/juliewe/Documents/workspace/Compounds/data/'
 
