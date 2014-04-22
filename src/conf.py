@@ -247,15 +247,16 @@ def configure(args):
                 parameters['featurefile']=parameters['depfile']+'wins.features.strings'
                 parameters['vinfix']='wins'
             else:
+                parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]+'deps'
+                parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]+'deps'
+                parameters['featurefile']=parameters['depfile']+'.features.strings'
                 parameters['vinfix']='deps'
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
 
             parentdir='data/WNcompounds/'
             parameters['datadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
             parameters['altdatadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
-            parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]+'deps'
-            parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]+'deps'
-            parameters['featurefile']=parameters['depfile']+'.features.strings'
+
             parameters['adjlist']=True
             parameters['allheads']=True
             parameters['collocatefile']=['multiwords.wn_wiki']
