@@ -84,6 +84,8 @@ def configure(args):
             parameters['domod']=True
         elif arg=='random':
             parameters['random']=True
+        elif arg=='wn_wiki':
+            parameters['wn_wiki']=True
 
     parameters=setfilenames(parameters)
     return parameters
@@ -100,7 +102,10 @@ def setfilenames(parameters):
     if parameters['athome']:
         parameters['compoundparentdir']='/Users/juliewe/Documents/workspace/Compounds/data/'
 
-    parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
+    if parameters['wn_wiki']:
+        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/NNs/nouns/'
+    else:
+        parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
     parameters['neighfile']=parameters['neighsource']+'.neighbours.strings'
 
 
