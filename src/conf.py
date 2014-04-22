@@ -235,9 +235,24 @@ def configure(args):
         elif arg=='wn_wiki':
             #phrasetype should be set first via ANs or NNs
             #wins should be set first
+            if parameters['phrasetype']=='ANs':
+                parameters['featurematch']='amod-HEAD'
+            else:
+                parameters['featurematch']=='nn-HEAD'
+
+            if parameters['wins']:
+                parameters['deplist']=['T']
+                parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
+                parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
+                parameters['featurefile']=parameters['depfile']+'wins.features.strings'
+                parameters['vinfix']='wins'
+            else:
+                parameters['vinfix']='deps'
+                parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
+
             parentdir='data/WNcompounds/'
-            parameters['datadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
-            parameters['altdatadir']=parentdir+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
+            parameters['datadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
+            parameters['altdatadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
             parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]+'deps'
             parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]+'deps'
             parameters['featurefile']=parameters['depfile']+'.features.strings'
@@ -251,20 +266,7 @@ def configure(args):
             parameters['diff']=True
             parameters['compop']='gm'
             parameters['association']='raw'
-            if parameters['phrasetype']=='ANs':
-                parameters['featurematch']='amod-HEAD'
-            else:
-                parameters['featurematch']=='nn-HEAD'
 
-            if parameters['wins']:
-                parameters['deplist']=['T']
-                parameters['depfile']='wikiPOS_'+parameters['posdict'][parameters['lefttype']]
-                parameters['altdepfile']='wikiPOS_'+parameters['posdict'][parameters['righttype']]
-                parameters['featurefile']=parameters['depfile']+'.features.strings'
-                parameters['vinfix']='wins'
-            else:
-                parameters['vinfix']='deps'
-                parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
             parameters['vsource']=parameters['phrasetype']+'.'+parameters['vinfix']
         elif arg=='nofunct':
             parameters['funct']=False
