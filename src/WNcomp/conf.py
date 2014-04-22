@@ -102,7 +102,7 @@ def setfilenames(parameters):
 
     if parameters['wn_wiki']:
         parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/NNs/nouns/'
-        parameters['mwfile']='multiwords.wnwiki.NNs'
+        parameters['mwfile']='multiwords.wn_wiki.NNs'
     else:
         parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
     parameters['neighfile']=parameters['neighsource']+'.neighbours.strings'
