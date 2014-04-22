@@ -24,7 +24,6 @@ def configure(args):
     parameters['random']=False
     #parameters['typelist']=['phrase']
 
-
     for i,arg in enumerate(args):
         if arg=='nouns' or arg=='N':
             parameters['pos']='N'
