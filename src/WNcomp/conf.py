@@ -23,13 +23,30 @@ def configure(args):
     parameters['typelist']=['phrase','head','mod']
     parameters['random']=False
     parameters['vsource']='deps'
+    parameters['phrasetype']='NNs'
+
     #parameters['typelist']=['phrase']
 
     for i,arg in enumerate(args):
-        if arg=='nouns' or arg=='N':
+        if arg=='nouns' or arg=='N': #obsolete - use NNs or ANs
             parameters['pos']='N'
+            parameters['posword']='noun'
         elif arg=='adjs' or arg=='J':
             parameters['pos']='J'
+            parameters['posword']='adj'
+        elif arg=='NNs':
+            parameters['phrasetype']='NNs'
+            parameters['pos']='N'
+            parameters['posword']='noun'
+            parameters['altpos']='N'
+            parameters['altposword']='noun'
+        elif arg=='ANs':
+            parameters['phrasetype']='ANs'
+            parameters['pos']='N'
+            parameters['posword']='noun'
+            parameters['altpos']='J'
+            parameters['altposword']='adj'
+
         elif arg=='testing':
             parameters['testing']=True
         elif arg=='filter':
@@ -82,8 +99,10 @@ def configure(args):
             parameters['wnsim']='jcn'
         elif arg=='head':
             parameters['dohead']=True
+            parameters['dopos']=parameters['posword']
         elif arg=='mod':
             parameters['domod']=True
+            parameters['dopos']=parameters['altposword']
         elif arg=='random':
             parameters['random']=True
         elif arg=='wn_wiki':
@@ -108,8 +127,8 @@ def setfilenames(parameters):
         parameters['compoundparentdir']='/Users/juliewe/Documents/workspace/Compounds/data/'
 
     if parameters['wn_wiki']:
-        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/'+parameters['vsource']+'/NNs/nouns/'
-        parameters['mwfile']='multiwords.wn_wiki.NNs'
+        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/'+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['dopos']+'s/'
+        parameters['mwfile']='multiwords.wn_wiki.'+parameters['phrasetype']
     else:
         parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
     parameters['neighfile']=parameters['neighsource']+'.neighbours.strings'
