@@ -223,8 +223,8 @@ class Comparer:
 
 
         print "Number of collocations is "+str(len(self.collocdict.keys()))
-        print "Number of right heads is "+str(len(self.rightdict.keys()))
-        print "Number of left modifiers is "+str(len(self.leftdict.keys()))
+        print "Number of (right) mods is "+str(len(self.rightdict.keys()))
+        print "Number of (left) heads is "+str(len(self.leftdict.keys()))
         #self.collocorder=sorted(self.collocdict.keys())
         if self.parameters['testing']:
             print self.collocdict.keys()
