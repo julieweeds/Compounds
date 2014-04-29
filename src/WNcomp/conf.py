@@ -72,7 +72,7 @@ def configure(args):
         elif arg=='unigram':
             parameters['neighsource']='unigram'
             parameters['typelist']=['head']
-            parameters['dohead']=True
+ #           parameters['dohead']=True
             parameters['unigram']=True
         elif arg=='setk':
             parameters['k']=int(args[i+1])
