@@ -11,7 +11,6 @@ def configure(args):
     parameters['featurematch']='nn-DEP'
     parameters['seed']=37
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
-    parameters['featurematch']='nn-DEP'
     parameters['k']=5
     parameters['mwfile']='multiwords.all'
     parameters['neighsource']=''
@@ -24,6 +23,7 @@ def configure(args):
     parameters['random']=False
     parameters['vsource']='deps'
     parameters['phrasetype']='NNs'
+    parameters['unigram']=False
 
     #parameters['typelist']=['phrase']
 
@@ -40,12 +40,14 @@ def configure(args):
             parameters['posword']='noun'
             parameters['altpos']='N'
             parameters['altposword']='noun'
+            parameters['featurematch']='nn-DEP'
         elif arg=='ANs':
             parameters['phrasetype']='ANs'
             parameters['pos']='N'
             parameters['posword']='noun'
             parameters['altpos']='J'
             parameters['altposword']='adj'
+            parameters['featurematch']='amod-DEP'
 
         elif arg=='testing':
             parameters['testing']=True
