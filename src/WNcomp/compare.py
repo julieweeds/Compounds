@@ -71,13 +71,13 @@ def sensesim(ss1,ss2,metric):
         sim=ss1.jcn_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
     return sim
 
-def wnsim(phrase,neighbour,metric='path'):
+def wnsim(phrase,neighbour,metric='path',pos='N'):
 
     (wnphrase,ptag)=wnFormat(phrase)
     (wnneighbour,ntag)=wnFormat(neighbour)
 
-    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping['N'])
-    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping['N'])
+    neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[pos])
+    phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[pos])
 
     maxsim=0
     if len(phrasesynsets)==0:
