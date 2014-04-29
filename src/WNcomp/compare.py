@@ -179,11 +179,11 @@ class Comparer:
             print "Reading "+self.mwpath
             for line in instream:
                 fields=line.rstrip().split('\t')
-                collocate=fields[0]
+                collocate=fields[0] #helmet/N:nn-DEP:football/N
                 parts=collocate.split(':')
-                left=parts[0] #black/J
-                rel=parts[1]  #'amod-DEP'
-                right=parts[2] #swan/N
+                left=parts[0] #helmet/N
+                rel=parts[1]  #'nn-DEP'
+                right=parts[2] #football/N
                 inversematch = self.parameters['inversefeatures'][self.parameters['featurematch']]
                 #print "Attempting to match "+rel+" and "+inversematch
                 if rel==inversematch:
@@ -205,15 +205,15 @@ class Comparer:
                         sc=float(hash(collocate))
 
                     if self.parameters['unigram']: #enable comparison of just the heads or mods
-                        parts=collocate.split(':')
+                        parts=collocate.split(':') #[helmet/N,nn-DEP,football/N]
                         if self.parameters['dohead']:
-                            collocate=parts[0]
+                            collocate=parts[0]  #helmet/N
                         elif self.parameters['domod']:
-                            collocate=parts[2]
+                            collocate=parts[2]  #football/N
                     if self.parameters['dohead']:
-                        self.collocdict[right]=ThesEntry(collocate,score=sc)
-                    elif self.parameters['domod']:
                         self.collocdict[left]=ThesEntry(collocate,score=sc)
+                    elif self.parameters['domod']:
+                        self.collocdict[right]=ThesEntry(collocate,score=sc)
                     else:
                         self.collocdict[collocate]=ThesEntry(collocate,score=sc)
 
