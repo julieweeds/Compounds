@@ -203,6 +203,13 @@ class Comparer:
 
                     else:
                         sc=float(hash(collocate))
+
+                    if self.parameters['unigram']: #enable comparison of just the heads or mods
+                        parts=collocate.split(':')
+                        if self.parameters['dohead']:
+                            collocate=parts[0]
+                        elif self.parameters['domod']:
+                            collocate=parts[2]
                     if self.parameters['dohead']:
                         self.collocdict[right]=ThesEntry(collocate,score=sc)
                     elif self.parameters['domod']:
