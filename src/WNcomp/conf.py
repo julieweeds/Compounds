@@ -71,7 +71,9 @@ def configure(args):
             parameters['neighsource']='diffcomp_nfmult'
         elif arg=='unigram':
             parameters['neighsource']='unigram'
-            parameters['typelist']=['head','mod']
+            parameters['typelist']=['head']
+            parameters['dohead']=True
+            parameters['unigram']=True
         elif arg=='setk':
             parameters['k']=int(args[i+1])
         elif arg=='lin':
