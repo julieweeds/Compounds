@@ -22,6 +22,7 @@ def configure(args):
     parameters['domod']=False
     parameters['typelist']=['phrase','head','mod']
     parameters['random']=False
+    parameters['vsource']='deps'
     #parameters['typelist']=['phrase']
 
     for i,arg in enumerate(args):
@@ -85,6 +86,10 @@ def configure(args):
             parameters['random']=True
         elif arg=='wn_wiki':
             parameters['wn_wiki']=True
+        elif arg=='deps':
+            parameters['vsource']='deps'
+        elif arg=='wins':
+            parameters['vsource']='wins'
 
     parameters=setfilenames(parameters)
     return parameters
@@ -101,7 +106,7 @@ def setfilenames(parameters):
         parameters['compoundparentdir']='/Users/juliewe/Documents/workspace/Compounds/data/'
 
     if parameters['wn_wiki']:
-        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/NNs/nouns/'
+        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/'+parameters['vsource']+'/NNs/nouns/'
         parameters['mwfile']='multiwords.wn_wiki.NNs'
     else:
         parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
