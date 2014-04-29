@@ -36,6 +36,7 @@ class FeatureVector:
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
     compareUptoOrder = 1
     miroflag=False
+    ROUGH=0.0005
 
     @staticmethod
     def strip(feat):
@@ -345,10 +346,15 @@ class FeatureVector:
         else:
             self.normalised=True
             self.computelength() #ensures sums are computed as well as length
-            for feat in self.featuredict.keys():
+            copydict=dict(self.featuredict)
+            self.featuredict={}
+            for feat in copydict:
                 aorder=FeatureVector.findorder(feat)
-                self.featuredict[feat]=self.featuredict[feat]/self.sum[aorder]
 
+                score=copydict[feat]/self.sum[aorder]
+                if score > FeatureVector.ROUGH:
+                    self.featuredict[feat]=score
+            self.computedlength=False
             self.computelength() #recomputes length and sums
             return
 
@@ -786,6 +792,8 @@ class Composer:
 
                         composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
                         if composedVector.computelength()>0:
+                            composedVector.normalise()
+                            #phraseVector.normalise()
                             composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
                         if self.parameters['testing']:
                             print composedVector.toString()

@@ -256,6 +256,10 @@ class Comparer:
 
         sarray=np.array(sims)
         mean=np.average(sarray)
+        mylength=len(sims)
+        possible=len(self.collocdict.keys())
+        recall=float(mylength)/float(possible)
+        print "Recall (proportion with non-empty neighbour list) is "+str(recall)
         print "Mean is "+str(mean)
 
 
