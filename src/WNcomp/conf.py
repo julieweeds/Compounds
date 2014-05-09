@@ -27,6 +27,7 @@ def configure(args):
     parameters['vsource']='deps'
     parameters['phrasetype']='NNs'
     parameters['unigram']=False
+    parameters['wn_wiki']=True
 
     #parameters['typelist']=['phrase']
 
