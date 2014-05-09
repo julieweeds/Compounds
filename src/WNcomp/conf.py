@@ -110,6 +110,7 @@ def configure(args):
         elif arg=='mod':
             parameters['typelist']=['mod']
             parameters['domod']=True
+            parameters['dohead']=False
             parameters['dopos']=parameters['altposword']
         elif arg=='random':
             parameters['random']=True
