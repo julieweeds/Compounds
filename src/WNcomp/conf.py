@@ -138,7 +138,7 @@ def setfilenames(parameters):
     if parameters['wn_wiki']:
         parameters['compdatadirs']=[]
         for vsource in parameters['vsources']:
-            parameters['compdatadir'].append(parameters['compoundparentdir']+'WNcompounds/'+vsource+'/'+parameters['phrasetype']+'/'+parameters['dopos']+'s/')
+            parameters['compdatadirs'].append(parameters['compoundparentdir']+'WNcompounds/'+vsource+'/'+parameters['phrasetype']+'/'+parameters['dopos']+'s/')
 
         parameters['mwfile']='multiwords.wn_wiki.'+parameters['phrasetype']
     else:
