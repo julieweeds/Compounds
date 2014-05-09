@@ -5,7 +5,7 @@ from conf import configure
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
 import numpy as np
-import random, time, datetime
+import random, time, datetime,math
 
 wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
 
@@ -288,17 +288,22 @@ class Comparer:
 
         sarray=np.array(sims)
         mean=np.average(sarray)
+        stdev=np.std(sarray)
+        error=stdev/math.pow(len(sims),0.5)
         mylength=len(sims)
         possible=len(self.collocdict.keys())
         recall=float(mylength)/float(possible)
         print "Recall (proportion with non-empty neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
-        print "Mean is "+str(mean)
-        self.writeoutput(recall,mean)
+        print "Mean is "+str(mean)+', error: '+str(error)
+        self.writeoutput([recall,mean,error])
         return
 
-    def writeoutput(self,recall,mean):
+    def writeoutput(self,values):
 
-        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])+','+str(recall)+','+str(mean)+'\n'
+        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])
+        for value in values:
+            outline +=','+str(value)
+        outline+='\n'
         ts=time.time()
         st=datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         outline=st+','+outline
