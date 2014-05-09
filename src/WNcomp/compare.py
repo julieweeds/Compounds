@@ -95,6 +95,7 @@ def wnsim(phrase,neighbour,metric='path',pos='N'):
 
 
 class ThesEntry:
+    verbose=True
 
     def __init__(self,phrase,score=1):
 
@@ -120,8 +121,8 @@ class ThesEntry:
             if self.validcheck(neigh):
                 #self.neighdict[neigh]=float(sc)
                 self.neighdict[neigh]=1
-
-        print self.phrase, self.neighdict.keys()
+        if ThesEntry.verbose:
+            print self.phrase, self.neighdict.keys()
 
     def validcheck(self,neigh):
         if neigh == self.phrase:
@@ -157,8 +158,33 @@ class ThesEntry:
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
-        print self.phrase,mymean
+        if ThesEntry.verbose:
+            print self.phrase,mymean
         return mymean
+
+
+class Experiments:
+
+    def __init__(self,parameters):
+
+        self.parameters=parameters
+        if self.parameters['testing']:
+            ThesEntry.verbose=True
+        else:
+            ThesEntry.verbose=False
+
+    def run(self):
+
+        with open(self.parameters['outfile'],'a') as self.parameters['outstream']:
+
+            for compdatadir,vsource in zip(self.parameters['compdatadirs'],self.parameters['vsources']):
+                self.parameters['compdatadir']=compdatadir
+                self.parameters['vsource']=vsource
+                for k in self.parameters['ks']:
+                    self.parameters['k']=k
+                    myComparer=Comparer(self.parameters)
+                    myComparer.go()
+
 
 
 class Comparer:
@@ -268,8 +294,13 @@ class Comparer:
         recall=float(mylength)/float(possible)
         print "Recall (proportion with non-empty neighbour list) is "+str(recall)
         print "Mean is "+str(mean)
+        self.writeoutput(recall,mean)
+        return
 
+    def writeoutput(self,recall,mean):
 
+        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])+','+str(recall)+','+str(mean)+'\n'
+        self.parameters['outstream'].write(outline)
         return
 
     def check(self):
@@ -291,6 +322,5 @@ if __name__=='__main__':
 
     parameters=configure(sys.argv)
     random.seed(parameters['seed'])
-    myComparer=Comparer(parameters)
-
-    myComparer.go()
+    myexperiments=Experiments(parameters)
+    myexperiments.run()

@@ -12,6 +12,7 @@ def configure(args):
     parameters['seed']=37
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
     parameters['k']=5
+    parameters['ks']=[1,2,3,4,5,10,15,20,50,100]
     parameters['mwfile']='multiwords.all'
     parameters['neighsource']=''
     parameters['NNcompflag']=True
@@ -21,6 +22,8 @@ def configure(args):
     parameters['domod']=False
     parameters['typelist']=['phrase','head','mod']
     parameters['random']=False
+    parameters['rflag']='knn'
+    parameters['vsources']=[]
     parameters['vsource']='deps'
     parameters['phrasetype']='NNs'
     parameters['unigram']=False
@@ -91,8 +94,9 @@ def configure(args):
         elif arg=='unigram':
             parameters['neighsource']='unigram'
             parameters['typelist']=['head']
- #           parameters['dohead']=True
+            parameters['dohead']=True
             parameters['unigram']=True
+            parameters['dopos']=parameters['posword']
         elif arg=='setk':
             parameters['k']=int(args[i+1])
         elif arg=='lin':
@@ -100,19 +104,22 @@ def configure(args):
         elif arg=='jcn':
             parameters['wnsim']='jcn'
         elif arg=='head':
+            parameters['typelist']=['head']
             parameters['dohead']=True
             parameters['dopos']=parameters['posword']
         elif arg=='mod':
+            parameters['typelist']=['mod']
             parameters['domod']=True
             parameters['dopos']=parameters['altposword']
         elif arg=='random':
             parameters['random']=True
+            parameters['rflag']='random'
         elif arg=='wn_wiki':
             parameters['wn_wiki']=True
         elif arg=='deps':
-            parameters['vsource']='deps'
+            parameters['vsources'].append('deps')
         elif arg=='wins':
-            parameters['vsource']='wins'
+            parameters['vsources'].append('wins')
 
     parameters=setfilenames(parameters)
     return parameters
@@ -129,11 +136,16 @@ def setfilenames(parameters):
         parameters['compoundparentdir']='/Users/juliewe/Documents/workspace/Compounds/data/'
 
     if parameters['wn_wiki']:
-        parameters['compdatadir']=parameters['compoundparentdir']+'WNcompounds/'+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['dopos']+'s/'
+        parameters['compdatadirs']=[]
+        for vsource in parameters['vsources']:
+            parameters['compdatadir'].append(parameters['compoundparentdir']+'WNcompounds/'+vsource+'/'+parameters['phrasetype']+'/'+parameters['dopos']+'s/')
+
         parameters['mwfile']='multiwords.wn_wiki.'+parameters['phrasetype']
     else:
-        parameters['compdatadir']=parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/'
+        parameters['compdatadirs']=[parameters['compoundparentdir']+'ijcnlp_compositionality_data/NNs/nouns/']
+    parameters['compdatadir']=parameters['compdatadirs'][0]
     parameters['neighfile']=parameters['neighsource']+'.neighbours.strings'
+    parameters['outfile']=parameters['compoundparentdir']+'WNcompounds/results.csv'
 
 
     return parameters
