@@ -256,6 +256,8 @@ class Comparer:
         return
 
     def loadneighbours(self):
+        allentries=list(self.collocdict.keys())  #for random mode
+        random.shuffle(allentries)
         with open(self.neighpath,'r') as instream:
             print "Reading "+self.neighpath
             linesread=0
@@ -267,11 +269,15 @@ class Comparer:
                 fields=line.rstrip().split('\t')
                 entry=stripdiffp(fields[0])
                 thisEntry= self.collocdict.get(entry,None)
+
                 if thisEntry!=None:
                     neighs=list(fields[1:])
                     neighs.reverse()
                     if self.parameters['random']:
+                        #added shuffled neighbours to randomly selected target noun
                         random.shuffle(neighs)
+                        randomentry=allentries.pop()
+                        thisEntry=self.collocdict[randomentry]
 
                     thisEntry.addneighs(neighs,self.k)
                     #print "Adding entry for "+entry
