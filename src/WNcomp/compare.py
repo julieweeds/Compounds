@@ -175,13 +175,12 @@ class Experiments:
 
     def run(self):
 
-        with open(self.parameters['outfile'],'a') as self.parameters['outstream']:
-
-            for compdatadir,vsource in zip(self.parameters['compdatadirs'],self.parameters['vsources']):
-                self.parameters['compdatadir']=compdatadir
-                self.parameters['vsource']=vsource
-                for k in self.parameters['ks']:
-                    self.parameters['k']=k
+        for compdatadir,vsource in zip(self.parameters['compdatadirs'],self.parameters['vsources']):
+            self.parameters['compdatadir']=compdatadir
+            self.parameters['vsource']=vsource
+            for k in self.parameters['ks']:
+                self.parameters['k']=k
+                with open(self.parameters['outfile'],'a') as self.parameters['outstream']:
                     myComparer=Comparer(self.parameters)
                     myComparer.go()
 
@@ -302,7 +301,7 @@ class Comparer:
         outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])+','+str(recall)+','+str(mean)+'\n'
         ts=time.time()
         st=datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        outline=st+outline
+        outline=st+','+outline
         self.parameters['outstream'].write(outline)
         return
 
