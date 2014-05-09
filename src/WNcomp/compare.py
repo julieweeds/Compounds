@@ -5,7 +5,7 @@ from conf import configure
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
 import numpy as np
-import random
+import random, time, datetime
 
 wnmapping={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
 
@@ -292,7 +292,7 @@ class Comparer:
         mylength=len(sims)
         possible=len(self.collocdict.keys())
         recall=float(mylength)/float(possible)
-        print "Recall (proportion with non-empty neighbour list) is "+str(recall)
+        print "Recall (proportion with non-empty neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
         print "Mean is "+str(mean)
         self.writeoutput(recall,mean)
         return
@@ -300,6 +300,9 @@ class Comparer:
     def writeoutput(self,recall,mean):
 
         outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])+','+str(recall)+','+str(mean)+'\n'
+        ts=time.time()
+        st=datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        outline=st+outline
         self.parameters['outstream'].write(outline)
         return
 
