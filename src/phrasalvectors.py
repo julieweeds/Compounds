@@ -26,6 +26,7 @@ class VectorExtractor:
         self.featuretotal={'left':0,'right':0}
 
         self.deppath = os.path.join(self.datadir,self.parameters['depfile']) #for first POS (e.g., J in ANcompounds)
+
         if True:
             self.altdeppath = os.path.join(self.parameters['parentdir'],self.parameters['altdatadir'],self.parameters['altdepfile'])  #for other POS (e.g., N in ANcompounds)
             self.deppaths=[self.deppath,self.altdeppath]
@@ -89,7 +90,7 @@ class VectorExtractor:
 
     def loadfeaturecounts(self):
 
-        filepaths = [os.path.join(self.datadir,self.parameters['featurefile']),os.path.join(self.altdatadir,self.parameters['featurefile'])]
+        filepaths = [os.path.join(self.datadir,self.parameters['featurefile']),os.path.join(self.altdatadir,self.parameters['altfeaturefile'])]
         for i,filepath in enumerate(filepaths):
             with open(filepath,'r') as instream:
                 print "Reading "+filepath
