@@ -284,5 +284,7 @@ def configure(args):
             parameters['compop']='min'
         elif arg=='gm':
             parameters['compop']='gm'
+        elif arg=='add':
+            parameters['compop']='add'
 
     return parameters
