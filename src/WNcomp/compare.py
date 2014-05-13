@@ -333,6 +333,7 @@ class Comparer:
 
 if __name__=='__main__':
 
+
     parameters=configure(sys.argv)
     random.seed(parameters['seed'])
     myexperiments=Experiments(parameters)
