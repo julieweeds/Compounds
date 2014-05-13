@@ -253,6 +253,7 @@ def configure(args):
                 parameters['vinfix']='deps'
                 parameters['deplist']=['advmod-HEAD','advmod-DEP','amod-DEP','amod-HEAD','conj-DEP','conj-HEAD','dobj-DEP','dobj-HEAD','iobj-DEP','iobj-HEAD','nn-DEP','nn-HEAD','nsubj-HEAD','nsubj-DEP','pobj-HEAD']
 
+            parameters['altfeaturefile']=parameters['altdepfile']+'.features.strings'
             parentdir='data/WNcompounds/'
             parameters['datadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['lefttype']]
             parameters['altdatadir']=parentdir+parameters['vinfix']+'/'+parameters['phrasetype']+'/'+parameters['posdict'][parameters['righttype']]
