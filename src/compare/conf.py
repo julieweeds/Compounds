@@ -35,6 +35,7 @@ def configure(args):
     parameters['wins']=False
     parameters['collocatefile']='multiwords.'
     parameters['vsource']='deps'
+    parameters['normalise']=False
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -154,6 +155,8 @@ def configure(args):
             parameters['wins']=False
             parameters['vsource']='deps'
             parameters['ftype']='deps'
+        elif arg=='normalise':
+            parameters['normalise']=True
 
     parameters = setfilenames(parameters)
 

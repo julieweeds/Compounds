@@ -36,7 +36,8 @@ class FeatureVector:
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
     compareUptoOrder = 1
     miroflag=False
-    ROUGH=0.0005
+    ROUGH=0 #therefore no roughening of composed vectors
+    #ROUGH=0.0005
 
     @staticmethod
     def strip(feat):
@@ -792,7 +793,8 @@ class Composer:
 
                         composedVector=self.compose(leftVector,rightVector,ftag=phraseparts[1])
                         if composedVector.computelength()>0:
-                            composedVector.normalise()
+                            if self.parameters['normalise']:
+                                composedVector.normalise()
                             #phraseVector.normalise()
                             composedVector.writeout(vectorstream)  #save untransformed raw frequencies for input to byblo
                         if self.parameters['testing']:
