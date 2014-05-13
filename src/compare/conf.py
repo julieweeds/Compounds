@@ -34,6 +34,7 @@ def configure(args):
     parameters['wn_wiki']=False
     parameters['wins']=False
     parameters['collocatefile']='multiwords.'
+    parameters['vsource']='deps'
 
     for arg in args:
         if arg=='testing':parameters['testing']=True
@@ -110,7 +111,6 @@ def configure(args):
         elif arg=='weighted_precision':parameters['metric']=setadd(parameters['metric'],'weighted_precision')
         elif arg=='apollo':parameters['apollo']=True
         elif arg=='athome':parameters['athome']=True
-        elif arg=='wins':parameters['ftype']='wins'
         elif arg=='pmi':parameters['association']='pmi'
         elif arg=='composefirst':parameters['composefirst']=True
         elif arg=='composesecond':parameters['composefirst']=False
@@ -148,6 +148,12 @@ def configure(args):
             parameters['msource']=='r8'
         elif arg=='wins':
             parameters['wins']=True
+            parameters['vsource']='wins'
+            parameters['ftype']='wins'
+        elif arg=='deps':
+            parameters['wins']=False
+            parameters['vsource']='deps'
+            parameters['ftype']='deps'
 
     parameters = setfilenames(parameters)
 
@@ -178,12 +184,8 @@ def setfilenames(parameters):
         basename=basename+'.'+parameters['vsource']
         basename2=basename
     if parameters['wn_wiki']:
-        parameters['datadir']=parentdir+'WNcompounds/'+parameters['phrasetype']+'/'+parameters['postype']
-        parameters['altdatadir']=parentdir+'WNcompounds/'+parameters['phrasetype']+'/'+parameters['altpostype']
-        if parameters['wins']:
-            parameters['vsource']="wins"
-        else:
-            parameters['vsource']="deps"
+        parameters['datadir']=parentdir+'WNcompounds/'+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['postype']
+        parameters['altdatadir']=parentdir+'WNcompounds/'+parameters['vsource']+'/'+parameters['phrasetype']+'/'+parameters['altpostype']
         basename=basename+'.'+parameters['vsource']
         basename2=basename
 
