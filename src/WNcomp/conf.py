@@ -104,6 +104,9 @@ def configure(args):
             parameters['wnsim']='lin'
         elif arg=='jcn':
             parameters['wnsim']='jcn'
+        elif arg=='phrase':
+            parameters['typelist']=['phrase']
+            parameters['dopos']=parameters['posword']
         elif arg=='head':
             parameters['typelist']=['head']
             parameters['dohead']=True

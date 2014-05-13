@@ -170,6 +170,7 @@ class Experiments:
         self.parameters=parameters
         if self.parameters['testing']:
             ThesEntry.verbose=True
+            self.parameters['ks']=[1]
         else:
             ThesEntry.verbose=False
 
@@ -301,7 +302,8 @@ class Comparer:
         recall=float(mylength)/float(possible)
         print "Recall (proportion with non-empty neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
         print "Mean is "+str(mean)+', error: '+str(error)
-        self.writeoutput([recall,mean,error])
+        if not self.parameters['testing']:
+            self.writeoutput([recall,mean,error])
         return
 
     def writeoutput(self,values):
