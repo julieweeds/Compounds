@@ -97,7 +97,13 @@ class FeatureVector:
         else:
             ctag=':+:'
 
-        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        #newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict=self.featuredict)
+        newvector=FeatureVector(self.signifier+ctag+ftag+':'+avector.signifier,features=[],fdict={})
+        for feature in self.featuredict.keys():
+            aorder=FeatureVector.findorder(feature)
+            if aorder==1:   #only return first order features
+                newvector.featuredict[feature]=self.featuredict[feature]
+
         if not self.functional:
 
             for feature in avector.featuredict.keys():
@@ -378,6 +384,7 @@ class FeatureVector:
                 #print feature,storedorder
                 if storedorder > len(featdictlist)-1:
                     print feature, storedorder
+                    print "pmi transform expects only first order features : exiting"
                     exit()
                 feattot=featdictlist[storedorder].get(fofeat,0)
                 if feattot>0:
@@ -529,8 +536,9 @@ class Composer:
 
                 fields=line.rstrip().split('\t')
                 self.freqdict[fields[0]]=float(fields[1])
-        print self.collocdict
-        print self.freqdict
+        if self.parameters['testing']:
+            print self.collocdict
+            print self.freqdict
         self.freq_correlate()
         #self.freqdict={}  NEED THIS - can't wipe it!
 
