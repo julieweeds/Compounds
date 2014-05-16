@@ -452,6 +452,10 @@ class Composer:
             self.completewhoami=self.completewhoami+'.funct'
         else:
             self.completewhoami=self.completewhoami+'.nofunct'
+        if self.parameters['composefirst']:
+            self.completewhoami+='.cf'
+        else:
+            self.completewhoami+='.cs'
         self.statsreq=True
         self.association=parameters['association']
         self.completewhoami+='.'+self.association
