@@ -179,7 +179,7 @@ class Experiments:
         else:
             ThesEntry.verbose=False
         if self.parameters['baseline']:
-            self.parameters['ks']=[0]
+            self.parameters['ks']=[0]+self.parameters['ks']
 
     def run(self):
 
