@@ -32,7 +32,8 @@ def drawscatter(x,y,poly,title,ytitle,pr,xl,yl):
     plt.show()
 
 class FeatureVector:
-    firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')
+    firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')  # this only matches dependency features
+    firstorderPATT = re.compile('(T):(.*)') # for window features
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
     compareUptoOrder = 1
     miroflag=False
