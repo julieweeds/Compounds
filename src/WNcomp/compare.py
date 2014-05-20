@@ -112,6 +112,11 @@ class ThesEntry:
     def getRel(self):
         return self.phrase.split(':')[1]
 
+    def addhead(self,head):
+
+        self.neighdict[head]=1
+
+
     def addneighs(self,fields,k=10):
 
         #print fields
@@ -173,6 +178,8 @@ class Experiments:
             self.parameters['ks']=[1]
         else:
             ThesEntry.verbose=False
+        if self.parameters['baseline']:
+            self.parameters['ks']=[0]
 
     def run(self):
 
@@ -256,35 +263,44 @@ class Comparer:
             print self.collocdict.keys()
         return
 
+    def addbaseline(self):
+
+        for phrase in self.collocdict.keys():
+            thisEntry=self.collocdict[phrase]
+            parts=phrase.split(':')
+            thisEntry.addhead(parts[0])
+
+
     def loadneighbours(self):
-        allentries=list(self.collocdict.keys())  #for random mode
-        random.shuffle(allentries)
-        with open(self.neighpath,'r') as instream:
-            print "Reading "+self.neighpath
-            linesread=0
-            added=0
-            for line in instream:
-                linesread+=1
-                if linesread%10000==0:
-                    print "Processed lines: "+str(linesread)
-                fields=line.rstrip().split('\t')
-                entry=stripdiffp(fields[0])
-                thisEntry= self.collocdict.get(entry,None)
+        if self.k>0:
+            allentries=list(self.collocdict.keys())  #for random mode
+            random.shuffle(allentries)
+            with open(self.neighpath,'r') as instream:
+                print "Reading "+self.neighpath
+                linesread=0
+                added=0
+                for line in instream:
+                    linesread+=1
+                    if linesread%10000==0:
+                        print "Processed lines: "+str(linesread)
+                    fields=line.rstrip().split('\t')
+                    entry=stripdiffp(fields[0])
+                    thisEntry= self.collocdict.get(entry,None)
 
-                if thisEntry!=None:
-                    neighs=list(fields[1:])
-                    neighs.reverse()
-                    if self.parameters['random']:
-                        #added shuffled neighbours to randomly selected target noun
-                        random.shuffle(neighs)
-                        randomentry=allentries.pop()
-                        thisEntry=self.collocdict[randomentry]
+                    if thisEntry!=None:
+                        neighs=list(fields[1:])
+                        neighs.reverse()
+                        if self.parameters['random']:
+                            #added shuffled neighbours to randomly selected target noun
+                            random.shuffle(neighs)
+                            randomentry=allentries.pop()
+                            thisEntry=self.collocdict[randomentry]
 
-                    thisEntry.addneighs(neighs,self.k)
-                    #print "Adding entry for "+entry
-                    added+=1
-        print "Added thesaurus entry for phrases: "+str(added)
-        return
+                        thisEntry.addneighs(neighs,self.k)
+                        #print "Adding entry for "+entry
+                        added+=1
+            print "Added thesaurus entry for phrases: "+str(added)
+            return
 
     def compareneighbours(self):
         sims=[]
@@ -293,12 +309,17 @@ class Comparer:
             if sim>-1:
                 sims.append(sim)
 
-        sarray=np.array(sims)
-        mean=np.average(sarray)
-        stdev=np.std(sarray)
-        error=stdev/math.pow(len(sims),0.5)
+        if len(sims)>0:
+            sarray=np.array(sims)
+            mean=np.average(sarray)
+            stdev=np.std(sarray)
+            error=stdev/math.pow(len(sims),0.5)
+        else:
+            mean=0
+            error =0
         mylength=len(sims)
         possible=len(self.collocdict.keys())
+        #print possible
         recall=float(mylength)/float(possible)
         print "Recall (proportion with non-empty neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
         print "Mean is "+str(mean)+', error: '+str(error)
@@ -328,6 +349,8 @@ class Comparer:
         if self.parameters['testing']:
             print self.parameters
         self.loadphrases()
+        if self.parameters['baseline']:
+            self.addbaseline()
         self.loadneighbours()
         if self.parameters['testing']:
             self.check()
