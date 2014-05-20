@@ -28,6 +28,7 @@ def configure(args):
     parameters['phrasetype']='NNs'
     parameters['unigram']=False
     parameters['wn_wiki']=True
+    parameters['baseline']=False
 
     #parameters['typelist']=['phrase']
 
@@ -104,6 +105,8 @@ def configure(args):
             parameters['wnsim']='lin'
         elif arg=='jcn':
             parameters['wnsim']='jcn'
+        elif arg=='baseline':
+            parameters['baseline']=True
         elif arg=='phrase':
             parameters['typelist']=['phrase']
             parameters['dopos']=parameters['posword']
