@@ -63,7 +63,7 @@ class FeatureVector:
             if matchobj:
                 order=1
             else:
-                print "Warning: unmatched feature: ",feat,str(order)
+                #print "Warning: unmatched feature: ",feat,str(order)
         return order
 
     def __init__(self,signifier,functional=True,features=[],fdict={}):
