@@ -102,6 +102,7 @@ class ThesEntry:
         self.phrase=phrase
         self.comp_score=score
         self.neighdict={}
+        self.complete=False
 
     def getHead(self):
         return self.phrase.split(':')[0]
@@ -128,6 +129,13 @@ class ThesEntry:
                 self.neighdict[neigh]=1
         if ThesEntry.verbose:
             print self.phrase, self.neighdict.keys()
+
+        if len(self.neighdict.keys())==k:
+            self.complete=True
+            return 1
+        else:
+            self.complete=False
+            return 0
 
     def validcheck(self,neigh):
         if neigh == self.phrase:
@@ -182,8 +190,8 @@ class Experiments:
             self.parameters['ks']=[2]
         else:
             ThesEntry.verbose=False
-        if self.parameters['baseline']:
-            self.parameters['ks']=[0]+self.parameters['ks']
+        #if self.parameters['baseline']:
+         #   self.parameters['ks']=[0]+self.parameters['ks']
 
 
     def run(self):
@@ -211,6 +219,7 @@ class Comparer:
         self.mwpath=os.path.join(parameters['compdatadir'],parameters['mwfile'])
         self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
         self.k=self.parameters['k']
+        self.complete=0
 
     def loadphrases(self):
 
@@ -265,8 +274,9 @@ class Comparer:
                     keylist=self.keydict.get(key,None)
                     if keylist==None:
                         self.keydict[key]=[collocate]
-                    else:
-                        self.keydict[key]=keylist.append(collocate)
+                    elif not self.parameters['unigram']:
+                        keylist.append(collocate)
+                        self.keydict[key]=keylist
                     #print "mod: ",mod,"head: ",head
                     self.leftdict[left]=self.leftdict.get(left,0)+1
                     self.rightdict[right]=self.rightdict.get(right,0)+1
@@ -275,6 +285,8 @@ class Comparer:
         print "Number of collocations is "+str(len(self.collocdict.keys()))
         print "Number of (right) mods is "+str(len(self.rightdict.keys()))
         print "Number of (left) heads is "+str(len(self.leftdict.keys()))
+        print "Number of keys is "+str(len(self.keydict.keys()))
+        #print self.keydict
         #self.collocorder=sorted(self.collocdict.keys())
         if self.parameters['testing']:
             print self.collocdict.keys()
@@ -316,20 +328,21 @@ class Comparer:
                                     randomentry=allentries.pop()
                                     thisEntry=self.collocdict[randomentry]
 
-                                thisEntry.addneighs(neighs,self.k)
+                                self.complete+=thisEntry.addneighs(neighs,self.k)
                         #print "Adding entry for "+entry
-                        added+=1
+                                added+=1
             print "Added thesaurus entry for phrases: "+str(added)
             return
 
     def compareneighbours(self):
         sims=[]
         for myThes in self.collocdict.values():
-            sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
-            if sim>-1:
-                sims.append(sim)
-            #if self.parameters['testing'] and len(sims)>1:
-            #    exit()
+            if myThes.complete:
+                sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
+                if sim>-1:
+                    sims.append(sim)
+                #if self.parameters['testing'] and len(sims)>1:
+                #    exit()
 
         if len(sims)>0:
             sarray=np.array(sims)
@@ -342,8 +355,8 @@ class Comparer:
         mylength=len(sims)
         possible=len(self.collocdict.keys())
         #print possible
-        recall=float(mylength)/float(possible)
-        print "Recall (proportion with non-empty neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
+        recall=float(self.complete)/float(possible)
+        print "Recall (proportion with complete neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
         print "Mean is "+str(mean)+', error: '+str(error)
         if not self.parameters['testing']:
             self.writeoutput([recall,mean,error])
@@ -351,7 +364,12 @@ class Comparer:
 
     def writeoutput(self,values):
 
-        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+','+str(self.parameters['k'])
+        if self.parameters['baseline']:
+            bflag='_baseline'
+        else:
+            bflag='_nb'
+
+        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+bflag+','+str(self.parameters['k'])
         for value in values:
             outline +=','+str(value)
         outline+='\n'
@@ -382,6 +400,7 @@ if __name__=='__main__':
 
 
     parameters=configure(sys.argv)
+    print parameters
     random.seed(parameters['seed'])
     myexperiments=Experiments(parameters)
     myexperiments.run()

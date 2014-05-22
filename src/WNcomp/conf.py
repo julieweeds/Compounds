@@ -12,7 +12,7 @@ def configure(args):
     parameters['seed']=37
     parameters['inversefeatures']={'nn-DEP':'nn-HEAD','nn-HEAD':'nn-DEP','amod-DEP':'amod-HEAD','amod-HEAD':'amod-DEP','':''}
     parameters['k']=5
-    parameters['ks']=[1,2,3,4,5,10,15,20,50,100]
+    parameters['ks']=[1,2,3,4,5,10,15,20]
     parameters['mwfile']='multiwords.all'
     parameters['neighsource']=''
     parameters['NNcompflag']=True
@@ -29,6 +29,7 @@ def configure(args):
     parameters['unigram']=False
     parameters['wn_wiki']=True
     parameters['baseline']=False
+    parameters['metric']='lin'
 
     #parameters['typelist']=['phrase']
 
@@ -128,6 +129,8 @@ def configure(args):
             parameters['vsources'].append('deps')
         elif arg=='wins':
             parameters['vsources'].append('wins')
+        elif arg=='cospmi':
+            parameters['metric']='cospmi'
 
     parameters=setfilenames(parameters)
     return parameters
@@ -142,6 +145,9 @@ def setfilenames(parameters):
 
     if parameters['athome']:
         parameters['compoundparentdir']='/Users/juliewe/Documents/workspace/Compounds/data/'
+
+    if parameters['metric']=='cospmi':
+        parameters['neighsource']+='.cospmi'
 
     if parameters['wn_wiki']:
         parameters['compdatadirs']=[]
