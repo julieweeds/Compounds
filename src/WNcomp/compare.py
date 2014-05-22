@@ -144,6 +144,10 @@ class ThesEntry:
         if len(neighsynsets)==0:
             #print neigh + " not in WN" #neighbour must be in WN
             return False
+        #if self.neighdict.get(neigh,0)==1: #neighbour already added - don't need this as it is a dict and won't add repeats anyway
+        #    print neigh + " already added"
+        #    return False
+
 
         return True
 
@@ -175,11 +179,12 @@ class Experiments:
         self.parameters=parameters
         if self.parameters['testing']:
             ThesEntry.verbose=True
-            self.parameters['ks']=[1]
+            self.parameters['ks']=[2]
         else:
             ThesEntry.verbose=False
         if self.parameters['baseline']:
             self.parameters['ks']=[0]+self.parameters['ks']
+
 
     def run(self):
 
@@ -202,6 +207,7 @@ class Comparer:
         self.collocdict={}
         self.leftdict={}
         self.rightdict={}
+        self.keydict={}  #key (head,mod or phrase --> collocate list)
         self.mwpath=os.path.join(parameters['compdatadir'],parameters['mwfile'])
         self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
         self.k=self.parameters['k']
@@ -222,6 +228,9 @@ class Comparer:
                 if rel==inversematch:
                     rel=self.parameters['featurematch']
                     collocate=right+':'+rel+':'+left
+                    parts=collocate.split(':')
+                    left=parts[0]
+                    right=parts[2]
 
 
                 if rel == self.parameters['featurematch']:
@@ -244,17 +253,25 @@ class Comparer:
                         elif self.parameters['domod']:
                             collocate=parts[2]  #football/N
                     if self.parameters['dohead']:
-                        self.collocdict[left]=ThesEntry(collocate,score=sc)
+                        self.collocdict[collocate]=ThesEntry(collocate,score=sc)
+                        key = left
+
                     elif self.parameters['domod']:
-                        self.collocdict[right]=ThesEntry(collocate,score=sc)
+                        self.collocdict[collocate]=ThesEntry(collocate,score=sc)
+                        key=right
                     else:
                         self.collocdict[collocate]=ThesEntry(collocate,score=sc)
-
+                        key = collocate
+                    keylist=self.keydict.get(key,None)
+                    if keylist==None:
+                        self.keydict[key]=[collocate]
+                    else:
+                        self.keydict[key]=keylist.append(collocate)
                     #print "mod: ",mod,"head: ",head
                     self.leftdict[left]=self.leftdict.get(left,0)+1
                     self.rightdict[right]=self.rightdict.get(right,0)+1
-
-
+                #if len(self.collocdict.keys())>1 and self.parameters['testing']:
+                #    break
         print "Number of collocations is "+str(len(self.collocdict.keys()))
         print "Number of (right) mods is "+str(len(self.rightdict.keys()))
         print "Number of (left) heads is "+str(len(self.leftdict.keys()))
@@ -285,18 +302,21 @@ class Comparer:
                         print "Processed lines: "+str(linesread)
                     fields=line.rstrip().split('\t')
                     entry=stripdiffp(fields[0])
-                    thisEntry= self.collocdict.get(entry,None)
-
-                    if thisEntry!=None:
+                    #thisEntry= self.collocdict.get(entry,None)
+                    keylist = self.keydict.get(entry,None)
+                    if keylist!=None:
                         neighs=list(fields[1:])
                         neighs.reverse()
-                        if self.parameters['random']:
-                            #added shuffled neighbours to randomly selected target noun
-                            random.shuffle(neighs)
-                            randomentry=allentries.pop()
-                            thisEntry=self.collocdict[randomentry]
+                        for key in keylist:
+                            thisEntry=self.collocdict.get(key,None)
+                            if thisEntry!=None:
+                                if self.parameters['random']:
+                                    #added shuffled neighbours to randomly selected target noun
+                                    random.shuffle(neighs)
+                                    randomentry=allentries.pop()
+                                    thisEntry=self.collocdict[randomentry]
 
-                        thisEntry.addneighs(neighs,self.k)
+                                thisEntry.addneighs(neighs,self.k)
                         #print "Adding entry for "+entry
                         added+=1
             print "Added thesaurus entry for phrases: "+str(added)
@@ -308,6 +328,8 @@ class Comparer:
             sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
             if sim>-1:
                 sims.append(sim)
+            #if self.parameters['testing'] and len(sims)>1:
+            #    exit()
 
         if len(sims)>0:
             sarray=np.array(sims)
