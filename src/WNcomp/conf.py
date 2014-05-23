@@ -94,6 +94,22 @@ def configure(args):
             parameters['neighsource']='diffcomp_nfgm'
         elif arg=='diffcomp_nfmult':
             parameters['neighsource']='diffcomp_nfmult'
+        elif arg=='diffcomp_cs_gm':
+            parameters['neighsource']='diffcomp_cs_gm'
+        elif arg=='diffcomp_cs_add':
+            parameters['neighsource']='diffcomp_cs_add'
+        elif arg=='diffcomp_cs_min':
+            parameters['neighsource']='diffcomp_cs_min'
+        elif arg=='diffcomp_cs_mult':
+            parameters['neighsource']='diffcomp_cs_mult'
+        elif arg=='diffcomp_cs_nfgm':
+            parameters['neighsource']='diffcomp_cs_nfgm'
+        elif arg=='diffcomp_cs_nfmin':
+            parameters['neighsource']='diffcomp_cs_nfmin'
+        elif arg=='diffcomp_cs_nfmult':
+            parameters['neighsource']='diffcomp_cs_nfmult'
+        elif arg=='diffcomp_cs_nfadd':
+            parameters['neighsource']='diffcomp_cs_nfadd'
         elif arg=='unigram':
             parameters['neighsource']='unigram'
             parameters['typelist']=['head']
