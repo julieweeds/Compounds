@@ -94,6 +94,10 @@ def configure(args):
             parameters['neighsource']='diffcomp_nfgm'
         elif arg=='diffcomp_nfmult':
             parameters['neighsource']='diffcomp_nfmult'
+        elif arg=='diffcomp_nfadd':
+            parameters['neighsource']='diffcomp_nfadd'
+        elif arg=='diffcomp_nfmin':
+            parameters['neighsource']='diffcomp_nfmin'
         elif arg=='diffcomp_cs_gm':
             parameters['neighsource']='diffcomp_cs_gm'
         elif arg=='diffcomp_cs_add':
