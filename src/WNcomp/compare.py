@@ -286,6 +286,13 @@ class Comparer:
         print "Number of (right) mods is "+str(len(self.rightdict.keys()))
         print "Number of (left) heads is "+str(len(self.leftdict.keys()))
         print "Number of keys is "+str(len(self.keydict.keys()))
+
+        keysum=0
+        for key in self.keydict.keys():
+            keysum+=len(self.keydict[key])
+            if len(self.keydict[key])>1:
+                print key, self.keydict[key]
+        print "Number of collocations in keydict is "+str(keysum)
         #print self.keydict
         #self.collocorder=sorted(self.collocdict.keys())
         if self.parameters['testing']:
