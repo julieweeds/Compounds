@@ -11,8 +11,8 @@ class PairGenerator:
     def __init__(self,parameters):
         self.parameters=parameters
         self.n=100
-        self.ANpath=os.path.join(self.parameters['compdatadir'],'wn.ANs.txt')
-        self.NNpath=os.path.join(self.parameters['compdatadir'],'wn.NNs.txt')
+        self.ANpath=os.path.join(self.parameters['compdatadir'],'multiwords.wn_wiki.ANs')
+        self.NNpath=os.path.join(self.parameters['compdatadir'],'multiwords.wn_wiki.NNs')
         self.NNfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.NNs.txt')
         self.ANfiltpath=os.path.join(self.parameters['compdatadir'],'wn_wiki.ANs.txt')
         self.wikiNpath=os.path.join(self.parameters['compdatadir'],'wikiPOS_nounsdeps.events.strings')
