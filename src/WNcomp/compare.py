@@ -120,6 +120,11 @@ class ThesEntry:
 
     def addneighs(self,fields,k=10):
 
+        if len(self.neighdict.keys())>0:
+            print "Warning: neighbours already added for "+self.phrase
+            print self.neighdict
+            print fields
+
         #print fields
         while len(self.neighdict.keys()) < k and len(fields)>0:
             neigh=fields.pop()
