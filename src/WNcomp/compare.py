@@ -341,10 +341,10 @@ class Comparer:
                                     random.shuffle(neighs)
                                     randomentry=allentries.pop()
                                     thisEntry=self.collocdict[randomentry]
-
-                                self.complete+=thisEntry.addneighs(neighs,self.k)
+                                wasadded=thisEntry.addneighs(neighs,self.k)
+                                self.complete+=wasadded
                         #print "Adding entry for "+entry
-                                added+=1
+                                added+=wasadded
             print "Added thesaurus entry for phrases: "+str(added)
             return
 
