@@ -123,7 +123,7 @@ class ThesEntry:
         if len(self.neighdict.keys())>0:
             print "Warning: neighbours already added for "+self.phrase
             print self.neighdict
-            print fields
+            print fields[0:10]
 
         #print fields
         while len(self.neighdict.keys()) < k and len(fields)>0:
