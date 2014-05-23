@@ -30,6 +30,7 @@ def configure(args):
     parameters['wn_wiki']=True
     parameters['baseline']=False
     parameters['metric']='lin'
+    parameters['bigram']=False #can phrases be counted as valid neighbours
 
     #parameters['typelist']=['phrase']
 
@@ -151,6 +152,8 @@ def configure(args):
             parameters['vsources'].append('wins')
         elif arg=='cospmi':
             parameters['metric']='cospmi'
+        elif arg=='bigram':
+            parameters['bigram']=True
 
     parameters=setfilenames(parameters)
     return parameters
