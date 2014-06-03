@@ -122,10 +122,12 @@ class ThesEntry:
     def addneighs(self,fields,k=10):
 
         if len(self.neighdict.keys())>0:
-            print "Warning: neighbours already added for "+self.phrase
-            print self.neighdict
-            print fields[-10:len(fields)]
-            return 0
+            if ThesEntry.verbose:
+                print "Warning: neighbours already added for "+self.phrase
+                print self.neighdict
+                print fields[-10:len(fields)]
+            if self.complete:
+                return 0
 #            exit()
 
         #print fields
