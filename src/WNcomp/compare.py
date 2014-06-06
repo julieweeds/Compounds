@@ -96,6 +96,7 @@ def wnsim(phrase,neighbour,metric='path',pos='N'):
 
 class ThesEntry:
     verbose=True
+    bigram=False
 
     def __init__(self,phrase,score=1):
 
@@ -121,10 +122,12 @@ class ThesEntry:
     def addneighs(self,fields,k=10):
 
         if len(self.neighdict.keys())>0:
-            print "Warning: neighbours already added for "+self.phrase
-            print self.neighdict
-            print fields[-10:len(fields)]
-            return 0
+            if ThesEntry.verbose:
+                print "Warning: neighbours already added for "+self.phrase
+                print self.neighdict
+                print fields[-10:len(fields)]
+            if self.complete:
+                return 0
 #            exit()
 
         #print fields
@@ -149,7 +152,7 @@ class ThesEntry:
             #print neigh + "is phrase itself"
             return False  #neighbour can't be phrase itself
         parts=neigh.split(':')
-        if len(parts)>1: #neighbour can't be any phrase
+        if len(parts)>1 and not ThesEntry.bigram: #neighbour can't be any phrase unless bigram flag is set
             #print neigh + " is a phrase"
             return False
         parts=neigh.split('/')
@@ -197,6 +200,8 @@ class Experiments:
             self.parameters['ks']=[2]
         else:
             ThesEntry.verbose=False
+        if self.parameters['bigram']:
+            ThesEntry.bigram=True #set bigram flag so phrases are allowed to be semantic neighbours
         #if self.parameters['baseline']:
          #   self.parameters['ks']=[0]+self.parameters['ks']
 
@@ -382,8 +387,12 @@ class Comparer:
             bflag='_baseline'
         else:
             bflag='_nb'
+        if self.parameters['bigram']:
+            bigflag='_bigram'
+        else:
+            bigflag='_nobigrams'
 
-        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+bflag+','+str(self.parameters['k'])
+        outline=self.parameters['phrasetype']+','+self.parameters['typelist'][0]+','+self.parameters['neighsource']+','+self.parameters['vsource']+','+parameters['rflag']+bflag+bigflag+','+str(self.parameters['k'])
         for value in values:
             outline +=','+str(value)
         outline+='\n'

@@ -30,6 +30,7 @@ def configure(args):
     parameters['wn_wiki']=True
     parameters['baseline']=False
     parameters['metric']='lin'
+    parameters['bigram']=False #can phrases be counted as valid neighbours
 
     #parameters['typelist']=['phrase']
 
@@ -98,6 +99,10 @@ def configure(args):
             parameters['neighsource']='diffcomp_nfadd'
         elif arg=='diffcomp_nfmin':
             parameters['neighsource']='diffcomp_nfmin'
+        elif arg=='diffcomp_add':
+            parameters['neighsource']='diffcomp_add'
+        elif arg=='diffcomp_ngadd':
+            parameters['neighsource']='diffcomp_nfadd'
         elif arg=='diffcomp_cs_gm':
             parameters['neighsource']='diffcomp_cs_gm'
         elif arg=='diffcomp_cs_add':
@@ -151,6 +156,8 @@ def configure(args):
             parameters['vsources'].append('wins')
         elif arg=='cospmi':
             parameters['metric']='cospmi'
+        elif arg=='bigram':
+            parameters['bigram']=True
 
     parameters=setfilenames(parameters)
     return parameters
