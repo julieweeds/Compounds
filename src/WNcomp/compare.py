@@ -57,6 +57,10 @@ def wnFormat(phrase):
             lex1=parts[2].split('/')[0]
             (lex2,tag)=parts[0].split('/')
             wnphrase=lex1+'_'+lex2
+        elif parts[1]=='amod-DEP':
+            lex1=parts[2].split('/')[0]
+            (lex2,tag)=parts[0].split('/')
+            wnphrase=lex1+'_'+lex2
     elif len(parts)==1:
         (wnphrase,tag)=parts[0].split('/')
     return (wnphrase,tag)
@@ -71,11 +75,13 @@ def sensesim(ss1,ss2,metric):
         sim=ss1.jcn_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
     return sim
 
-def wnsim(phrase,neighbour,metric='path',pos='N'):
+def wnsim(phrase,neighbour,metric='path',pos='N',verbose=False):
 
     (wnphrase,ptag)=wnFormat(phrase)
     (wnneighbour,ntag)=wnFormat(neighbour)
-
+    if verbose:
+        #print wnphrase, ptag
+        pass
     neighsynsets=wn.synsets(wnneighbour,pos=wnmapping[pos])
     phrasesynsets=wn.synsets(wnphrase,pos=wnmapping[pos])
 
@@ -173,7 +179,7 @@ class ThesEntry:
         sims=[]
         mymean=0
         for neigh in self.neighdict.keys():
-            sim=wnsim(self.phrase,neigh,metric)
+            sim=wnsim(self.phrase,neigh,metric,verbose=ThesEntry.verbose)
             if sim>-1:
                 sims.append(sim)
             elif sim==-2:
@@ -302,7 +308,7 @@ class Comparer:
         keysum=0
         for key in self.keydict.keys():
             keysum+=len(self.keydict[key])
-            if len(self.keydict[key])>1:
+            if len(self.keydict[key])>1 and self.parameters['testing']:
                 print key, self.keydict[key]
         print "Number of collocations in keydict is "+str(keysum)
         #print self.keydict
