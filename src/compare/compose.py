@@ -33,7 +33,7 @@ def drawscatter(x,y,poly,title,ytitle,pr,xl,yl):
 
 class FeatureVector:
     firstorderPATT = re.compile('([^:]+-[^:]+):(.*)')  # this only matches dependency features
-    firstorderPATT = re.compile('(T):(.*)') # for window features
+    windowPATT = re.compile('(T):(.*)') # for window features
     secondorderPATT = re.compile('([^:]+-[^:]+):([^:]+-[^:]+):(.*)')
     compareUptoOrder = 1
     miroflag=False
@@ -64,7 +64,11 @@ class FeatureVector:
             if matchobj:
                 order=1
             else:
-                print "Warning: unmatched feature: ",feat,str(order)
+                matchobj = FeatureVector.windowPATT.match(feat)
+                if matchobj:
+                    order=1
+                else:
+                    print "Warning: unmatched feature - defaulting to ':' to determine order: ",feat,str(order)
         return order
 
     def __init__(self,signifier,functional=True,features=[],fdict={}):
