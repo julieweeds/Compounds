@@ -389,7 +389,7 @@ class FeatureVector:
                 #print feature,storedorder
                 if storedorder > len(featdictlist)-1:
                     print feature, storedorder
-                    print "pmi transform expects only first order features : exiting"
+                    print "exiting: pmi transform only expects features up to order",str(len(featdictlist))
                     exit()
                 feattot=featdictlist[storedorder].get(fofeat,0)
                 if feattot>0:
@@ -798,7 +798,7 @@ class Composer:
                             #transform to pmi values before composition
                             if inverted:
                                 rightVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
-                                leftVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['right']],association=self.association)
+                                leftVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['left']],association=self.association)
                             else:
                                 rightVector.transform([self.featdict['right'],self.featdict['left']],[self.featuretotal['right'],self.featuretotal['left']],association=self.association)
                                 leftVector.transform([self.featdict['left'],self.featdict['right']],[self.featuretotal['left'],self.featuretotal['right']],association=self.association)
