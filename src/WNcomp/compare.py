@@ -70,9 +70,18 @@ def sensesim(ss1,ss2,metric):
     if metric=='path':
         sim=ss1.path_similarity(ss2)
     elif metric=='lin':
-        sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
+        sim=ss1.lin_similarity(ss2,wn_ic.ic('ic-brown.dat'))
     elif metric=='jcn':
-        sim=ss1.jcn_similarity(ss2,wn_ic.ic('ic-semcor.dat'))
+        sim=ss1.jcn_similarity(ss2,wn_ic.ic('ic-brown.dat'))
+    elif metric=='res':
+        sim=ss1.res_similarity(ss2,wn_ic.ic('ic-brown.dat'))
+    elif metric=='lch':
+        sim=ss1.lch_similarity(ss2)
+    elif metric=='wup':
+        sim=ss1.wup_similarity(ss2)
+    else:
+        print "Unknown metric", metric
+        sim=0
     return sim
 
 def wnsim(phrase,neighbour,metric='path',pos='N',verbose=False):
@@ -129,9 +138,10 @@ class ThesEntry:
 
         if len(self.neighdict.keys())>0:
             if ThesEntry.verbose:
-                print "Warning: neighbours already added for "+self.phrase
-                print self.neighdict
-                print fields[-10:len(fields)]
+                #print "Warning: neighbours already added for "+self.phrase
+                #print self.neighdict
+                #print fields[-10:len(fields)]
+                pass
             if self.complete:
                 return 0
 #            exit()
@@ -191,7 +201,7 @@ class ThesEntry:
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
-        if ThesEntry.verbose:
+        if ThesEntry.verbose and mymean < 0:
             print self.phrase,mymean
         return mymean
 
@@ -323,6 +333,9 @@ class Comparer:
             thisEntry=self.collocdict[phrase]
             parts=phrase.split(':')
             thisEntry.addhead(parts[0])
+            if self.k==1:
+                thisEntry.complete=True
+                self.complete+=1
 
 
     def loadneighbours(self):
@@ -381,6 +394,9 @@ class Comparer:
         possible=len(self.collocdict.keys())
         #print possible
         recall=float(self.complete)/float(possible)
+        if self.parameters['testing']:
+            if recall < 1:
+                print self.complete,possible
         print "Recall (proportion with complete neighbour list) size: "+str(self.parameters['k'])+" is "+str(recall)
         print "Mean is "+str(mean)+', error: '+str(error)
         if not self.parameters['testing']:
