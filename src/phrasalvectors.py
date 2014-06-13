@@ -194,6 +194,19 @@ class FeatureVector:
             res=res+':'+part
         return res
 
+    def isInverted(self,featurematch,mapping):
+        parts=self.word.split(':')
+        if parts[1]==featurematch:
+            return False
+        elif parts[1]==mapping[featurematch]:
+            return True
+        else:
+            print "Warning: doesn't match feature or inverse", self.word
+            return False
+
+
+
+
     def __init__(self,word='',windows=False):
 
         self.featdict={}
@@ -285,6 +298,8 @@ class FeatureVector:
         #print self.word,oldwidth,newwidth
         if newwidth==0:
             print self.featdict
+            #print featdict1.keys()[0:10]
+            #print featdict2.keys()[0:10]
         self.featdict=dict(self.indict)
         self.indict={}
 
@@ -319,7 +334,10 @@ class VectorBuilder(VectorExtractor):
         else:  #self.flag=="phrases"
             #print "Checking "+currentvector.word
             if self.collocdict.get(currentvector.word,0)>0:
-                self.inwordflag=['left']
+                if currentvector.isInverted(self.parameters['featurematch'],self.parameters['inversefeatures']):
+                    self.inwordflag=['right']
+                else:
+                    self.inwordflag=['left']
                 #parts=currentvector.word.split(':')
                 #if len(parts)>2:
                 #    invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
@@ -329,11 +347,16 @@ class VectorBuilder(VectorExtractor):
                 if len(parts)>2:
                     invphrase=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
                     #print "Checking "+invphrase
-                    if self.collocdict.get(invphrase,0)>0:self.inwordflag=['right']
+                    if self.collocdict.get(invphrase,0)>0:
+
+                        if currentvector.isInverted(self.parameters['featurematch'],self.parameters['inversefeatures']):
+                            self.inwordflag=['right']
+                        else:
+                            self.inwordflag=['left']
             if self.inwordflag!=[]:
                 self.phrasevectordict[currentvector.word]=currentvector  #store phrasevector for differences on constituents run
                 #print "storing vector for "+currentvector.word
-
+                #print currentvector.word,self.inwordflag
 
         if self.inwordflag !=[]:
             #print "Outputting vector for "+currentvector.word
@@ -363,7 +386,7 @@ class VectorBuilder(VectorExtractor):
                 linesread=0
                 for line in instream:
                     linesread+=1
-                    if linesread%100000==0:
+                    if linesread%1000000==0:
                         print "Read "+str(linesread)+" lines"
                         #if self.parameters['testing']:
                         if self.parameters['testing'] and flag == 'constituents':
@@ -403,10 +426,16 @@ class VectorBuilder(VectorExtractor):
             if ('left' in self.inwordflag and parts[2]==constituent) or ('right' in self.inwordflag and parts[0]==constituent):
                 mycollocs.append(colloc)
                 if parts[0]==constituent:
-                    inwordflags.append('left')
+                    if parts[1]==self.parameters['featurematch']:
+                        inwordflags.append('left')
+                    else:
+                        inwordflags.append('right')
                 else:
-                    inwordflags.append('right')
-        print mycollocs
+                    if parts[1]==self.parameters['featurematch']:
+                        inwordflags.append('right')
+                    else:
+                        inwordflags.append('left')
+        print zip(mycollocs,inwordflags)
         for (colloc,inwordflag) in zip(mycollocs,inwordflags):
             parts=colloc.split(':')
             invcolloc=parts[2]+':'+self.parameters['inversefeatures'][parts[1]]+':'+parts[0]
