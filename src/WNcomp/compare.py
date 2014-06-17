@@ -213,7 +213,7 @@ class Experiments:
         self.parameters=parameters
         if self.parameters['testing']:
             ThesEntry.verbose=True
-            self.parameters['ks']=[2]
+            self.parameters['ks']=[5]
         else:
             ThesEntry.verbose=False
         if self.parameters['bigram']:
