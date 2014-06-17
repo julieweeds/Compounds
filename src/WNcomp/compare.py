@@ -201,7 +201,7 @@ class ThesEntry:
             else:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
-        if ThesEntry.verbose and mymean < 0:
+        if ThesEntry.verbose:
             print self.phrase,mymean
         return mymean
 
