@@ -353,11 +353,12 @@ class Comparer:
                     fields=line.rstrip().split('\t')
                     entry=stripdiffp(fields[0])
                     #thisEntry= self.collocdict.get(entry,None)
-                    keylist = self.keydict.get(entry,None)
+                    keylist = self.keydict.get(entry,None) #get phrases associated with this neighbour list
                     if keylist!=None:
-                        neighs=list(fields[1:])
-                        neighs.reverse()
                         for key in keylist:
+                            neighs=list(fields[1:])  #copy of fields needs to be made for each phrase - otherwise will share neighbours
+                            neighs.reverse()
+
                             thisEntry=self.collocdict.get(key,None)
                             if thisEntry!=None:
                                 if self.parameters['random']:
