@@ -152,9 +152,10 @@ class ThesEntry:
             sc=fields.pop()
             if self.validcheck(neigh):
                 #self.neighdict[neigh]=float(sc)
-                self.neighdict[neigh]=1
+                self.neighdict[neigh]=sc
         if ThesEntry.verbose:
-            print self.phrase, self.neighdict.keys()
+            #print self.phrase, self.neighdict.keys()
+            pass
 
         if len(self.neighdict.keys())==k:
             self.complete=True
@@ -162,6 +163,12 @@ class ThesEntry:
         else:
             self.complete=False
             return 0
+
+    def getneighbours(self):
+        result=[]
+        for neighbour in self.neighdict:
+            result.append((neighbour,self.neighdict[neighbour]))
+        return result
 
     def validcheck(self,neigh):
         if neigh == self.phrase:
@@ -202,7 +209,8 @@ class ThesEntry:
                 sarray=np.array(sims)
                 mymean=np.average(sarray)
         if ThesEntry.verbose:
-            print self.phrase,mymean
+            #print self.phrase,mymean
+            pass
         return mymean
 
 
@@ -224,21 +232,34 @@ class Experiments:
 
     def run(self):
 
-        for compdatadir,vsource in zip(self.parameters['compdatadirs'],self.parameters['vsources']):
-            self.parameters['compdatadir']=compdatadir
-            self.parameters['vsource']=vsource
-            for k in self.parameters['ks']:
-                self.parameters['k']=k
-                with open(self.parameters['outfile'],'a') as self.parameters['outstream']:
-                    myComparer=Comparer(self.parameters)
-                    myComparer.go()
+        results={}
+        for mytype in self.parameters['typelist']:
+
+            if mytype == 'head':
+                self.parameters['dohead']=True
+
+            for compdatadir,vsource in zip(self.parameters['compdatadirs'],self.parameters['vsources']):
+                self.parameters['compdatadir']=compdatadir
+                self.parameters['vsource']=vsource
+                for k in self.parameters['ks']:
+                    self.parameters['k']=k
+                    with open(self.parameters['outfile'],'a') as self.parameters['outstream']:
+                        myComparer=Comparer(self.parameters,results=results)
+                        (results,neighboursets)=myComparer.go()
+            #print results
+        for key in results.keys():
+            output=key
+            for value in results[key]:
+                output+='\t'+str(value)
+            output+='\t'+str(neighboursets[key])
+            print output
 
 
 
 class Comparer:
 
 
-    def __init__(self,parameters):
+    def __init__(self,parameters,results={},neighboursets={}):
         self.parameters=parameters
         self.collocdict={}
         self.leftdict={}
@@ -248,6 +269,8 @@ class Comparer:
         self.neighpath=os.path.join(parameters['compdatadir'],parameters['neighfile'])
         self.k=self.parameters['k']
         self.complete=0
+        self.results=results
+        self.neighboursets=neighboursets
 
     def loadphrases(self):
 
@@ -319,12 +342,14 @@ class Comparer:
         for key in self.keydict.keys():
             keysum+=len(self.keydict[key])
             if len(self.keydict[key])>1 and self.parameters['testing']:
-                print key, self.keydict[key]
+                #print key, self.keydict[key]
+                pass
         print "Number of collocations in keydict is "+str(keysum)
         #print self.keydict
         #self.collocorder=sorted(self.collocdict.keys())
         if self.parameters['testing']:
-            print self.collocdict.keys()
+            #print self.collocdict.keys()
+            pass
         return
 
     def addbaseline(self):
@@ -380,6 +405,12 @@ class Comparer:
                 sim=myThes.average_wnsim(metric=self.parameters['wnsim'])
                 if sim>-1:
                     sims.append(sim)
+                if self.results.get(myThes.phrase,None)==None:
+                    self.results[myThes.phrase]=[]
+                    self.neighboursets[myThes.phrase]=[]
+
+                self.results[myThes.phrase].append(sim)
+                self.neighboursets[myThes.phrase].append(myThes.getneighbours())
                 #if self.parameters['testing'] and len(sims)>1:
                 #    exit()
 
@@ -428,8 +459,8 @@ class Comparer:
     def check(self):
         for myThes in self.collocdict.values():
             if len(myThes.neighdict.keys())==0:
-                print myThes.phrase
-
+                #print myThes.phrase
+                pass
 
     def go(self):
         if self.parameters['testing']:
@@ -441,6 +472,7 @@ class Comparer:
         if self.parameters['testing']:
             self.check()
         self.compareneighbours()
+        return (self.results,self.neighboursets)
 
 if __name__=='__main__':
 

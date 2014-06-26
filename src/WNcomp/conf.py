@@ -147,6 +147,9 @@ def configure(args):
             parameters['domod']=True
             parameters['dohead']=False
             parameters['dopos']=parameters['altposword']
+        elif arg=='compare':
+            parameters['typelist']=['phrase','head']
+            parameters['dopos']=parameters['posword']
         elif arg=='random':
             parameters['random']=True
             parameters['rflag']='random'
